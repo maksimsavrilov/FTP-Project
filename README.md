@@ -7,7 +7,9 @@ The CLI command set is inspired by the one in the Plesk panel
 https://docs.plesk.com/en-US/obsidian/cli-linux/using-command-line-utilities.40984/).
 Except for node management commands.
 
-## Overview
+## C4 Diagram
+
+## Overview, C4 context level
 
 ```text
                     Master
@@ -126,20 +128,6 @@ Worker Agent
                   └── PostgreSQL
 ```
 
-### Deployment
-
-```text
-                Master VM
-              ┌────────────┐
-              │ API        │
-              │ Scheduler  │
-              │ DB         │
-              └─────┬──────┘
-                    │
-          ┌─────────┼─────────┐
-          ▼         ▼         ▼
-       Worker 1  Worker 2  Worker 3
-```
 
 ### Sequence
 
@@ -170,7 +158,7 @@ Worker Agent
         CLI
 ```
 
-## Context info for users <-> FTP project interaction
+## Context info for users <-> FTP Project interaction
 
 ### Admin user
 
@@ -280,4 +268,176 @@ Agent
   │
   ▼
 Master
+```
+
+### Worker Node registration
+
+```text
+Worker Node
+    │
+    │ 1. bootstrap credential
+    ▼
+POST /nodes/register
+    │
+    ▼
+  Master
+    │
+    ├── creates Node ID
+    ├── saves capabilities
+    └── issues credentials
+          │
+          ▼
+     Node registered
+```
+
+### Worker node registration data
+
+node_id
+hostname
+OS
+CPU
+RAM
+disk
+network
+agents:
+  - web
+  - dns
+  - mail
+  - database
+services:
+  - nginx
+  - apache
+  - bind
+  - postfix
+  - dovecot
+  - mysql
+  - postgresql
+
+
+  ### Worker node heartbeat data
+
+- CPU usage
+- RAM usage
+- disk usage
+- service state
+
+
+## C4 Container level
+
+### Master
+
+```text
+Master Node
+│
+├── FastAPI
+│   ├── Auth management
+│   ├── Users
+│   ├── Resellers
+│   ├── Subscriptions
+│   ├── Service Plans
+│   ├── Resources
+│   ├── Nodes
+│   └── Scheduling
+│
+└── State DB (PostgreSQL)
+```
+
+### Worker
+
+```text
+Worker Node
+│
+├── Web Agent  ──► nginx + Apache
+├── DNS Agent  ──► BIND
+├── Mail Agent ──► SMTP/IMAP/POP
+└── DB Agent   ──► MySQL/PostgreSQL
+```
+
+
+### CLI <-> Master <-> Agents communication protocol
+
+```text
+Admin ─────┐        
+Reseller ──┼───► CLI
+Site User ─┘      │
+                 REST
+                  │
+                  ▼
+                Master
+                  │
+                 REST
+                  ├──────────► Web Agent
+                  ├──────────► DNS Agent
+                  ├──────────► Mail Agent
+                  └──────────► DB Agent
+```
+
+## Bidirectional control + heartbeat
+
+```text
+                  Master
+                    │
+          ┌─────────┴─────────┐
+          │                   │
+      Commands            Desired State
+          │                   │
+          ▼                   ▼
+       Agent ───────────────► Master
+          │                 Actual State
+          │
+      heartbeat
+          │
+          ▼
+       Master
+```
+
+
+### Subscription model
+
+```text
+User
+ └── Subscription
+      ├── Web Service
+      ├── DNS Service
+      ├── Mail Service
+      └── DB Service
+```
+
+### service model
+
+```text
+Subscription
+│
+├── Web ──► Node 01
+├── DNS ──► Node 01
+├── Mail ──► Node 02
+└── DB ──► Node 17
+```
+
+### Services are independent and every service agent gets full data from master
+
+```text
+Master
+  │
+  ├── Web desired state
+  │      ├── domain
+  │      ├── IP
+  │      ├── DNS records
+  │      └── Users
+  │
+  ├── Mail desired state
+  │      ├── domain
+  │      ├── IP
+  │      ├── Users
+  │      └── mail configuration
+  │
+  ├── DNS desired state
+  │      └── records
+  │
+  │
+  └── DB desired state
+        ├── Name
+        ├── Type
+        └── Users and ACL
+
 ```

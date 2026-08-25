@@ -1,0 +1,52 @@
+## For hosting management (plesk bin)
+
+- admin-alias
+- action-log
+- admin
+- anonftp
+- autoresponder
+- branding
+- backup-storage
+- certificate
+- cloning
+- custom-plan-items
+- customer
+- database
+- database-server
+- dns
+- dnssec
+- domain-restriction
+- domalias
+- event-handler
+- ftpsubaccount
+- git
+- hotlink-protection
+- http3-pref
+- init-conf
+- ip-ban
+- ip-pool
+- ipmanage
+- locales
+- mail
+- maillist
+- mailserver
+- notification
+- php-handler
+- backup
+- restore
+- reseller
+- reseller-plan
+- secret-key
+- server-dns
+- hosting-plan
+- service
+- site/domain
+- subdomain
+- subscription
+- user
+- webuser
+- traffic
+
+## For infrastructure management (plesk sbin)
+
+- node
