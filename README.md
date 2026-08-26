@@ -339,7 +339,15 @@ Master Node
 │   ├── Nodes
 │   └── Scheduling
 │
-└── State DB (PostgreSQL)
+└── PostgreSQL
+      │
+      ├── State DB
+      └── encrypted secrets
+
+
+Encryption key
+      │
+      └── external to DB
 ```
 
 ### Worker
@@ -440,4 +448,150 @@ Master
         ├── Type
         └── Users and ACL
 
+```
+
+## Architecture rule
+
+Worker Agents do not interact to each other. All the cross-service dependencies are resolved by Master and are materialized to desired state of specific Agent.
+
+
+### Scheduler diagram
+
+1. CLI создаёт Service.
+2. Master записывает Service в PostgreSQL со статусом pending.
+3. Scheduler выбирает подходящую Node по:
+    - capability;
+    - доступному CPU/RAM/disk;
+    - Service Plan limits;
+    - уже размещённым сервисам.
+4. Master назначает Service Node.
+5. Desired state изменяется.
+6. Agent получает новое состояние.
+7. Agent выполняет reconciliation.
+8. Agent возвращает actual state.
+9. Master переводит Service в running либо error.
+
+```text
+Control loop
+
+        ┌──────────────┐
+        │ Desired State│
+        └──────┬───────┘
+               ▼
+          Scheduler
+               │
+               ▼
+        Service Assignment
+               │
+               ▼
+             Agent
+               │
+               ▼
+         Actual State
+               │
+               ▼
+        ┌──────────────┐
+        │    Master    │
+        └──────┬───────┘
+               │
+               └────► reconciliation
+```
+
+
+## High availability principles
+
+Master's scope:
+- обнаруживает offline;
+- обновляет состояние Node;
+- помечает затронутые Services как degraded/unavailable;
+- уведомляет Admin;
+- не переносит и не восстанавливает сервисы автоматически.
+
+```text
+Infrastructure HA
+       │
+       ├── Master
+       └── Worker Nodes
+
+Hosting Control System
+       │
+       └── monitoring + desired state
+```
+
+
+## Node state list (lifecycle with each to each links)
+
+```text
+PROVISIONING
+ONLINE
+DEGRADED
+OFFLINE
+DECOMMISSIONED
+```
+
+
+## Service lifecycle
+
+```text
+PENDING
+   ↓
+PROVISIONING
+   ↓
+RUNNING
+   ↓
+DEGRADED
+   ↓
+STOPPED
+   ↓
+DELETED
+
+e.g.
+Web Service
+  status = DEGRADED
+  reason = nginx configuration failed
+```
+
+## C4 Container diagram
+
+```text
+                    Admin / Reseller / Site User
+                                │
+                                ▼
+                         ┌──────────────┐
+                         │     CLI      │
+                         └──────┬───────┘
+                                │ REST
+                                ▼
+                    ┌──────────────────────┐
+                    │       Master         │
+                    │      FastAPI         │
+                    │                      │
+                    │ Auth                 │
+                    │ Users                │
+                    │ Resellers            │
+                    │ Subscriptions        │
+                    │ Service Plans        │
+                    │ Resources            │
+                    │ Node Management      │
+                    │ Scheduler             │
+                    │ Reconciliation        │
+                    └──────────┬───────────┘
+                               │
+                          PostgreSQL
+                               │
+              REST             │             REST
+        ┌──────────────────────┼──────────────────────┐
+        ▼                      ▼                      ▼
+┌──────────────┐       ┌──────────────┐       ┌──────────────┐
+│ Worker Node  │       │ Worker Node  │       │ Worker Node  │
+│              │       │              │       │              │
+│ Web Agent    │       │ Web Agent    │       │ DB Agent     │
+│ DNS Agent    │       │ DNS Agent    │       │              │
+│ Mail Agent   │       │ Mail Agent   │       │ MySQL        │
+│              │       │              │       │ PostgreSQL   │
+│ nginx        │       │ nginx        │       │              │
+│ Apache       │       │ Apache       │       └──────────────┘
+│ BIND         │       │ BIND         │
+│ SMTP/IMAP    │       │ SMTP/IMAP    │
+└──────────────┘       └──────────────┘
 ```
