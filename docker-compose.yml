@@ -1,0 +1,9 @@
+services:
+  dsl:
+    image: docker.io/structurizr/structurizr
+    user: "0:0"
+    volumes:
+      - ./structurizr:/usr/local/structurizr
+    ports:
+      - "8080:8080"
+    command: ["local"]

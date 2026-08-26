@@ -573,8 +573,8 @@ Web Service
                     │ Service Plans        │
                     │ Resources            │
                     │ Node Management      │
-                    │ Scheduler             │
-                    │ Reconciliation        │
+                    │ Scheduler            │
+                    │ Reconciliation       │
                     └──────────┬───────────┘
                                │
                           PostgreSQL
@@ -595,3 +595,98 @@ Web Service
 │ SMTP/IMAP    │       │ SMTP/IMAP    │
 └──────────────┘       └──────────────┘
 ```
+
+Следующий шаг — не писать ещё DSL, а правильно разделить Worker Nodes на два уровня:
+
+- Container View — программные части: Web Agent, DNS Agent, Mail Agent, DB Agent.
+- Deployment View — физические Worker Nodes, на которых эти агенты размещаются.
+
+Это важное различие C4.
+
+### Deployment view
+
+```text
+                    Hosting Control System
+                            │
+                    ┌───────▼────────┐
+                    │   Master Node  │
+                    │                │
+                    │ FastAPI        │
+                    │ PostgreSQL     │
+                    └───────┬────────┘
+                            │ REST
+             ┌──────────────┼──────────────┐
+             │              │              │
+             ▼              ▼              ▼
+       ┌──────────┐   ┌──────────┐   ┌──────────┐
+       │ Worker 1 │   │ Worker 2 │   │ Worker 3 │
+       │          │   │          │   │          │
+       │ Web      │   │ Web      │   │ Database │
+       │ DNS      │   │ DNS      │   │ Agent    │
+       │ Mail     │   │ Mail     │   │          │
+       │          │   │          │   │ MySQL    │
+       │ nginx    │   │ nginx    │   │ PostgreSQL│
+       │ Apache   │   │ Apache   │   └──────────┘
+       │ BIND     │   │ BIND     │
+       │ Mail     │   │ Mail     │
+       └──────────┘   └──────────┘
+```
+
+
+
+## C4 Level 3 — Component Diagram для Master Application.
+
+```text
+                    ┌─────────────────────┐
+                    │      FastAPI        │
+                    │    REST API Layer   │
+                    └──────────┬──────────┘
+                               │
+             ┌─────────────────┼─────────────────┐
+             ▼                 ▼                 ▼
+       Auth Component    User Management    Subscription
+                              │                 │
+                              │                 ▼
+                              │           Service Manager
+                              │                 │
+             ┌────────────────┼─────────────────┤
+             ▼                ▼                 ▼
+       Service Plans     Resource Manager    Node Manager
+                                                 │
+                                                 ▼
+                                            Scheduler
+                                                 │
+                                                 ▼
+                                          Reconciliation
+                                                 │
+                                                 ▼
+                                           Agent Client
+                                                 │
+                                                 │ REST
+                    ┌────────────────────────────┼──────────────┐
+                    ▼                            ▼              ▼
+                 Web Agent                  DNS Agent       Mail Agent
+```
+
+Components
+
+API Layer
+- REST API
+- Authentication / Authorization
+
+Domain
+- User Management
+- Reseller Management
+- Service Plan Management
+- Subscription Management
+- Service Management
+- Resource Management
+- Node Management
+
+Control Plane
+- Scheduler
+- Reconciliation Manager
+- Agent Client
+
+Persistence
+- Repositories
