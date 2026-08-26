@@ -3,9 +3,154 @@
   "description" : "Distributed hosting management system",
   "documentation" : { },
   "id" : 1,
-  "lastModifiedDate" : "2026-08-26T15:13:44Z",
+  "lastModifiedDate" : "2026-08-26T19:45:17Z",
   "model" : {
+    "deploymentNodes" : [ {
+      "containerInstances" : [ {
+        "containerId" : "6",
+        "environment" : "Production",
+        "id" : "70",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "masterInstance"
+        },
+        "relationships" : [ {
+          "description" : "Reads and writes state",
+          "destinationId" : "71",
+          "id" : "72",
+          "linkedRelationshipId" : "54",
+          "sourceId" : "70"
+        }, {
+          "description" : "Controls and sends desired state via REST/HTTP",
+          "destinationId" : "74",
+          "id" : "76",
+          "linkedRelationshipId" : "55",
+          "sourceId" : "70"
+        }, {
+          "description" : "Controls and sends desired state via REST/HTTP",
+          "destinationId" : "77",
+          "id" : "79",
+          "linkedRelationshipId" : "57",
+          "sourceId" : "70"
+        }, {
+          "description" : "Controls and sends desired state via REST/HTTP",
+          "destinationId" : "80",
+          "id" : "82",
+          "linkedRelationshipId" : "59",
+          "sourceId" : "70"
+        }, {
+          "description" : "Controls and sends desired state via REST/HTTP",
+          "destinationId" : "84",
+          "id" : "86",
+          "linkedRelationshipId" : "61",
+          "sourceId" : "70"
+        } ],
+        "tags" : "Container Instance"
+      }, {
+        "containerId" : "48",
+        "environment" : "Production",
+        "id" : "71",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "databaseInstance"
+        },
+        "tags" : "Container Instance"
+      } ],
+      "environment" : "Production",
+      "id" : "69",
+      "instances" : "1",
+      "name" : "Master Node",
+      "properties" : {
+        "structurizr.dsl.identifier" : "b5d7c316-d183-43f1-acef-ae5197fbbc8f"
+      },
+      "tags" : "Element,Deployment Node"
+    }, {
+      "containerInstances" : [ {
+        "containerId" : "49",
+        "environment" : "Production",
+        "id" : "74",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "webAgentInstance"
+        },
+        "relationships" : [ {
+          "description" : "Reports actual state and heartbeat via REST/HTTP",
+          "destinationId" : "70",
+          "id" : "75",
+          "linkedRelationshipId" : "56",
+          "sourceId" : "74"
+        } ],
+        "tags" : "Container Instance"
+      }, {
+        "containerId" : "50",
+        "environment" : "Production",
+        "id" : "77",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "dnsAgentInstance"
+        },
+        "relationships" : [ {
+          "description" : "Reports actual state and heartbeat via REST/HTTP",
+          "destinationId" : "70",
+          "id" : "78",
+          "linkedRelationshipId" : "58",
+          "sourceId" : "77"
+        } ],
+        "tags" : "Container Instance"
+      }, {
+        "containerId" : "51",
+        "environment" : "Production",
+        "id" : "80",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "mailAgentInstance"
+        },
+        "relationships" : [ {
+          "description" : "Reports actual state and heartbeat via REST/HTTP",
+          "destinationId" : "70",
+          "id" : "81",
+          "linkedRelationshipId" : "60",
+          "sourceId" : "80"
+        } ],
+        "tags" : "Container Instance"
+      } ],
+      "environment" : "Production",
+      "id" : "73",
+      "instances" : "1",
+      "name" : "Worker Node",
+      "properties" : {
+        "structurizr.dsl.identifier" : "1c8ca883-84ce-4a09-8bb1-c85acdbc3907"
+      },
+      "tags" : "Element,Deployment Node"
+    }, {
+      "containerInstances" : [ {
+        "containerId" : "52",
+        "environment" : "Production",
+        "id" : "84",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "dbAgentInstance"
+        },
+        "relationships" : [ {
+          "description" : "Reports actual state and heartbeat via REST/HTTP",
+          "destinationId" : "70",
+          "id" : "85",
+          "linkedRelationshipId" : "62",
+          "sourceId" : "84"
+        } ],
+        "tags" : "Container Instance"
+      } ],
+      "environment" : "Production",
+      "id" : "83",
+      "instances" : "1",
+      "name" : "Database Worker Node",
+      "properties" : {
+        "structurizr.dsl.identifier" : "eb992cbe-e884-4d5a-a439-5826cdf67d0f"
+      },
+      "tags" : "Element,Deployment Node"
+    } ],
     "people" : [ {
+      "description" : "Manages the whole hosting infrastructure",
       "id" : "1",
       "name" : "Admin",
       "properties" : {
@@ -14,18 +159,19 @@
       "relationships" : [ {
         "description" : "Uses",
         "destinationId" : "5",
-        "id" : "9",
+        "id" : "63",
         "sourceId" : "1",
         "tags" : "Relationship"
       }, {
         "description" : "Uses",
         "destinationId" : "4",
-        "id" : "10",
-        "linkedRelationshipId" : "9",
+        "id" : "64",
+        "linkedRelationshipId" : "63",
         "sourceId" : "1"
       } ],
       "tags" : "Element,Person"
     }, {
+      "description" : "Manages users and subscriptions within assigned limits",
       "id" : "2",
       "name" : "Reseller",
       "properties" : {
@@ -34,18 +180,19 @@
       "relationships" : [ {
         "description" : "Uses",
         "destinationId" : "5",
-        "id" : "11",
+        "id" : "65",
         "sourceId" : "2",
         "tags" : "Relationship"
       }, {
         "description" : "Uses",
         "destinationId" : "4",
-        "id" : "12",
-        "linkedRelationshipId" : "11",
+        "id" : "66",
+        "linkedRelationshipId" : "65",
         "sourceId" : "2"
       } ],
       "tags" : "Element,Person"
     }, {
+      "description" : "Manages own hosting services",
       "id" : "3",
       "name" : "Site User",
       "properties" : {
@@ -54,14 +201,14 @@
       "relationships" : [ {
         "description" : "Uses",
         "destinationId" : "5",
-        "id" : "13",
+        "id" : "67",
         "sourceId" : "3",
         "tags" : "Relationship"
       }, {
         "description" : "Uses",
         "destinationId" : "4",
-        "id" : "14",
-        "linkedRelationshipId" : "13",
+        "id" : "68",
+        "linkedRelationshipId" : "67",
         "sourceId" : "3"
       } ],
       "tags" : "Element,Person"
@@ -76,16 +223,326 @@
           "structurizr.dsl.identifier" : "cli"
         },
         "relationships" : [ {
-          "description" : "Executes commands",
+          "description" : "Executes commands via REST/HTTP",
           "destinationId" : "6",
-          "id" : "15",
+          "id" : "53",
           "sourceId" : "5",
           "tags" : "Relationship"
         } ],
         "tags" : "Element,Container",
         "technology" : "Python"
       }, {
-        "description" : "Control plane, REST API and business logic",
+        "components" : [ {
+          "description" : "HTTP API endpoints exposed to CLI and other clients",
+          "documentation" : { },
+          "id" : "7",
+          "name" : "REST API",
+          "properties" : {
+            "structurizr.dsl.identifier" : "api"
+          },
+          "relationships" : [ {
+            "description" : "Authenticates and authorizes requests",
+            "destinationId" : "8",
+            "id" : "20",
+            "sourceId" : "7",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Manages users",
+            "destinationId" : "9",
+            "id" : "21",
+            "sourceId" : "7",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Manages resellers",
+            "destinationId" : "10",
+            "id" : "22",
+            "sourceId" : "7",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Manages service plans",
+            "destinationId" : "11",
+            "id" : "23",
+            "sourceId" : "7",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Manages subscriptions",
+            "destinationId" : "12",
+            "id" : "24",
+            "sourceId" : "7",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Manages services",
+            "destinationId" : "13",
+            "id" : "25",
+            "sourceId" : "7",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Manages resources",
+            "destinationId" : "14",
+            "id" : "26",
+            "sourceId" : "7",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Manages Worker Nodes",
+            "destinationId" : "15",
+            "id" : "27",
+            "sourceId" : "7",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "FastAPI"
+        }, {
+          "description" : "Authenticates users and authorizes operations",
+          "documentation" : { },
+          "id" : "8",
+          "name" : "Authentication & Authorization",
+          "properties" : {
+            "structurizr.dsl.identifier" : "auth"
+          },
+          "tags" : "Element,Component",
+          "technology" : "Python"
+        }, {
+          "description" : "Manages Site Users and their lifecycle",
+          "documentation" : { },
+          "id" : "9",
+          "name" : "User Management",
+          "properties" : {
+            "structurizr.dsl.identifier" : "users"
+          },
+          "relationships" : [ {
+            "description" : "Persists user state",
+            "destinationId" : "19",
+            "id" : "39",
+            "sourceId" : "9",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Python"
+        }, {
+          "description" : "Manages Resellers and their users",
+          "documentation" : { },
+          "id" : "10",
+          "name" : "Reseller Management",
+          "properties" : {
+            "structurizr.dsl.identifier" : "resellers"
+          },
+          "relationships" : [ {
+            "description" : "Manages users belonging to reseller",
+            "destinationId" : "9",
+            "id" : "28",
+            "sourceId" : "10",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Persists reseller state",
+            "destinationId" : "19",
+            "id" : "40",
+            "sourceId" : "10",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Python"
+        }, {
+          "description" : "Manages service plans and resource limits hierarchy",
+          "documentation" : { },
+          "id" : "11",
+          "name" : "Service Plan Management",
+          "properties" : {
+            "structurizr.dsl.identifier" : "plans"
+          },
+          "relationships" : [ {
+            "description" : "Defines subscription limits",
+            "destinationId" : "12",
+            "id" : "29",
+            "sourceId" : "11",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Defines resource limits",
+            "destinationId" : "14",
+            "id" : "31",
+            "sourceId" : "11",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Persists service plans",
+            "destinationId" : "19",
+            "id" : "41",
+            "sourceId" : "11",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Python"
+        }, {
+          "description" : "Manages user subscriptions and their lifecycle",
+          "documentation" : { },
+          "id" : "12",
+          "name" : "Subscription Management",
+          "properties" : {
+            "structurizr.dsl.identifier" : "subscriptions"
+          },
+          "relationships" : [ {
+            "description" : "Owns services",
+            "destinationId" : "13",
+            "id" : "30",
+            "sourceId" : "12",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Consumes resources",
+            "destinationId" : "14",
+            "id" : "32",
+            "sourceId" : "12",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Persists subscriptions",
+            "destinationId" : "19",
+            "id" : "42",
+            "sourceId" : "12",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Python"
+        }, {
+          "description" : "Manages Web, DNS, Mail and DB services",
+          "documentation" : { },
+          "id" : "13",
+          "name" : "Service Management",
+          "properties" : {
+            "structurizr.dsl.identifier" : "services"
+          },
+          "relationships" : [ {
+            "description" : "Requests service placement",
+            "destinationId" : "16",
+            "id" : "33",
+            "sourceId" : "13",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Persists services and desired state",
+            "destinationId" : "19",
+            "id" : "43",
+            "sourceId" : "13",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Python"
+        }, {
+          "description" : "Tracks resource allocation and limits",
+          "documentation" : { },
+          "id" : "14",
+          "name" : "Resource Management",
+          "properties" : {
+            "structurizr.dsl.identifier" : "resources"
+          },
+          "relationships" : [ {
+            "description" : "Provides resource availability",
+            "destinationId" : "16",
+            "id" : "35",
+            "sourceId" : "14",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Persists resource allocation",
+            "destinationId" : "19",
+            "id" : "44",
+            "sourceId" : "14",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Python"
+        }, {
+          "description" : "Manages Worker Nodes, capabilities and health state",
+          "documentation" : { },
+          "id" : "15",
+          "name" : "Node Management",
+          "properties" : {
+            "structurizr.dsl.identifier" : "nodes"
+          },
+          "relationships" : [ {
+            "description" : "Provides node capabilities and availability",
+            "destinationId" : "16",
+            "id" : "34",
+            "sourceId" : "15",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Persists node state",
+            "destinationId" : "19",
+            "id" : "45",
+            "sourceId" : "15",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Python"
+        }, {
+          "description" : "Selects suitable Worker Nodes for services",
+          "documentation" : { },
+          "id" : "16",
+          "name" : "Scheduler",
+          "properties" : {
+            "structurizr.dsl.identifier" : "scheduler"
+          },
+          "relationships" : [ {
+            "description" : "Creates or updates service assignment and desired state",
+            "destinationId" : "17",
+            "id" : "36",
+            "sourceId" : "16",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Reads assignments and resource state",
+            "destinationId" : "19",
+            "id" : "46",
+            "sourceId" : "16",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Python"
+        }, {
+          "description" : "Maintains desired state and reconciles it with Worker Agent actual state",
+          "documentation" : { },
+          "id" : "17",
+          "name" : "Reconciliation Manager",
+          "properties" : {
+            "structurizr.dsl.identifier" : "reconciliation"
+          },
+          "relationships" : [ {
+            "description" : "Sends desired state and commands",
+            "destinationId" : "18",
+            "id" : "37",
+            "sourceId" : "17",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Reads and updates desired state",
+            "destinationId" : "19",
+            "id" : "47",
+            "sourceId" : "17",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Python"
+        }, {
+          "description" : "REST client used to communicate with Worker Agents",
+          "documentation" : { },
+          "id" : "18",
+          "name" : "Agent Client",
+          "properties" : {
+            "structurizr.dsl.identifier" : "agentClient"
+          },
+          "relationships" : [ {
+            "description" : "Returns actual state and operation results",
+            "destinationId" : "17",
+            "id" : "38",
+            "sourceId" : "18",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Python / HTTP"
+        }, {
+          "description" : "Persistence layer for system state",
+          "documentation" : { },
+          "id" : "19",
+          "name" : "Repositories",
+          "properties" : {
+            "structurizr.dsl.identifier" : "repositories"
+          },
+          "tags" : "Element,Component",
+          "technology" : "Python / SQLAlchemy"
+        } ],
+        "description" : "Control plane, REST API, business logic, scheduling and reconciliation",
         "documentation" : { },
         "id" : "6",
         "name" : "Master Application",
@@ -93,24 +550,42 @@
           "structurizr.dsl.identifier" : "master"
         },
         "relationships" : [ {
-          "description" : "Reads/writes state",
-          "destinationId" : "7",
-          "id" : "16",
+          "description" : "Reads and writes state",
+          "destinationId" : "48",
+          "id" : "54",
           "sourceId" : "6",
           "tags" : "Relationship"
         }, {
-          "description" : "Controls via REST",
-          "destinationId" : "8",
-          "id" : "17",
+          "description" : "Controls and sends desired state via REST/HTTP",
+          "destinationId" : "49",
+          "id" : "55",
+          "sourceId" : "6",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Controls and sends desired state via REST/HTTP",
+          "destinationId" : "50",
+          "id" : "57",
+          "sourceId" : "6",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Controls and sends desired state via REST/HTTP",
+          "destinationId" : "51",
+          "id" : "59",
+          "sourceId" : "6",
+          "tags" : "Relationship"
+        }, {
+          "description" : "Controls and sends desired state via REST/HTTP",
+          "destinationId" : "52",
+          "id" : "61",
           "sourceId" : "6",
           "tags" : "Relationship"
         } ],
         "tags" : "Element,Container",
         "technology" : "Python / FastAPI"
       }, {
-        "description" : "Stores desired state and system configuration",
+        "description" : "Stores users, subscriptions, service plans, resources, nodes, services and desired state",
         "documentation" : { },
-        "id" : "7",
+        "id" : "48",
         "name" : "State Database",
         "properties" : {
           "structurizr.dsl.identifier" : "database"
@@ -118,21 +593,73 @@
         "tags" : "Element,Container",
         "technology" : "PostgreSQL"
       }, {
-        "description" : "Compute nodes providing hosting services",
+        "description" : "Manages web hosting services",
         "documentation" : { },
-        "id" : "8",
-        "name" : "Worker Nodes",
+        "id" : "49",
+        "name" : "Web Agent",
         "properties" : {
-          "structurizr.dsl.identifier" : "worker"
+          "structurizr.dsl.identifier" : "webAgent"
         },
         "relationships" : [ {
-          "description" : "Reports state and heartbeat via REST",
+          "description" : "Reports actual state and heartbeat via REST/HTTP",
           "destinationId" : "6",
-          "id" : "18",
-          "sourceId" : "8",
+          "id" : "56",
+          "sourceId" : "49",
           "tags" : "Relationship"
         } ],
-        "tags" : "Element,Container"
+        "tags" : "Element,Container",
+        "technology" : "Python"
+      }, {
+        "description" : "Manages DNS services",
+        "documentation" : { },
+        "id" : "50",
+        "name" : "DNS Agent",
+        "properties" : {
+          "structurizr.dsl.identifier" : "dnsAgent"
+        },
+        "relationships" : [ {
+          "description" : "Reports actual state and heartbeat via REST/HTTP",
+          "destinationId" : "6",
+          "id" : "58",
+          "sourceId" : "50",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Python"
+      }, {
+        "description" : "Manages mail services",
+        "documentation" : { },
+        "id" : "51",
+        "name" : "Mail Agent",
+        "properties" : {
+          "structurizr.dsl.identifier" : "mailAgent"
+        },
+        "relationships" : [ {
+          "description" : "Reports actual state and heartbeat via REST/HTTP",
+          "destinationId" : "6",
+          "id" : "60",
+          "sourceId" : "51",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Python"
+      }, {
+        "description" : "Manages database services",
+        "documentation" : { },
+        "id" : "52",
+        "name" : "DB Agent",
+        "properties" : {
+          "structurizr.dsl.identifier" : "dbAgent"
+        },
+        "relationships" : [ {
+          "description" : "Reports actual state and heartbeat via REST/HTTP",
+          "destinationId" : "6",
+          "id" : "62",
+          "sourceId" : "52",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Python"
       } ],
       "documentation" : { },
       "id" : "4",
@@ -145,20 +672,154 @@
   },
   "name" : "Hosting Control System",
   "properties" : {
-    "structurizr.inspection.error" : "18",
-    "structurizr.dsl" : "d29ya3NwYWNlICJIb3N0aW5nIENvbnRyb2wgU3lzdGVtIiAiRGlzdHJpYnV0ZWQgaG9zdGluZyBtYW5hZ2VtZW50IHN5c3RlbSIgewoKICAgIG1vZGVsIHsKCiAgICAgICAgLy8gQWN0b3JzCiAgICAgICAgYWRtaW4gPSBwZXJzb24gIkFkbWluIgogICAgICAgIHJlc2VsbGVyID0gcGVyc29uICJSZXNlbGxlciIKICAgICAgICBzaXRlVXNlciA9IHBlcnNvbiAiU2l0ZSBVc2VyIgoKICAgICAgICAvLyBNYWluIHN5c3RlbQogICAgICAgIGhvc3RpbmcgPSBzb2Z0d2FyZVN5c3RlbSAiSG9zdGluZyBDb250cm9sIFN5c3RlbSIgewoKICAgICAgICAgICAgY2xpID0gY29udGFpbmVyICJDTEkiIHsKICAgICAgICAgICAgICAgIGRlc2NyaXB0aW9uICJVbml4LXN0eWxlIGNvbW1hbmQgbGluZSBpbnRlcmZhY2UiCiAgICAgICAgICAgICAgICB0ZWNobm9sb2d5ICJQeXRob24iCiAgICAgICAgICAgIH0KCiAgICAgICAgICAgIG1hc3RlciA9IGNvbnRhaW5lciAiTWFzdGVyIEFwcGxpY2F0aW9uIiB7CiAgICAgICAgICAgICAgICBkZXNjcmlwdGlvbiAiQ29udHJvbCBwbGFuZSwgUkVTVCBBUEkgYW5kIGJ1c2luZXNzIGxvZ2ljIgogICAgICAgICAgICAgICAgdGVjaG5vbG9neSAiUHl0aG9uIC8gRmFzdEFQSSIKICAgICAgICAgICAgfQoKICAgICAgICAgICAgZGF0YWJhc2UgPSBjb250YWluZXIgIlN0YXRlIERhdGFiYXNlIiB7CiAgICAgICAgICAgICAgICBkZXNjcmlwdGlvbiAiU3RvcmVzIGRlc2lyZWQgc3RhdGUgYW5kIHN5c3RlbSBjb25maWd1cmF0aW9uIgogICAgICAgICAgICAgICAgdGVjaG5vbG9neSAiUG9zdGdyZVNRTCIKICAgICAgICAgICAgfQoKICAgICAgICAgICAgd29ya2VyID0gY29udGFpbmVyICJXb3JrZXIgTm9kZXMiIHsKICAgICAgICAgICAgICAgIGRlc2NyaXB0aW9uICJDb21wdXRlIG5vZGVzIHByb3ZpZGluZyBob3N0aW5nIHNlcnZpY2VzIgogICAgICAgICAgICB9CiAgICAgICAgfQoKICAgICAgICAvLyBVc2VyIGludGVyYWN0aW9uCiAgICAgICAgYWRtaW4gLT4gY2xpICJVc2VzIgogICAgICAgIHJlc2VsbGVyIC0+IGNsaSAiVXNlcyIKICAgICAgICBzaXRlVXNlciAtPiBjbGkgIlVzZXMiCgogICAgICAgIGNsaSAtPiBtYXN0ZXIgIkV4ZWN1dGVzIGNvbW1hbmRzIgogICAgICAgIG1hc3RlciAtPiBkYXRhYmFzZSAiUmVhZHMvd3JpdGVzIHN0YXRlIgoKICAgICAgICBtYXN0ZXIgLT4gd29ya2VyICJDb250cm9scyB2aWEgUkVTVCIKICAgICAgICB3b3JrZXIgLT4gbWFzdGVyICJSZXBvcnRzIHN0YXRlIGFuZCBoZWFydGJlYXQgdmlhIFJFU1QiCiAgICB9CgogICAgdmlld3MgewoKICAgICAgICBzeXN0ZW1Db250ZXh0IGhvc3RpbmcgIlN5c3RlbUNvbnRleHQiIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgICAgIGF1dG9sYXlvdXQgbHIKICAgICAgICB9CgogICAgICAgIGNvbnRhaW5lciBob3N0aW5nICJDb250YWluZXJzIiB7CiAgICAgICAgICAgIGluY2x1ZGUgKgogICAgICAgICAgICBhdXRvbGF5b3V0IGxyCiAgICAgICAgfQoKICAgICAgICBzdHlsZXMgewoKICAgICAgICAgICAgZWxlbWVudCAiUGVyc29uIiB7CiAgICAgICAgICAgICAgICBzaGFwZSBwZXJzb24KICAgICAgICAgICAgfQoKICAgICAgICAgICAgZWxlbWVudCAiU29mdHdhcmUgU3lzdGVtIiB7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICIjMTE2OGJkIgogICAgICAgICAgICAgICAgY29sb3IgIiNmZmZmZmYiCiAgICAgICAgICAgIH0KCiAgICAgICAgICAgIGVsZW1lbnQgIkNvbnRhaW5lciIgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAiIzQzOGRkNSIKICAgICAgICAgICAgICAgIGNvbG9yICIjZmZmZmZmIgogICAgICAgICAgICB9CiAgICAgICAgfQogICAgfQp9",
+    "structurizr.inspection.error" : "64",
+    "structurizr.dsl" : "d29ya3NwYWNlICJIb3N0aW5nIENvbnRyb2wgU3lzdGVtIiAiRGlzdHJpYnV0ZWQgaG9zdGluZyBtYW5hZ2VtZW50IHN5c3RlbSIgewoKICAgIG1vZGVsIHsKCiAgICAgICAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiAgICAgICAgLy8gUGVvcGxlCiAgICAgICAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgogICAgICAgIGFkbWluID0gcGVyc29uICJBZG1pbiIgewogICAgICAgICAgICBkZXNjcmlwdGlvbiAiTWFuYWdlcyB0aGUgd2hvbGUgaG9zdGluZyBpbmZyYXN0cnVjdHVyZSIKICAgICAgICB9CgogICAgICAgIHJlc2VsbGVyID0gcGVyc29uICJSZXNlbGxlciIgewogICAgICAgICAgICBkZXNjcmlwdGlvbiAiTWFuYWdlcyB1c2VycyBhbmQgc3Vic2NyaXB0aW9ucyB3aXRoaW4gYXNzaWduZWQgbGltaXRzIgogICAgICAgIH0KCiAgICAgICAgc2l0ZVVzZXIgPSBwZXJzb24gIlNpdGUgVXNlciIgewogICAgICAgICAgICBkZXNjcmlwdGlvbiAiTWFuYWdlcyBvd24gaG9zdGluZyBzZXJ2aWNlcyIKICAgICAgICB9CgoKICAgICAgICAvLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KICAgICAgICAvLyBIb3N0aW5nIENvbnRyb2wgU3lzdGVtCiAgICAgICAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgogICAgICAgIGhvc3RpbmcgPSBzb2Z0d2FyZVN5c3RlbSAiSG9zdGluZyBDb250cm9sIFN5c3RlbSIgewoKICAgICAgICAgICAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KICAgICAgICAgICAgLy8gQ0xJCiAgICAgICAgICAgIC8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgogICAgICAgICAgICBjbGkgPSBjb250YWluZXIgIkNMSSIgewogICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIlVuaXgtc3R5bGUgY29tbWFuZCBsaW5lIGludGVyZmFjZSIKICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlB5dGhvbiIKICAgICAgICAgICAgfQoKCiAgICAgICAgICAgIC8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiAgICAgICAgICAgIC8vIE1hc3RlciBBcHBsaWNhdGlvbgogICAgICAgICAgICAvLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKICAgICAgICAgICAgbWFzdGVyID0gY29udGFpbmVyICJNYXN0ZXIgQXBwbGljYXRpb24iIHsKICAgICAgICAgICAgICAgIGRlc2NyaXB0aW9uICJDb250cm9sIHBsYW5lLCBSRVNUIEFQSSwgYnVzaW5lc3MgbG9naWMsIHNjaGVkdWxpbmcgYW5kIHJlY29uY2lsaWF0aW9uIgogICAgICAgICAgICAgICAgdGVjaG5vbG9neSAiUHl0aG9uIC8gRmFzdEFQSSIKCiAgICAgICAgICAgICAgICAvLyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCiAgICAgICAgICAgICAgICAvLyBBUEkKICAgICAgICAgICAgICAgIC8vIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCiAgICAgICAgICAgICAgICBhcGkgPSBjb21wb25lbnQgIlJFU1QgQVBJIiB7CiAgICAgICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIkhUVFAgQVBJIGVuZHBvaW50cyBleHBvc2VkIHRvIENMSSBhbmQgb3RoZXIgY2xpZW50cyIKICAgICAgICAgICAgICAgICAgICB0ZWNobm9sb2d5ICJGYXN0QVBJIgogICAgICAgICAgICAgICAgfQoKICAgICAgICAgICAgICAgIGF1dGggPSBjb21wb25lbnQgIkF1dGhlbnRpY2F0aW9uICYgQXV0aG9yaXphdGlvbiIgewogICAgICAgICAgICAgICAgICAgIGRlc2NyaXB0aW9uICJBdXRoZW50aWNhdGVzIHVzZXJzIGFuZCBhdXRob3JpemVzIG9wZXJhdGlvbnMiCiAgICAgICAgICAgICAgICAgICAgdGVjaG5vbG9neSAiUHl0aG9uIgogICAgICAgICAgICAgICAgfQoKCiAgICAgICAgICAgICAgICAvLyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCiAgICAgICAgICAgICAgICAvLyBEb21haW4KICAgICAgICAgICAgICAgIC8vIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCiAgICAgICAgICAgICAgICB1c2VycyA9IGNvbXBvbmVudCAiVXNlciBNYW5hZ2VtZW50IiB7CiAgICAgICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIk1hbmFnZXMgU2l0ZSBVc2VycyBhbmQgdGhlaXIgbGlmZWN5Y2xlIgogICAgICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlB5dGhvbiIKICAgICAgICAgICAgICAgIH0KCiAgICAgICAgICAgICAgICByZXNlbGxlcnMgPSBjb21wb25lbnQgIlJlc2VsbGVyIE1hbmFnZW1lbnQiIHsKICAgICAgICAgICAgICAgICAgICBkZXNjcmlwdGlvbiAiTWFuYWdlcyBSZXNlbGxlcnMgYW5kIHRoZWlyIHVzZXJzIgogICAgICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlB5dGhvbiIKICAgICAgICAgICAgICAgIH0KCiAgICAgICAgICAgICAgICBwbGFucyA9IGNvbXBvbmVudCAiU2VydmljZSBQbGFuIE1hbmFnZW1lbnQiIHsKICAgICAgICAgICAgICAgICAgICBkZXNjcmlwdGlvbiAiTWFuYWdlcyBzZXJ2aWNlIHBsYW5zIGFuZCByZXNvdXJjZSBsaW1pdHMgaGllcmFyY2h5IgogICAgICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlB5dGhvbiIKICAgICAgICAgICAgICAgIH0KCiAgICAgICAgICAgICAgICBzdWJzY3JpcHRpb25zID0gY29tcG9uZW50ICJTdWJzY3JpcHRpb24gTWFuYWdlbWVudCIgewogICAgICAgICAgICAgICAgICAgIGRlc2NyaXB0aW9uICJNYW5hZ2VzIHVzZXIgc3Vic2NyaXB0aW9ucyBhbmQgdGhlaXIgbGlmZWN5Y2xlIgogICAgICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlB5dGhvbiIKICAgICAgICAgICAgICAgIH0KCiAgICAgICAgICAgICAgICBzZXJ2aWNlcyA9IGNvbXBvbmVudCAiU2VydmljZSBNYW5hZ2VtZW50IiB7CiAgICAgICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIk1hbmFnZXMgV2ViLCBETlMsIE1haWwgYW5kIERCIHNlcnZpY2VzIgogICAgICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlB5dGhvbiIKICAgICAgICAgICAgICAgIH0KCiAgICAgICAgICAgICAgICByZXNvdXJjZXMgPSBjb21wb25lbnQgIlJlc291cmNlIE1hbmFnZW1lbnQiIHsKICAgICAgICAgICAgICAgICAgICBkZXNjcmlwdGlvbiAiVHJhY2tzIHJlc291cmNlIGFsbG9jYXRpb24gYW5kIGxpbWl0cyIKICAgICAgICAgICAgICAgICAgICB0ZWNobm9sb2d5ICJQeXRob24iCiAgICAgICAgICAgICAgICB9CgogICAgICAgICAgICAgICAgbm9kZXMgPSBjb21wb25lbnQgIk5vZGUgTWFuYWdlbWVudCIgewogICAgICAgICAgICAgICAgICAgIGRlc2NyaXB0aW9uICJNYW5hZ2VzIFdvcmtlciBOb2RlcywgY2FwYWJpbGl0aWVzIGFuZCBoZWFsdGggc3RhdGUiCiAgICAgICAgICAgICAgICAgICAgdGVjaG5vbG9neSAiUHl0aG9uIgogICAgICAgICAgICAgICAgfQoKCiAgICAgICAgICAgICAgICAvLyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCiAgICAgICAgICAgICAgICAvLyBDb250cm9sIFBsYW5lCiAgICAgICAgICAgICAgICAvLyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCgogICAgICAgICAgICAgICAgc2NoZWR1bGVyID0gY29tcG9uZW50ICJTY2hlZHVsZXIiIHsKICAgICAgICAgICAgICAgICAgICBkZXNjcmlwdGlvbiAiU2VsZWN0cyBzdWl0YWJsZSBXb3JrZXIgTm9kZXMgZm9yIHNlcnZpY2VzIgogICAgICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlB5dGhvbiIKICAgICAgICAgICAgICAgIH0KCiAgICAgICAgICAgICAgICByZWNvbmNpbGlhdGlvbiA9IGNvbXBvbmVudCAiUmVjb25jaWxpYXRpb24gTWFuYWdlciIgewogICAgICAgICAgICAgICAgICAgIGRlc2NyaXB0aW9uICJNYWludGFpbnMgZGVzaXJlZCBzdGF0ZSBhbmQgcmVjb25jaWxlcyBpdCB3aXRoIFdvcmtlciBBZ2VudCBhY3R1YWwgc3RhdGUiCiAgICAgICAgICAgICAgICAgICAgdGVjaG5vbG9neSAiUHl0aG9uIgogICAgICAgICAgICAgICAgfQoKICAgICAgICAgICAgICAgIGFnZW50Q2xpZW50ID0gY29tcG9uZW50ICJBZ2VudCBDbGllbnQiIHsKICAgICAgICAgICAgICAgICAgICBkZXNjcmlwdGlvbiAiUkVTVCBjbGllbnQgdXNlZCB0byBjb21tdW5pY2F0ZSB3aXRoIFdvcmtlciBBZ2VudHMiCiAgICAgICAgICAgICAgICAgICAgdGVjaG5vbG9neSAiUHl0aG9uIC8gSFRUUCIKICAgICAgICAgICAgICAgIH0KCgogICAgICAgICAgICAgICAgLy8gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQogICAgICAgICAgICAgICAgLy8gUGVyc2lzdGVuY2UKICAgICAgICAgICAgICAgIC8vIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCiAgICAgICAgICAgICAgICByZXBvc2l0b3JpZXMgPSBjb21wb25lbnQgIlJlcG9zaXRvcmllcyIgewogICAgICAgICAgICAgICAgICAgIGRlc2NyaXB0aW9uICJQZXJzaXN0ZW5jZSBsYXllciBmb3Igc3lzdGVtIHN0YXRlIgogICAgICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlB5dGhvbiAvIFNRTEFsY2hlbXkiCiAgICAgICAgICAgICAgICB9CgoKICAgICAgICAgICAgICAgIC8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KICAgICAgICAgICAgICAgIC8vIENvbXBvbmVudCByZWxhdGlvbnNoaXBzCiAgICAgICAgICAgICAgICAvLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CgogICAgICAgICAgICAgICAgYXBpIC0+IGF1dGggIkF1dGhlbnRpY2F0ZXMgYW5kIGF1dGhvcml6ZXMgcmVxdWVzdHMiCgogICAgICAgICAgICAgICAgYXBpIC0+IHVzZXJzICJNYW5hZ2VzIHVzZXJzIgogICAgICAgICAgICAgICAgYXBpIC0+IHJlc2VsbGVycyAiTWFuYWdlcyByZXNlbGxlcnMiCiAgICAgICAgICAgICAgICBhcGkgLT4gcGxhbnMgIk1hbmFnZXMgc2VydmljZSBwbGFucyIKICAgICAgICAgICAgICAgIGFwaSAtPiBzdWJzY3JpcHRpb25zICJNYW5hZ2VzIHN1YnNjcmlwdGlvbnMiCiAgICAgICAgICAgICAgICBhcGkgLT4gc2VydmljZXMgIk1hbmFnZXMgc2VydmljZXMiCiAgICAgICAgICAgICAgICBhcGkgLT4gcmVzb3VyY2VzICJNYW5hZ2VzIHJlc291cmNlcyIKICAgICAgICAgICAgICAgIGFwaSAtPiBub2RlcyAiTWFuYWdlcyBXb3JrZXIgTm9kZXMiCgoKICAgICAgICAgICAgICAgIC8vIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KICAgICAgICAgICAgICAgIC8vIERvbWFpbiByZWxhdGlvbnNoaXBzCiAgICAgICAgICAgICAgICAvLyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCgogICAgICAgICAgICAgICAgcmVzZWxsZXJzIC0+IHVzZXJzICJNYW5hZ2VzIHVzZXJzIGJlbG9uZ2luZyB0byByZXNlbGxlciIKCiAgICAgICAgICAgICAgICBwbGFucyAtPiBzdWJzY3JpcHRpb25zICJEZWZpbmVzIHN1YnNjcmlwdGlvbiBsaW1pdHMiCgogICAgICAgICAgICAgICAgc3Vic2NyaXB0aW9ucyAtPiBzZXJ2aWNlcyAiT3ducyBzZXJ2aWNlcyIKCiAgICAgICAgICAgICAgICBwbGFucyAtPiByZXNvdXJjZXMgIkRlZmluZXMgcmVzb3VyY2UgbGltaXRzIgoKICAgICAgICAgICAgICAgIHN1YnNjcmlwdGlvbnMgLT4gcmVzb3VyY2VzICJDb25zdW1lcyByZXNvdXJjZXMiCgoKICAgICAgICAgICAgICAgIC8vIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KICAgICAgICAgICAgICAgIC8vIFNjaGVkdWxpbmcKICAgICAgICAgICAgICAgIC8vIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCiAgICAgICAgICAgICAgICBzZXJ2aWNlcyAtPiBzY2hlZHVsZXIgIlJlcXVlc3RzIHNlcnZpY2UgcGxhY2VtZW50IgoKICAgICAgICAgICAgICAgIG5vZGVzIC0+IHNjaGVkdWxlciAiUHJvdmlkZXMgbm9kZSBjYXBhYmlsaXRpZXMgYW5kIGF2YWlsYWJpbGl0eSIKCiAgICAgICAgICAgICAgICByZXNvdXJjZXMgLT4gc2NoZWR1bGVyICJQcm92aWRlcyByZXNvdXJjZSBhdmFpbGFiaWxpdHkiCgogICAgICAgICAgICAgICAgc2NoZWR1bGVyIC0+IHJlY29uY2lsaWF0aW9uICJDcmVhdGVzIG9yIHVwZGF0ZXMgc2VydmljZSBhc3NpZ25tZW50IGFuZCBkZXNpcmVkIHN0YXRlIgoKCiAgICAgICAgICAgICAgICAvLyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCiAgICAgICAgICAgICAgICAvLyBSZWNvbmNpbGlhdGlvbgogICAgICAgICAgICAgICAgLy8gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQoKICAgICAgICAgICAgICAgIHJlY29uY2lsaWF0aW9uIC0+IGFnZW50Q2xpZW50ICJTZW5kcyBkZXNpcmVkIHN0YXRlIGFuZCBjb21tYW5kcyIKCiAgICAgICAgICAgICAgICBhZ2VudENsaWVudCAtPiByZWNvbmNpbGlhdGlvbiAiUmV0dXJucyBhY3R1YWwgc3RhdGUgYW5kIG9wZXJhdGlvbiByZXN1bHRzIgoKCiAgICAgICAgICAgICAgICAvLyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCiAgICAgICAgICAgICAgICAvLyBQZXJzaXN0ZW5jZQogICAgICAgICAgICAgICAgLy8gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQoKICAgICAgICAgICAgICAgIHVzZXJzIC0+IHJlcG9zaXRvcmllcyAiUGVyc2lzdHMgdXNlciBzdGF0ZSIKCiAgICAgICAgICAgICAgICByZXNlbGxlcnMgLT4gcmVwb3NpdG9yaWVzICJQZXJzaXN0cyByZXNlbGxlciBzdGF0ZSIKCiAgICAgICAgICAgICAgICBwbGFucyAtPiByZXBvc2l0b3JpZXMgIlBlcnNpc3RzIHNlcnZpY2UgcGxhbnMiCgogICAgICAgICAgICAgICAgc3Vic2NyaXB0aW9ucyAtPiByZXBvc2l0b3JpZXMgIlBlcnNpc3RzIHN1YnNjcmlwdGlvbnMiCgogICAgICAgICAgICAgICAgc2VydmljZXMgLT4gcmVwb3NpdG9yaWVzICJQZXJzaXN0cyBzZXJ2aWNlcyBhbmQgZGVzaXJlZCBzdGF0ZSIKCiAgICAgICAgICAgICAgICByZXNvdXJjZXMgLT4gcmVwb3NpdG9yaWVzICJQZXJzaXN0cyByZXNvdXJjZSBhbGxvY2F0aW9uIgoKICAgICAgICAgICAgICAgIG5vZGVzIC0+IHJlcG9zaXRvcmllcyAiUGVyc2lzdHMgbm9kZSBzdGF0ZSIKCiAgICAgICAgICAgICAgICBzY2hlZHVsZXIgLT4gcmVwb3NpdG9yaWVzICJSZWFkcyBhc3NpZ25tZW50cyBhbmQgcmVzb3VyY2Ugc3RhdGUiCgogICAgICAgICAgICAgICAgcmVjb25jaWxpYXRpb24gLT4gcmVwb3NpdG9yaWVzICJSZWFkcyBhbmQgdXBkYXRlcyBkZXNpcmVkIHN0YXRlIgogICAgICAgICAgICB9CgoKICAgICAgICAgICAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KICAgICAgICAgICAgLy8gU3RhdGUgRGF0YWJhc2UKICAgICAgICAgICAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiAgICAgICAgICAgIGRhdGFiYXNlID0gY29udGFpbmVyICJTdGF0ZSBEYXRhYmFzZSIgewogICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIlN0b3JlcyB1c2Vycywgc3Vic2NyaXB0aW9ucywgc2VydmljZSBwbGFucywgcmVzb3VyY2VzLCBub2Rlcywgc2VydmljZXMgYW5kIGRlc2lyZWQgc3RhdGUiCiAgICAgICAgICAgICAgICB0ZWNobm9sb2d5ICJQb3N0Z3JlU1FMIgogICAgICAgICAgICB9CgoKICAgICAgICAgICAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KICAgICAgICAgICAgLy8gV29ya2VyIEFnZW50cwogICAgICAgICAgICAvLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKICAgICAgICAgICAgd2ViQWdlbnQgPSBjb250YWluZXIgIldlYiBBZ2VudCIgewogICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIk1hbmFnZXMgd2ViIGhvc3Rpbmcgc2VydmljZXMiCiAgICAgICAgICAgICAgICB0ZWNobm9sb2d5ICJQeXRob24iCiAgICAgICAgICAgIH0KCiAgICAgICAgICAgIGRuc0FnZW50ID0gY29udGFpbmVyICJETlMgQWdlbnQiIHsKICAgICAgICAgICAgICAgIGRlc2NyaXB0aW9uICJNYW5hZ2VzIEROUyBzZXJ2aWNlcyIKICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlB5dGhvbiIKICAgICAgICAgICAgfQoKICAgICAgICAgICAgbWFpbEFnZW50ID0gY29udGFpbmVyICJNYWlsIEFnZW50IiB7CiAgICAgICAgICAgICAgICBkZXNjcmlwdGlvbiAiTWFuYWdlcyBtYWlsIHNlcnZpY2VzIgogICAgICAgICAgICAgICAgdGVjaG5vbG9neSAiUHl0aG9uIgogICAgICAgICAgICB9CgogICAgICAgICAgICBkYkFnZW50ID0gY29udGFpbmVyICJEQiBBZ2VudCIgewogICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIk1hbmFnZXMgZGF0YWJhc2Ugc2VydmljZXMiCiAgICAgICAgICAgICAgICB0ZWNobm9sb2d5ICJQeXRob24iCiAgICAgICAgICAgIH0KCgogICAgICAgICAgICAvLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQogICAgICAgICAgICAvLyBDb250YWluZXIgcmVsYXRpb25zaGlwcwogICAgICAgICAgICAvLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKICAgICAgICAgICAgY2xpIC0+IG1hc3RlciAiRXhlY3V0ZXMgY29tbWFuZHMgdmlhIFJFU1QvSFRUUCIKCiAgICAgICAgICAgIG1hc3RlciAtPiBkYXRhYmFzZSAiUmVhZHMgYW5kIHdyaXRlcyBzdGF0ZSIKCiAgICAgICAgICAgIG1hc3RlciAtPiB3ZWJBZ2VudCAiQ29udHJvbHMgYW5kIHNlbmRzIGRlc2lyZWQgc3RhdGUgdmlhIFJFU1QvSFRUUCIKCiAgICAgICAgICAgIHdlYkFnZW50IC0+IG1hc3RlciAiUmVwb3J0cyBhY3R1YWwgc3RhdGUgYW5kIGhlYXJ0YmVhdCB2aWEgUkVTVC9IVFRQIgoKICAgICAgICAgICAgbWFzdGVyIC0+IGRuc0FnZW50ICJDb250cm9scyBhbmQgc2VuZHMgZGVzaXJlZCBzdGF0ZSB2aWEgUkVTVC9IVFRQIgoKICAgICAgICAgICAgZG5zQWdlbnQgLT4gbWFzdGVyICJSZXBvcnRzIGFjdHVhbCBzdGF0ZSBhbmQgaGVhcnRiZWF0IHZpYSBSRVNUL0hUVFAiCgogICAgICAgICAgICBtYXN0ZXIgLT4gbWFpbEFnZW50ICJDb250cm9scyBhbmQgc2VuZHMgZGVzaXJlZCBzdGF0ZSB2aWEgUkVTVC9IVFRQIgoKICAgICAgICAgICAgbWFpbEFnZW50IC0+IG1hc3RlciAiUmVwb3J0cyBhY3R1YWwgc3RhdGUgYW5kIGhlYXJ0YmVhdCB2aWEgUkVTVC9IVFRQIgoKICAgICAgICAgICAgbWFzdGVyIC0+IGRiQWdlbnQgIkNvbnRyb2xzIGFuZCBzZW5kcyBkZXNpcmVkIHN0YXRlIHZpYSBSRVNUL0hUVFAiCgogICAgICAgICAgICBkYkFnZW50IC0+IG1hc3RlciAiUmVwb3J0cyBhY3R1YWwgc3RhdGUgYW5kIGhlYXJ0YmVhdCB2aWEgUkVTVC9IVFRQIgoKCiAgICAgICAgfQoKCiAgICAgICAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiAgICAgICAgLy8gUGVvcGxlIHJlbGF0aW9uc2hpcHMKICAgICAgICAvLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiAgICAgICAgYWRtaW4gLT4gY2xpICJVc2VzIgoKICAgICAgICByZXNlbGxlciAtPiBjbGkgIlVzZXMiCgogICAgICAgIHNpdGVVc2VyIC0+IGNsaSAiVXNlcyIKCgogICAgICAgIC8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQogICAgICAgIC8vIERlcGxveW1lbnQgbW9kZWwKICAgICAgICAvLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiAgICAgICAgZGVwbG95bWVudEVudmlyb25tZW50ICJQcm9kdWN0aW9uIiB7CgogICAgICAgICAgICBkZXBsb3ltZW50Tm9kZSAiTWFzdGVyIE5vZGUiIHsKCiAgICAgICAgICAgICAgICBtYXN0ZXJJbnN0YW5jZSA9IGNvbnRhaW5lckluc3RhbmNlIG1hc3RlcgogICAgICAgICAgICAgICAgZGF0YWJhc2VJbnN0YW5jZSA9IGNvbnRhaW5lckluc3RhbmNlIGRhdGFiYXNlCiAgICAgICAgICAgIH0KCgogICAgICAgICAgICBkZXBsb3ltZW50Tm9kZSAiV29ya2VyIE5vZGUiIHsKCiAgICAgICAgICAgICAgICB3ZWJBZ2VudEluc3RhbmNlID0gY29udGFpbmVySW5zdGFuY2Ugd2ViQWdlbnQKICAgICAgICAgICAgICAgIGRuc0FnZW50SW5zdGFuY2UgPSBjb250YWluZXJJbnN0YW5jZSBkbnNBZ2VudAogICAgICAgICAgICAgICAgbWFpbEFnZW50SW5zdGFuY2UgPSBjb250YWluZXJJbnN0YW5jZSBtYWlsQWdlbnQKICAgICAgICAgICAgfQoKCiAgICAgICAgICAgIGRlcGxveW1lbnROb2RlICJEYXRhYmFzZSBXb3JrZXIgTm9kZSIgewoKICAgICAgICAgICAgICAgIGRiQWdlbnRJbnN0YW5jZSA9IGNvbnRhaW5lckluc3RhbmNlIGRiQWdlbnQKICAgICAgICAgICAgfQogICAgICAgIH0KICAgIH0KCgogICAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQogICAgLy8gVmlld3MKICAgIC8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiAgICB2aWV3cyB7CgogICAgICAgIC8vIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQogICAgICAgIC8vIExldmVsIDEg4oCUIFN5c3RlbSBDb250ZXh0CiAgICAgICAgLy8gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCgogICAgICAgIHN5c3RlbUNvbnRleHQgaG9zdGluZyAiU3lzdGVtQ29udGV4dCIgewogICAgICAgICAgICBpbmNsdWRlIGFkbWluCiAgICAgICAgICAgIGluY2x1ZGUgcmVzZWxsZXIKICAgICAgICAgICAgaW5jbHVkZSBzaXRlVXNlcgogICAgICAgICAgICBpbmNsdWRlIGhvc3RpbmcKICAgICAgICAgICAgYXV0b2xheW91dCBscgogICAgICAgIH0KCgogICAgICAgIC8vIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQogICAgICAgIC8vIExldmVsIDIg4oCUIENvbnRhaW5lcnMKICAgICAgICAvLyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCiAgICAgICAgY29udGFpbmVyIGhvc3RpbmcgIkNvbnRhaW5lcnMiIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgICAgIGF1dG9sYXlvdXQgbHIKICAgICAgICB9CgoKICAgICAgICAvLyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KICAgICAgICAvLyBMZXZlbCAzIOKAlCBNYXN0ZXIgQ29tcG9uZW50cwogICAgICAgIC8vIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQoKICAgICAgICBjb21wb25lbnQgbWFzdGVyICJNYXN0ZXJDb21wb25lbnRzIiB7CiAgICAgICAgICAgIGluY2x1ZGUgKgogICAgICAgICAgICBhdXRvbGF5b3V0IGxyCiAgICAgICAgfQoKCiAgICAgICAgLy8gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCiAgICAgICAgLy8gRGVwbG95bWVudAogICAgICAgIC8vIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQoKICAgICAgICBkZXBsb3ltZW50IGhvc3RpbmcgIlByb2R1Y3Rpb24iIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgICAgIGF1dG9sYXlvdXQgbHIKICAgICAgICB9CgoKICAgICAgICAvLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KICAgICAgICAvLyBTdHlsZXMKICAgICAgICAvLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCiAgICAgICAgc3R5bGVzIHsKCiAgICAgICAgICAgIGVsZW1lbnQgIlBlcnNvbiIgewogICAgICAgICAgICAgICAgc2hhcGUgcGVyc29uCiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICIjMDg0MjdiIgogICAgICAgICAgICAgICAgY29sb3IgIiNmZmZmZmYiCiAgICAgICAgICAgIH0KCiAgICAgICAgICAgIGVsZW1lbnQgIlNvZnR3YXJlIFN5c3RlbSIgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAiIzExNjhiZCIKICAgICAgICAgICAgICAgIGNvbG9yICIjZmZmZmZmIgogICAgICAgICAgICB9CgogICAgICAgICAgICBlbGVtZW50ICJDb250YWluZXIiIHsKICAgICAgICAgICAgICAgIGJhY2tncm91bmQgIiM0MzhkZDUiCiAgICAgICAgICAgICAgICBjb2xvciAiI2ZmZmZmZiIKICAgICAgICAgICAgfQoKICAgICAgICAgICAgZWxlbWVudCAiQ29tcG9uZW50IiB7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICIjODViYmYwIgogICAgICAgICAgICAgICAgY29sb3IgIiMwMDAwMDAiCiAgICAgICAgICAgIH0KCiAgICAgICAgICAgIGVsZW1lbnQgIkRlcGxveW1lbnQgTm9kZSIgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAiIzk5OTk5OSIKICAgICAgICAgICAgICAgIGNvbG9yICIjZmZmZmZmIgogICAgICAgICAgICB9CiAgICAgICAgfQogICAgfQp9",
     "structurizr.inspection.info" : "0",
     "structurizr.inspection.ignore" : "0",
     "structurizr.inspection.warning" : "0"
   },
   "views" : {
+    "componentViews" : [ {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "containerId" : "6",
+      "elements" : [ {
+        "id" : "7",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "8",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "9",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "10",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "11",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "12",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "13",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "14",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "15",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "16",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "17",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "18",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "19",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "MasterComponents",
+      "name" : "Component View: Hosting Control System - Master Application",
+      "order" : 3,
+      "relationships" : [ {
+        "id" : "20"
+      }, {
+        "id" : "21"
+      }, {
+        "id" : "22"
+      }, {
+        "id" : "23"
+      }, {
+        "id" : "24"
+      }, {
+        "id" : "25"
+      }, {
+        "id" : "26"
+      }, {
+        "id" : "27"
+      }, {
+        "id" : "28"
+      }, {
+        "id" : "29"
+      }, {
+        "id" : "30"
+      }, {
+        "id" : "31"
+      }, {
+        "id" : "32"
+      }, {
+        "id" : "33"
+      }, {
+        "id" : "34"
+      }, {
+        "id" : "35"
+      }, {
+        "id" : "36"
+      }, {
+        "id" : "37"
+      }, {
+        "id" : "38"
+      }, {
+        "id" : "39"
+      }, {
+        "id" : "40"
+      }, {
+        "id" : "41"
+      }, {
+        "id" : "42"
+      }, {
+        "id" : "43"
+      }, {
+        "id" : "44"
+      }, {
+        "id" : "45"
+      }, {
+        "id" : "46"
+      }, {
+        "id" : "47"
+      } ]
+    } ],
     "configuration" : {
       "styles" : {
         "elements" : [ {
+          "background" : "#85bbf0",
+          "color" : "#000000",
+          "tag" : "Component"
+        }, {
           "background" : "#438dd5",
           "color" : "#ffffff",
           "tag" : "Container"
         }, {
+          "background" : "#999999",
+          "color" : "#ffffff",
+          "tag" : "Deployment Node"
+        }, {
+          "background" : "#08427b",
+          "color" : "#ffffff",
           "shape" : "Person",
           "tag" : "Person"
         }, {
@@ -198,11 +859,23 @@
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "7",
+        "id" : "48",
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "8",
+        "id" : "49",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "50",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "51",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "52",
         "x" : 0,
         "y" : 0
       } ],
@@ -211,19 +884,102 @@
       "name" : "Container View: Hosting Control System",
       "order" : 2,
       "relationships" : [ {
-        "id" : "11"
+        "id" : "53"
       }, {
-        "id" : "13"
+        "id" : "54"
       }, {
-        "id" : "15"
+        "id" : "55"
       }, {
-        "id" : "16"
+        "id" : "56"
       }, {
-        "id" : "17"
+        "id" : "57"
       }, {
-        "id" : "18"
+        "id" : "58"
       }, {
-        "id" : "9"
+        "id" : "59"
+      }, {
+        "id" : "60"
+      }, {
+        "id" : "61"
+      }, {
+        "id" : "62"
+      }, {
+        "id" : "63"
+      }, {
+        "id" : "65"
+      }, {
+        "id" : "67"
+      } ],
+      "softwareSystemId" : "4"
+    } ],
+    "deploymentViews" : [ {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "elements" : [ {
+        "id" : "69",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "70",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "71",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "73",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "74",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "77",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "80",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "83",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "84",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "environment" : "Production",
+      "generatedKey" : true,
+      "key" : "Deployment-001",
+      "name" : "Deployment View: Hosting Control System - Production",
+      "order" : 4,
+      "relationships" : [ {
+        "id" : "72"
+      }, {
+        "id" : "75"
+      }, {
+        "id" : "76"
+      }, {
+        "id" : "78"
+      }, {
+        "id" : "79"
+      }, {
+        "id" : "81"
+      }, {
+        "id" : "82"
+      }, {
+        "id" : "85"
+      }, {
+        "id" : "86"
       } ],
       "softwareSystemId" : "4"
     } ],
@@ -257,11 +1013,11 @@
       "name" : "System Context View: Hosting Control System",
       "order" : 1,
       "relationships" : [ {
-        "id" : "10"
+        "id" : "64"
       }, {
-        "id" : "12"
+        "id" : "66"
       }, {
-        "id" : "14"
+        "id" : "68"
       } ],
       "softwareSystemId" : "4"
     } ]
