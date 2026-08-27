@@ -7,3 +7,31 @@ services:
     ports:
       - "8080:8080"
     command: ["local"]
+
+  plesk:
+    image: docker.io/plesk/plesk@sha256:9f64a358dedb850860aed92124c3bb865c572d15747f4f886f4f66e9f28a31ab
+    user: "0:0"
+    security_opt:
+      - label:disable
+      # - seccomp:unconfined
+    # cgroupns_mode: host
+    # network_mode: host
+    cap_add:
+      - SYS_ADMIN
+      - NET_ADMIN
+      - SYS_CHROOT
+    tmpfs:
+      - /tmp
+      - /run
+      - /run/lock
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - "./dockerenv_mock:/.dockerenv:ro"
+    ports:
+      - "8880:8880"
+      - "8443:8443"
+      - "8447:8447"
+    environment:
+      - PLESK_ADMIN_PASSWORD=changeme1Q**
+      - PLESK_VIRTUALIZATION=docker
+      - container=docker
