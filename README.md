@@ -59,13 +59,32 @@ Master API
   ▼
 Desired State DB
 
-site:
-  name: example.com
-  type: web
-  node: worker-03
-  nginx: enabled
-  apache: enabled
-  php: 8.4
+website:
+  id: website-123
+  domain: example.com
+  document_root: /var/www/example.com
+  php_version: "8.4"
+
+web_service:
+id: web-service-123
+website_id: website-123
+
+placement:
+  node_id: None
+
+provider:
+  name: nginx
+
+state:
+  desired: RUNNING
+  actual: PENDING
+
+dns:
+zone: example.com
+records:
+  - name: "@"
+    type: A
+    value: 203.0.113.10
 
   │
   ▼
@@ -75,12 +94,28 @@ Desired State
 Scheduler
   │
   ▼
+  ├── Master
+  │      web_service:
+  │        id: web-service-123
+  │        placement:
+  │          node_id: worker-03
+  │        state:
+  │          actual: PROVISIONING
+  │
+  ▼
 Worker Agent
   │
+  ├── configure DNS
   ├── install nginx
   ├── configure nginx
   ├── configure Apache
   └── create vhost
+  │
+  ▼
+Master
+web_service:
+    id: web-service-123
+    actual: RUNNING
 ```
 
 ## Worker node resource abstraction
@@ -690,3 +725,118 @@ Control Plane
 
 Persistence
 - Repositories
+
+
+
+### Domain as business-entity
+```text
+User
+ └── Subscription
+       └── Domain
+
+Domain
+├── id
+├── name
+├── subscription_id
+├── status
+└── created_at
+
+Domain
+  └── Website
+
+Domain
+   │
+   ▼
+Website
+   │
+   ▼
+Web Service
+   │
+   ▼
+Worker Node
+
+```
+
+### web service entity
+```text
+Web Service
+├── id
+├── website_id
+├── node_id
+├── status
+├── web_server
+├── php_version
+├── document_root
+└── desired_state
+
+Website
+    domain = example.com
+    document_root = /var/www/example.com
+    php = 8.4
+
+Web Service
+    node = worker-03
+    provider = nginx
+    status = RUNNING
+```
+
+### Components relations
+```text
+Subscription
+      │
+      └── Domain
+             │
+             └── Website
+                    │
+                    └── Web Service
+                           │
+                           └── Worker Node
+
+Subscription Management
+        │
+        └── Domain / Website ownership
+
+Service Management
+        │
+        └── Web Service
+
+Scheduler
+        │
+        └── Web Service → Worker Node
+
+Reconciliation
+        │
+        └── Web Service desired state
+
+Repositories
+        │
+        ├── Domain
+        ├── Website
+        └── Web Service
+```
+
+
+### CLI enroll example
+```text
+domain create example.com
+    ↓
+  Master
+    ↓
+Subscription
+    ↓
+Domain
+
+website create example.com
+    ↓
+Website
+    ↓
+Web Service
+    ↓
+Scheduler
+    ↓
+Worker Node
+    ↓
+Reconciliation
+    ↓
+Web Agent
+```

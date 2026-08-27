@@ -15,6 +15,7 @@
 - database-server
 - dns
 - dnssec
+- domain
 - domain-restriction
 - domalias
 - event-handler
@@ -50,3 +51,19 @@
 ## For infrastructure management (plesk sbin)
 
 - node
+
+
+### Command contracts
+
+- domain create <name>
+- domain list
+- domain get <name>
+- domain update <name>
+- domain delete <name>
+
+
+- website create <domain>
+- website list
+- website get <domain>
+- website update <domain>
+- website delete <domain>

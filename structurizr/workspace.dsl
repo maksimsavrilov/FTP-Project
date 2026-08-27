@@ -78,12 +78,12 @@ workspace "Hosting Control System" "Distributed hosting management system" {
                 }
 
                 subscriptions = component "Subscription Management" {
-                    description "Manages user subscriptions and their lifecycle"
+                    description "Manages user subscriptions, domains and their lifecycle"
                     technology "Python"
                 }
 
                 services = component "Service Management" {
-                    description "Manages Web, DNS, Mail and DB services"
+                    description "Manages Web, DNS, Mail and DB services and their configuration"
                     technology "Python"
                 }
 
@@ -152,6 +152,12 @@ workspace "Hosting Control System" "Distributed hosting management system" {
                 plans -> subscriptions "Defines subscription limits"
 
                 subscriptions -> services "Owns services"
+                
+                // subscriptions -> domains "Owns domains"
+                
+                // domains -> websites "Contains websites"
+                
+                // websites -> services "Uses web service"
 
                 plans -> resources "Defines resource limits"
 
