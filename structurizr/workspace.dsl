@@ -276,6 +276,70 @@ workspace "Hosting Control System" "Distributed hosting management system" {
             dnsAgent = container "DNS Agent" {
                 description "Manages DNS services"
                 technology "Python"
+                // ====================================================
+                // DNS Agent Components
+                // ====================================================
+
+                dnsApi = component "REST API" {
+                    description "REST endpoints exposed to Master"
+                    technology "FastAPI"
+                }
+
+                dnsAuth = component "Authentication" {
+                    description "Validates requests from Master"
+                    technology "Python"
+                }
+
+                dnsDesiredState = component "Desired State Handler" {
+                    description "Accepts and validates desired DNS state from Master"
+                    technology "Python"
+                }
+
+                dnsReconciliation = component "Reconciliation Engine" {
+                    description "Compares desired DNS state with actual state"
+                    technology "Python"
+                }
+
+                dnsConfig = component "DNS Configuration Manager" {
+                    description "Manages DNS Agent configuration"
+                    technology "Python"
+                }
+
+                zoneManager = component "Zone Manager" {
+                    description "Creates, updates and removes DNS zones and records"
+                    technology "Python"
+                }
+
+                bindManager = component "BIND Manager" {
+                    description "Manages BIND configuration, validation and lifecycle"
+                    technology "Python"
+                }
+
+                dnsStateReporter = component "State & Health Reporter" {
+                    description "Reports actual DNS state, health and heartbeat to Master"
+                    technology "Python"
+                }
+
+
+                // ====================================================
+                // Component relationships
+                // ====================================================
+
+                dnsApi -> dnsAuth "Authenticates Master requests"
+
+                dnsApi -> dnsDesiredState "Accepts desired DNS state"
+
+                dnsDesiredState -> dnsReconciliation "Triggers reconciliation"
+
+                dnsReconciliation -> dnsConfig "Applies required DNS configuration"
+
+                dnsConfig -> zoneManager "Manages zones and records"
+
+                zoneManager -> bindManager "Applies BIND configuration"
+
+                dnsReconciliation -> dnsStateReporter "Reports reconciliation result"
+
+                dnsStateReporter -> dnsApi "Exposes state and health information"
             }
 
             mailAgent = container "Mail Agent" {
@@ -288,21 +352,6 @@ workspace "Hosting Control System" "Distributed hosting management system" {
                 technology "Python"
             }
 
-
-
-            // ========================================================
-            // Worker service containers
-            // ========================================================
-
-            nginx = container "nginx" {
-                description "Web server"
-                technology "nginx"
-            }
-
-            apache = container "Apache" {
-                description "Web server"
-                technology "Apache HTTP Server"
-            }
 
 
             // ========================================================
@@ -346,10 +395,6 @@ workspace "Hosting Control System" "Distributed hosting management system" {
 
             webConfig -> apacheManager  "Configures Apache"
 
-            nginxManager -> nginx  "Manages configuration and lifecycle"
-
-            apacheManager -> apache  "Manages configuration and lifecycle"
-
             webReconciliation -> webStateReporter  "Reports reconciliation result"
 
             webStateReporter -> webApi  "Exposes state and health information"
@@ -382,10 +427,20 @@ workspace "Hosting Control System" "Distributed hosting management system" {
 
             deploymentNode "Worker Node" {
 
-                deploymentNode "Web Agent" {
-                    containerInstance webAgent
-                    containerInstance nginx
-                    containerInstance apache
+                webAgentInstance = containerInstance webAgent
+
+                infrastructureNode nginxRuntime "nginx" {
+                    description "Web server managed by Web Agent"
+                    technology "nginx"
+
+                    -> webAgentInstance "Managed by"
+                }
+
+                infrastructureNode apacheRuntime "Apache" {
+                    description "Web server managed by Web Agent"
+                    technology "Apache HTTP Server"
+
+                    -> webAgentInstance "Managed by"
                 }
 
                 deploymentNode "DNS Agent" {
@@ -445,6 +500,11 @@ workspace "Hosting Control System" "Distributed hosting management system" {
 
 
         component webAgent "WebAgentComponents" {
+           include *
+           autolayout lr
+        }
+
+        component dnsAgent "DnsAgentComponents" {
            include *
            autolayout lr
         }
