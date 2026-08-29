@@ -26,3 +26,4 @@ build/
 __pycache__/
 *.py[cod]
 .structurizr/
+.continue/

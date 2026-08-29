@@ -227,6 +227,50 @@ workspace "Hosting Control System" "Distributed hosting management system" {
             webAgent = container "Web Agent" {
                 description "Manages web hosting services"
                 technology "Python"
+
+                // ========================================================
+                // Web Agent Components
+                // ========================================================
+
+                webApi = component "REST API" {
+                    description "REST endpoints exposed to Master"
+                    technology "FastAPI"
+                }
+
+                webAuth = component "Authentication" {
+                    description "Validates requests from Master"
+                    technology "Python"
+                }
+
+                webDesiredState = component "Desired State Handler" {
+                    description "Accepts and validates desired state from Master"
+                    technology "Python"
+                }
+
+                webReconciliation = component "Reconciliation Engine" {
+                    description "Compares desired and actual state and determines required changes"
+                    technology "Python"
+                }
+
+                webConfig = component "Web Configuration Manager" {
+                    description "Builds and manages web hosting configuration"
+                    technology "Python"
+                }
+
+                nginxManager = component "Nginx Manager" {
+                    description "Manages nginx configuration and lifecycle"
+                    technology "Python"
+                }
+
+                apacheManager = component "Apache Manager" {
+                    description "Manages Apache configuration and lifecycle"
+                    technology "Python"
+                }
+
+                webStateReporter = component "State & Health Reporter" {
+                    description "Reports actual state, health and heartbeat to Master"
+                    technology "Python"
+                }
             }
 
             dnsAgent = container "DNS Agent" {
@@ -242,6 +286,22 @@ workspace "Hosting Control System" "Distributed hosting management system" {
             dbAgent = container "DB Agent" {
                 description "Manages database services"
                 technology "Python"
+            }
+
+
+
+            // ========================================================
+            // Worker service containers
+            // ========================================================
+
+            nginx = container "nginx" {
+                description "Web server"
+                technology "nginx"
+            }
+
+            apache = container "Apache" {
+                description "Web server"
+                technology "Apache HTTP Server"
             }
 
 
@@ -270,6 +330,29 @@ workspace "Hosting Control System" "Distributed hosting management system" {
             dbAgent -> master "Reports actual state and heartbeat via REST/HTTP"
 
 
+            // ========================================================
+            // Web Agent component relationships
+            // ========================================================
+
+            webApi -> webAuth "Authenticates Master requests"
+
+            webApi -> webDesiredState "Accepts desired state"
+
+            webDesiredState -> webReconciliation "Triggers reconciliation"
+
+            webReconciliation -> webConfig "Applies required configuration"
+
+            webConfig -> nginxManager  "Configures nginx"
+
+            webConfig -> apacheManager  "Configures Apache"
+
+            nginxManager -> nginx  "Manages configuration and lifecycle"
+
+            apacheManager -> apache  "Manages configuration and lifecycle"
+
+            webReconciliation -> webStateReporter  "Reports reconciliation result"
+
+            webStateReporter -> webApi  "Exposes state and health information"
         }
 
 
@@ -299,11 +382,20 @@ workspace "Hosting Control System" "Distributed hosting management system" {
 
             deploymentNode "Worker Node" {
 
-                webAgentInstance = containerInstance webAgent
-                dnsAgentInstance = containerInstance dnsAgent
-                mailAgentInstance = containerInstance mailAgent
-            }
+                deploymentNode "Web Agent" {
+                    containerInstance webAgent
+                    containerInstance nginx
+                    containerInstance apache
+                }
 
+                deploymentNode "DNS Agent" {
+                    containerInstance dnsAgent
+                }
+
+                deploymentNode "Mail Agent" {
+                    containerInstance mailAgent
+                }
+            }
 
             deploymentNode "Database Worker Node" {
 
@@ -343,12 +435,18 @@ workspace "Hosting Control System" "Distributed hosting management system" {
 
 
         // ------------------------------------------------------------
-        // Level 3 — Master Components
+        // Level 3 —  Components
         // ------------------------------------------------------------
 
         component master "MasterComponents" {
             include *
             autolayout lr
+        }
+
+
+        component webAgent "WebAgentComponents" {
+           include *
+           autolayout lr
         }
 
 
