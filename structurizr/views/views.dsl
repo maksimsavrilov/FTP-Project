@@ -35,3 +35,8 @@ component hosting.mailAgent "MailAgentComponents" {
    include *
    autolayout lr
 }
+
+component hosting.dbAgent "DbAgentComponents" {
+   include *
+   autolayout lr
+}
