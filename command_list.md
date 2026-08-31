@@ -48,9 +48,9 @@
 - webuser
 - traffic
 
-## For infrastructure management (plesk sbin)
+## For infrastructure management (in addition to plesk sbin)
 
-- node
+- node register --key-file xxx --role=web --ip=x.x.x.x --external-ip=x.x.x.x 
 
 
 ### Command contracts

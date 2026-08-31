@@ -40,3 +40,11 @@ component hosting.dbAgent "DbAgentComponents" {
    include *
    autolayout lr
 }
+
+!include dynamic-node-registration-web.dsl
+!include dynamic-node-registration-db.dsl
+!include dynamic-user-creation.dsl
+!include dynamic-hosting-plan-creation.dsl
+!include dynamic-subscription-creation.dsl
+!include dynamic-service-creation.dsl
+!include dynamic-node-monitoring.dsl

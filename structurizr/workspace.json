@@ -3,65 +3,89 @@
   "description" : "Distributed hosting management system",
   "documentation" : { },
   "id" : 1,
-  "lastModifiedDate" : "2026-08-30T20:24:49Z",
+  "lastModifiedDate" : "2026-09-02T07:37:10Z",
   "model" : {
     "deploymentNodes" : [ {
       "containerInstances" : [ {
         "containerId" : "6",
         "environment" : "Production",
-        "id" : "130",
+        "id" : "144",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "0bed1869-aa1d-458d-be25-4fa43cb6a6b0.8f02be28-4d17-41fb-a88d-043b28baca05.masterInstance"
+          "structurizr.dsl.identifier" : "942059c6-9829-4a45-91b8-b613adc3c749.7de47a54-ac86-40dd-9299-e6d969c580d4.masterInstance"
         },
         "relationships" : [ {
           "description" : "Reads and writes state",
-          "destinationId" : "131",
-          "id" : "132",
-          "linkedRelationshipId" : "114",
-          "sourceId" : "130"
-        }, {
-          "description" : "Controls and sends desired state via REST/HTTP",
-          "destinationId" : "134",
-          "id" : "136",
+          "destinationId" : "145",
+          "id" : "146",
           "linkedRelationshipId" : "115",
-          "sourceId" : "130"
+          "sourceId" : "144"
         }, {
-          "description" : "Controls and sends desired state via REST/HTTP",
-          "destinationId" : "142",
-          "id" : "144",
-          "linkedRelationshipId" : "117",
-          "sourceId" : "130"
-        }, {
-          "description" : "Controls and sends desired state via REST/HTTP",
-          "destinationId" : "146",
-          "id" : "148",
+          "description" : "Sends Web desired state via REST",
+          "destinationId" : "148",
+          "id" : "150",
           "linkedRelationshipId" : "119",
-          "sourceId" : "130"
+          "sourceId" : "144"
         }, {
           "description" : "Controls and sends desired state via REST/HTTP",
-          "destinationId" : "150",
-          "id" : "152",
+          "destinationId" : "148",
+          "id" : "151",
+          "linkedRelationshipId" : "129",
+          "sourceId" : "144"
+        }, {
+          "description" : "Sends DNS desired state via REST",
+          "destinationId" : "157",
+          "id" : "159",
           "linkedRelationshipId" : "121",
-          "sourceId" : "130"
+          "sourceId" : "144"
+        }, {
+          "description" : "Controls and sends desired state via REST/HTTP",
+          "destinationId" : "157",
+          "id" : "160",
+          "linkedRelationshipId" : "131",
+          "sourceId" : "144"
+        }, {
+          "description" : "Sends Mail desired state via REST",
+          "destinationId" : "162",
+          "id" : "164",
+          "linkedRelationshipId" : "123",
+          "sourceId" : "144"
+        }, {
+          "description" : "Controls and sends desired state via REST/HTTP",
+          "destinationId" : "162",
+          "id" : "165",
+          "linkedRelationshipId" : "133",
+          "sourceId" : "144"
+        }, {
+          "description" : "Sends DB desired state via REST",
+          "destinationId" : "167",
+          "id" : "169",
+          "linkedRelationshipId" : "125",
+          "sourceId" : "144"
+        }, {
+          "description" : "Controls and sends desired state via REST/HTTP",
+          "destinationId" : "167",
+          "id" : "170",
+          "linkedRelationshipId" : "135",
+          "sourceId" : "144"
         } ],
         "tags" : "Container Instance"
       }, {
         "containerId" : "48",
         "environment" : "Production",
-        "id" : "131",
+        "id" : "145",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "0bed1869-aa1d-458d-be25-4fa43cb6a6b0.8f02be28-4d17-41fb-a88d-043b28baca05.databaseInstance"
+          "structurizr.dsl.identifier" : "942059c6-9829-4a45-91b8-b613adc3c749.7de47a54-ac86-40dd-9299-e6d969c580d4.databaseInstance"
         },
         "tags" : "Container Instance"
       } ],
       "environment" : "Production",
-      "id" : "129",
+      "id" : "143",
       "instances" : "1",
       "name" : "Master Node",
       "properties" : {
-        "structurizr.dsl.identifier" : "0bed1869-aa1d-458d-be25-4fa43cb6a6b0.8f02be28-4d17-41fb-a88d-043b28baca05"
+        "structurizr.dsl.identifier" : "942059c6-9829-4a45-91b8-b613adc3c749.7de47a54-ac86-40dd-9299-e6d969c580d4"
       },
       "tags" : "Element,Deployment Node"
     }, {
@@ -69,87 +93,87 @@
         "containerInstances" : [ {
           "containerId" : "66",
           "environment" : "Production",
-          "id" : "142",
+          "id" : "157",
           "instanceId" : 1,
           "properties" : {
-            "structurizr.dsl.identifier" : "0bed1869-aa1d-458d-be25-4fa43cb6a6b0.3c45b5b7-5f25-4c88-a154-bdacfbc1d0ec.888d462a-5989-4732-8591-1838382c6908.cfb30460-4178-40aa-8150-834470bdfecd"
+            "structurizr.dsl.identifier" : "942059c6-9829-4a45-91b8-b613adc3c749.08bcc813-380f-4ba0-81ec-422ae31b8c02.7d34c318-2531-472b-9625-231bf711e20b.01781e77-b0a3-4526-9391-4a7b232a5be7"
           },
           "relationships" : [ {
             "description" : "Reports actual state and heartbeat via REST/HTTP",
-            "destinationId" : "130",
-            "id" : "143",
-            "linkedRelationshipId" : "118",
-            "sourceId" : "142"
+            "destinationId" : "144",
+            "id" : "158",
+            "linkedRelationshipId" : "132",
+            "sourceId" : "157"
           } ],
           "tags" : "Container Instance"
         } ],
         "environment" : "Production",
-        "id" : "141",
+        "id" : "156",
         "instances" : "1",
         "name" : "DNS Agent",
         "properties" : {
-          "structurizr.dsl.identifier" : "0bed1869-aa1d-458d-be25-4fa43cb6a6b0.3c45b5b7-5f25-4c88-a154-bdacfbc1d0ec.888d462a-5989-4732-8591-1838382c6908"
+          "structurizr.dsl.identifier" : "942059c6-9829-4a45-91b8-b613adc3c749.08bcc813-380f-4ba0-81ec-422ae31b8c02.7d34c318-2531-472b-9625-231bf711e20b"
         },
         "tags" : "Element,Deployment Node"
       }, {
         "containerInstances" : [ {
           "containerId" : "83",
           "environment" : "Production",
-          "id" : "146",
+          "id" : "162",
           "instanceId" : 1,
           "properties" : {
-            "structurizr.dsl.identifier" : "0bed1869-aa1d-458d-be25-4fa43cb6a6b0.3c45b5b7-5f25-4c88-a154-bdacfbc1d0ec.8e3ee516-5f89-474c-993b-064b8185bbb7.a3b5daa2-886a-49d3-ae81-b75d90249425"
+            "structurizr.dsl.identifier" : "942059c6-9829-4a45-91b8-b613adc3c749.08bcc813-380f-4ba0-81ec-422ae31b8c02.e6abd933-bed2-46f8-94b7-f3fee0d40786.987d36e3-5b34-4212-a28d-d4ef4cd8e2f4"
           },
           "relationships" : [ {
             "description" : "Reports actual state and heartbeat via REST/HTTP",
-            "destinationId" : "130",
-            "id" : "147",
-            "linkedRelationshipId" : "120",
-            "sourceId" : "146"
+            "destinationId" : "144",
+            "id" : "163",
+            "linkedRelationshipId" : "134",
+            "sourceId" : "162"
           } ],
           "tags" : "Container Instance"
         } ],
         "environment" : "Production",
-        "id" : "145",
+        "id" : "161",
         "instances" : "1",
         "name" : "Mail Agent",
         "properties" : {
-          "structurizr.dsl.identifier" : "0bed1869-aa1d-458d-be25-4fa43cb6a6b0.3c45b5b7-5f25-4c88-a154-bdacfbc1d0ec.8e3ee516-5f89-474c-993b-064b8185bbb7"
+          "structurizr.dsl.identifier" : "942059c6-9829-4a45-91b8-b613adc3c749.08bcc813-380f-4ba0-81ec-422ae31b8c02.e6abd933-bed2-46f8-94b7-f3fee0d40786"
         },
         "tags" : "Element,Deployment Node"
       } ],
       "containerInstances" : [ {
         "containerId" : "49",
         "environment" : "Production",
-        "id" : "134",
+        "id" : "148",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "0bed1869-aa1d-458d-be25-4fa43cb6a6b0.3c45b5b7-5f25-4c88-a154-bdacfbc1d0ec.webAgentInstance"
+          "structurizr.dsl.identifier" : "942059c6-9829-4a45-91b8-b613adc3c749.08bcc813-380f-4ba0-81ec-422ae31b8c02.webAgentInstance"
         },
         "relationships" : [ {
           "description" : "Reports actual state and heartbeat via REST/HTTP",
-          "destinationId" : "130",
-          "id" : "135",
-          "linkedRelationshipId" : "116",
-          "sourceId" : "134"
+          "destinationId" : "144",
+          "id" : "149",
+          "linkedRelationshipId" : "130",
+          "sourceId" : "148"
         } ],
         "tags" : "Container Instance"
       } ],
       "environment" : "Production",
-      "id" : "133",
+      "id" : "147",
       "infrastructureNodes" : [ {
         "description" : "Web server managed by Web Agent",
         "environment" : "Production",
-        "id" : "137",
+        "id" : "152",
         "name" : "nginxRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "0bed1869-aa1d-458d-be25-4fa43cb6a6b0.3c45b5b7-5f25-4c88-a154-bdacfbc1d0ec.e86b7f09-bd19-47e2-b38e-9b04d0567d4e"
+          "structurizr.dsl.identifier" : "942059c6-9829-4a45-91b8-b613adc3c749.08bcc813-380f-4ba0-81ec-422ae31b8c02.788bf7a6-4852-4d8f-8cda-689c44261899"
         },
         "relationships" : [ {
           "description" : "Managed by",
-          "destinationId" : "134",
-          "id" : "138",
-          "sourceId" : "137",
+          "destinationId" : "148",
+          "id" : "153",
+          "sourceId" : "152",
           "tags" : "Relationship"
         } ],
         "tags" : "Element,Infrastructure Node",
@@ -157,16 +181,16 @@
       }, {
         "description" : "Web server managed by Web Agent",
         "environment" : "Production",
-        "id" : "139",
+        "id" : "154",
         "name" : "apacheRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "0bed1869-aa1d-458d-be25-4fa43cb6a6b0.3c45b5b7-5f25-4c88-a154-bdacfbc1d0ec.34d29bdc-c56a-4339-ac8c-a9bbdacf2f51"
+          "structurizr.dsl.identifier" : "942059c6-9829-4a45-91b8-b613adc3c749.08bcc813-380f-4ba0-81ec-422ae31b8c02.99355ac2-9cbb-44cc-8001-5e3e465a1ad2"
         },
         "relationships" : [ {
           "description" : "Managed by",
-          "destinationId" : "134",
-          "id" : "140",
-          "sourceId" : "139",
+          "destinationId" : "148",
+          "id" : "155",
+          "sourceId" : "154",
           "tags" : "Relationship"
         } ],
         "tags" : "Element,Infrastructure Node",
@@ -175,42 +199,42 @@
       "instances" : "1",
       "name" : "Worker Node",
       "properties" : {
-        "structurizr.dsl.identifier" : "0bed1869-aa1d-458d-be25-4fa43cb6a6b0.3c45b5b7-5f25-4c88-a154-bdacfbc1d0ec"
+        "structurizr.dsl.identifier" : "942059c6-9829-4a45-91b8-b613adc3c749.08bcc813-380f-4ba0-81ec-422ae31b8c02"
       },
       "tags" : "Element,Deployment Node"
     }, {
       "containerInstances" : [ {
         "containerId" : "98",
         "environment" : "Production",
-        "id" : "150",
+        "id" : "167",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "0bed1869-aa1d-458d-be25-4fa43cb6a6b0.5cfb8ffc-98c5-409a-a8ff-87ea6c36c40b.dbAgentInstance"
+          "structurizr.dsl.identifier" : "942059c6-9829-4a45-91b8-b613adc3c749.f348dbd0-6557-470c-a95a-ca6f37c36d2b.dbAgentInstance"
         },
         "relationships" : [ {
           "description" : "Reports actual state and heartbeat via REST/HTTP",
-          "destinationId" : "130",
-          "id" : "151",
-          "linkedRelationshipId" : "122",
-          "sourceId" : "150"
+          "destinationId" : "144",
+          "id" : "168",
+          "linkedRelationshipId" : "136",
+          "sourceId" : "167"
         } ],
         "tags" : "Container Instance"
       } ],
       "environment" : "Production",
-      "id" : "149",
+      "id" : "166",
       "infrastructureNodes" : [ {
         "description" : "MySQL server managed by DB agent",
         "environment" : "Production",
-        "id" : "153",
+        "id" : "171",
         "name" : "mysqlRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "0bed1869-aa1d-458d-be25-4fa43cb6a6b0.5cfb8ffc-98c5-409a-a8ff-87ea6c36c40b.d5a430f3-9d78-42bb-bdfd-71cc391d03b5"
+          "structurizr.dsl.identifier" : "942059c6-9829-4a45-91b8-b613adc3c749.f348dbd0-6557-470c-a95a-ca6f37c36d2b.472b1a10-e766-44d6-bc1c-849eec4b38e8"
         },
         "relationships" : [ {
           "description" : "Managed by",
-          "destinationId" : "150",
-          "id" : "154",
-          "sourceId" : "153",
+          "destinationId" : "167",
+          "id" : "172",
+          "sourceId" : "171",
           "tags" : "Relationship"
         } ],
         "tags" : "Element,Infrastructure Node",
@@ -218,16 +242,16 @@
       }, {
         "description" : "MySQL server managed by DB agent",
         "environment" : "Production",
-        "id" : "155",
+        "id" : "173",
         "name" : "postgresqlRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "0bed1869-aa1d-458d-be25-4fa43cb6a6b0.5cfb8ffc-98c5-409a-a8ff-87ea6c36c40b.b19d650b-9202-4160-91a1-df151d48648e"
+          "structurizr.dsl.identifier" : "942059c6-9829-4a45-91b8-b613adc3c749.f348dbd0-6557-470c-a95a-ca6f37c36d2b.53ec7078-95a1-4874-9d80-c7d9e1e8dc73"
         },
         "relationships" : [ {
           "description" : "Managed by",
-          "destinationId" : "150",
-          "id" : "156",
-          "sourceId" : "155",
+          "destinationId" : "167",
+          "id" : "174",
+          "sourceId" : "173",
           "tags" : "Relationship"
         } ],
         "tags" : "Element,Infrastructure Node",
@@ -236,7 +260,7 @@
       "instances" : "1",
       "name" : "Database Worker Node",
       "properties" : {
-        "structurizr.dsl.identifier" : "0bed1869-aa1d-458d-be25-4fa43cb6a6b0.5cfb8ffc-98c5-409a-a8ff-87ea6c36c40b"
+        "structurizr.dsl.identifier" : "942059c6-9829-4a45-91b8-b613adc3c749.f348dbd0-6557-470c-a95a-ca6f37c36d2b"
       },
       "tags" : "Element,Deployment Node"
     } ],
@@ -250,14 +274,14 @@
       "relationships" : [ {
         "description" : "Uses",
         "destinationId" : "5",
-        "id" : "123",
+        "id" : "137",
         "sourceId" : "1",
         "tags" : "Relationship"
       }, {
         "description" : "Uses",
         "destinationId" : "4",
-        "id" : "124",
-        "linkedRelationshipId" : "123",
+        "id" : "138",
+        "linkedRelationshipId" : "137",
         "sourceId" : "1"
       } ],
       "tags" : "Element,Person"
@@ -271,14 +295,14 @@
       "relationships" : [ {
         "description" : "Uses",
         "destinationId" : "5",
-        "id" : "125",
+        "id" : "139",
         "sourceId" : "2",
         "tags" : "Relationship"
       }, {
         "description" : "Uses",
         "destinationId" : "4",
-        "id" : "126",
-        "linkedRelationshipId" : "125",
+        "id" : "140",
+        "linkedRelationshipId" : "139",
         "sourceId" : "2"
       } ],
       "tags" : "Element,Person"
@@ -292,14 +316,14 @@
       "relationships" : [ {
         "description" : "Uses",
         "destinationId" : "5",
-        "id" : "127",
+        "id" : "141",
         "sourceId" : "3",
         "tags" : "Relationship"
       }, {
         "description" : "Uses",
         "destinationId" : "4",
-        "id" : "128",
-        "linkedRelationshipId" : "127",
+        "id" : "142",
+        "linkedRelationshipId" : "141",
         "sourceId" : "3"
       } ],
       "tags" : "Element,Person"
@@ -315,10 +339,16 @@
         },
         "relationships" : [ {
           "description" : "Executes commands via REST/HTTP",
-          "destinationId" : "6",
+          "destinationId" : "7",
           "id" : "113",
           "sourceId" : "5",
           "tags" : "Relationship"
+        }, {
+          "description" : "Executes commands via REST/HTTP",
+          "destinationId" : "6",
+          "id" : "114",
+          "linkedRelationshipId" : "113",
+          "sourceId" : "5"
         } ],
         "tags" : "Element,Container",
         "technology" : "Python"
@@ -510,6 +540,12 @@
             "id" : "43",
             "sourceId" : "13",
             "tags" : "Relationship"
+          }, {
+            "description" : "Returns service information",
+            "destinationId" : "5",
+            "id" : "127",
+            "sourceId" : "13",
+            "tags" : "Relationship"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -579,6 +615,18 @@
             "id" : "46",
             "sourceId" : "16",
             "tags" : "Relationship"
+          }, {
+            "description" : "Reads available resources",
+            "destinationId" : "14",
+            "id" : "116",
+            "sourceId" : "16",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Reads node capabilities and availability",
+            "destinationId" : "15",
+            "id" : "117",
+            "sourceId" : "16",
+            "tags" : "Relationship"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -602,6 +650,12 @@
             "id" : "47",
             "sourceId" : "17",
             "tags" : "Relationship"
+          }, {
+            "description" : "Updates service state",
+            "destinationId" : "13",
+            "id" : "126",
+            "sourceId" : "17",
+            "tags" : "Relationship"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -617,6 +671,30 @@
             "description" : "Returns actual state and operation results",
             "destinationId" : "17",
             "id" : "38",
+            "sourceId" : "18",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Sends Web desired state via REST",
+            "destinationId" : "49",
+            "id" : "118",
+            "sourceId" : "18",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Sends DNS desired state via REST",
+            "destinationId" : "66",
+            "id" : "120",
+            "sourceId" : "18",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Sends Mail desired state via REST",
+            "destinationId" : "83",
+            "id" : "122",
+            "sourceId" : "18",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Sends DB desired state via REST",
+            "destinationId" : "98",
+            "id" : "124",
             "sourceId" : "18",
             "tags" : "Relationship"
           } ],
@@ -643,31 +721,61 @@
         "relationships" : [ {
           "description" : "Reads and writes state",
           "destinationId" : "48",
-          "id" : "114",
+          "id" : "115",
           "sourceId" : "6",
           "tags" : "Relationship"
         }, {
+          "description" : "Sends Web desired state via REST",
+          "destinationId" : "49",
+          "id" : "119",
+          "linkedRelationshipId" : "118",
+          "sourceId" : "6"
+        }, {
+          "description" : "Sends DNS desired state via REST",
+          "destinationId" : "66",
+          "id" : "121",
+          "linkedRelationshipId" : "120",
+          "sourceId" : "6"
+        }, {
+          "description" : "Sends Mail desired state via REST",
+          "destinationId" : "83",
+          "id" : "123",
+          "linkedRelationshipId" : "122",
+          "sourceId" : "6"
+        }, {
+          "description" : "Sends DB desired state via REST",
+          "destinationId" : "98",
+          "id" : "125",
+          "linkedRelationshipId" : "124",
+          "sourceId" : "6"
+        }, {
+          "description" : "Returns service information",
+          "destinationId" : "5",
+          "id" : "128",
+          "linkedRelationshipId" : "127",
+          "sourceId" : "6"
+        }, {
           "description" : "Controls and sends desired state via REST/HTTP",
           "destinationId" : "49",
-          "id" : "115",
+          "id" : "129",
           "sourceId" : "6",
           "tags" : "Relationship"
         }, {
           "description" : "Controls and sends desired state via REST/HTTP",
           "destinationId" : "66",
-          "id" : "117",
+          "id" : "131",
           "sourceId" : "6",
           "tags" : "Relationship"
         }, {
           "description" : "Controls and sends desired state via REST/HTTP",
           "destinationId" : "83",
-          "id" : "119",
+          "id" : "133",
           "sourceId" : "6",
           "tags" : "Relationship"
         }, {
           "description" : "Controls and sends desired state via REST/HTTP",
           "destinationId" : "98",
-          "id" : "121",
+          "id" : "135",
           "sourceId" : "6",
           "tags" : "Relationship"
         } ],
@@ -828,7 +936,7 @@
         "relationships" : [ {
           "description" : "Reports actual state and heartbeat via REST/HTTP",
           "destinationId" : "6",
-          "id" : "116",
+          "id" : "130",
           "sourceId" : "49",
           "tags" : "Relationship"
         } ],
@@ -980,7 +1088,7 @@
         "relationships" : [ {
           "description" : "Reports actual state and heartbeat via REST/HTTP",
           "destinationId" : "6",
-          "id" : "118",
+          "id" : "132",
           "sourceId" : "66",
           "tags" : "Relationship"
         } ],
@@ -1115,7 +1223,7 @@
         "relationships" : [ {
           "description" : "Reports actual state and heartbeat via REST/HTTP",
           "destinationId" : "6",
-          "id" : "120",
+          "id" : "134",
           "sourceId" : "83",
           "tags" : "Relationship"
         } ],
@@ -1250,7 +1358,7 @@
         "relationships" : [ {
           "description" : "Reports actual state and heartbeat via REST/HTTP",
           "destinationId" : "6",
-          "id" : "122",
+          "id" : "136",
           "sourceId" : "98",
           "tags" : "Relationship"
         } ],
@@ -1268,7 +1376,7 @@
   },
   "name" : "Hosting Control System",
   "properties" : {
-    "structurizr.inspection.error" : "102",
+    "structurizr.inspection.error" : "120",
     "structurizr.inspection.info" : "0",
     "structurizr.inspection.ignore" : "0",
     "structurizr.inspection.warning" : "0"
@@ -1284,6 +1392,10 @@
       },
       "containerId" : "6",
       "elements" : [ {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
         "id" : "7",
         "x" : 0,
         "y" : 0
@@ -1335,12 +1447,46 @@
         "id" : "19",
         "x" : 0,
         "y" : 0
+      }, {
+        "id" : "49",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "66",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "83",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "98",
+        "x" : 0,
+        "y" : 0
       } ],
       "externalContainerBoundariesVisible" : false,
       "key" : "MasterComponents",
       "name" : "Component View: Hosting Control System - Master Application",
       "order" : 4,
       "relationships" : [ {
+        "id" : "113"
+      }, {
+        "id" : "116"
+      }, {
+        "id" : "117"
+      }, {
+        "id" : "118"
+      }, {
+        "id" : "120"
+      }, {
+        "id" : "122"
+      }, {
+        "id" : "124"
+      }, {
+        "id" : "126"
+      }, {
+        "id" : "127"
+      }, {
         "id" : "20"
       }, {
         "id" : "21"
@@ -1719,31 +1865,41 @@
       "name" : "Container View: Hosting Control System",
       "order" : 2,
       "relationships" : [ {
-        "id" : "113"
-      }, {
         "id" : "114"
       }, {
         "id" : "115"
       }, {
-        "id" : "116"
-      }, {
-        "id" : "117"
-      }, {
-        "id" : "118"
-      }, {
         "id" : "119"
       }, {
-        "id" : "120"
-      }, {
         "id" : "121"
-      }, {
-        "id" : "122"
       }, {
         "id" : "123"
       }, {
         "id" : "125"
       }, {
-        "id" : "127"
+        "id" : "128"
+      }, {
+        "id" : "129"
+      }, {
+        "id" : "130"
+      }, {
+        "id" : "131"
+      }, {
+        "id" : "132"
+      }, {
+        "id" : "133"
+      }, {
+        "id" : "134"
+      }, {
+        "id" : "135"
+      }, {
+        "id" : "136"
+      }, {
+        "id" : "137"
+      }, {
+        "id" : "139"
+      }, {
+        "id" : "141"
       } ],
       "softwareSystemId" : "4"
     } ],
@@ -1756,39 +1912,11 @@
         "vertices" : true
       },
       "elements" : [ {
-        "id" : "129",
+        "id" : "143",
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "130",
-        "x" : 0,
-        "y" : 0
-      }, {
-        "id" : "131",
-        "x" : 0,
-        "y" : 0
-      }, {
-        "id" : "133",
-        "x" : 0,
-        "y" : 0
-      }, {
-        "id" : "134",
-        "x" : 0,
-        "y" : 0
-      }, {
-        "id" : "137",
-        "x" : 0,
-        "y" : 0
-      }, {
-        "id" : "139",
-        "x" : 0,
-        "y" : 0
-      }, {
-        "id" : "141",
-        "x" : 0,
-        "y" : 0
-      }, {
-        "id" : "142",
+        "id" : "144",
         "x" : 0,
         "y" : 0
       }, {
@@ -1796,23 +1924,51 @@
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "146",
+        "id" : "147",
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "149",
+        "id" : "148",
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "150",
+        "id" : "152",
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "153",
+        "id" : "154",
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "155",
+        "id" : "156",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "157",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "161",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "162",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "166",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "167",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "171",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "173",
         "x" : 0,
         "y" : 0
       } ],
@@ -1822,33 +1978,569 @@
       "name" : "Deployment View: Hosting Control System - Production",
       "order" : 3,
       "relationships" : [ {
-        "id" : "132"
+        "id" : "146"
       }, {
-        "id" : "135"
+        "id" : "149"
       }, {
-        "id" : "136"
-      }, {
-        "id" : "138"
-      }, {
-        "id" : "140"
-      }, {
-        "id" : "143"
-      }, {
-        "id" : "144"
-      }, {
-        "id" : "147"
-      }, {
-        "id" : "148"
+        "id" : "150"
       }, {
         "id" : "151"
       }, {
-        "id" : "152"
+        "id" : "153"
       }, {
-        "id" : "154"
+        "id" : "155"
       }, {
-        "id" : "156"
+        "id" : "158"
+      }, {
+        "id" : "159"
+      }, {
+        "id" : "160"
+      }, {
+        "id" : "163"
+      }, {
+        "id" : "164"
+      }, {
+        "id" : "165"
+      }, {
+        "id" : "168"
+      }, {
+        "id" : "169"
+      }, {
+        "id" : "170"
+      }, {
+        "id" : "172"
+      }, {
+        "id" : "174"
       } ],
       "softwareSystemId" : "4"
+    } ],
+    "dynamicViews" : [ {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "elementId" : "4",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "48",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "49",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalBoundariesVisible" : false,
+      "key" : "NodeRegistration-Web",
+      "name" : "Dynamic View: Hosting Control System",
+      "order" : 9,
+      "relationships" : [ {
+        "description" : "Starts node registration command with parameter --role=web",
+        "id" : "137",
+        "order" : "1",
+        "response" : false
+      }, {
+        "description" : "Requests node registration",
+        "id" : "114",
+        "order" : "2",
+        "response" : false
+      }, {
+        "description" : "Bootstraps via SSH and starts Web Agent",
+        "id" : "119",
+        "order" : "3",
+        "response" : false
+      }, {
+        "description" : "Registers via REST",
+        "id" : "130",
+        "order" : "4",
+        "response" : false
+      }, {
+        "description" : "Returns Node ID and permanent credentials",
+        "id" : "119",
+        "order" : "5",
+        "response" : false
+      }, {
+        "description" : "Reports node information, capabilities and resources",
+        "id" : "130",
+        "order" : "6",
+        "response" : false
+      }, {
+        "description" : "Creates Worker Node record",
+        "id" : "115",
+        "order" : "7",
+        "response" : false
+      } ]
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "elementId" : "4",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "48",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "98",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalBoundariesVisible" : false,
+      "key" : "NodeRegistration-Db",
+      "name" : "Dynamic View: Hosting Control System",
+      "order" : 10,
+      "relationships" : [ {
+        "description" : "Starts node registration command with parameter --role=db",
+        "id" : "137",
+        "order" : "1",
+        "response" : false
+      }, {
+        "description" : "Requests node registration",
+        "id" : "114",
+        "order" : "2",
+        "response" : false
+      }, {
+        "description" : "Bootstraps via SSH and starts Db Agent",
+        "id" : "125",
+        "order" : "3",
+        "response" : false
+      }, {
+        "description" : "Registers via REST",
+        "id" : "136",
+        "order" : "4",
+        "response" : false
+      }, {
+        "description" : "Returns Node ID and permanent credentials",
+        "id" : "125",
+        "order" : "5",
+        "response" : false
+      }, {
+        "description" : "Reports node information, capabilities and resources",
+        "id" : "136",
+        "order" : "6",
+        "response" : false
+      }, {
+        "description" : "Creates Worker Node record",
+        "id" : "115",
+        "order" : "7",
+        "response" : false
+      } ]
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "elementId" : "4",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "48",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalBoundariesVisible" : false,
+      "key" : "UserCreation",
+      "name" : "Dynamic View: Hosting Control System",
+      "order" : 11,
+      "relationships" : [ {
+        "description" : "Starts user creation command",
+        "id" : "137",
+        "order" : "1",
+        "response" : false
+      }, {
+        "description" : "Requests user creation via REST",
+        "id" : "114",
+        "order" : "2",
+        "response" : false
+      }, {
+        "description" : "Creates User record",
+        "id" : "115",
+        "order" : "3",
+        "response" : false
+      }, {
+        "description" : "Returns User ID",
+        "id" : "128",
+        "order" : "4",
+        "response" : false
+      }, {
+        "description" : "Shows created user",
+        "id" : "137",
+        "order" : "5",
+        "response" : true
+      } ]
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "elementId" : "4",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "48",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalBoundariesVisible" : false,
+      "key" : "HostingPlanCreation",
+      "name" : "Dynamic View: Hosting Control System",
+      "order" : 12,
+      "relationships" : [ {
+        "description" : "Starts hosting plan creation command",
+        "id" : "137",
+        "order" : "1",
+        "response" : false
+      }, {
+        "description" : "Requests Hosting Plan creation via REST",
+        "id" : "114",
+        "order" : "2",
+        "response" : false
+      }, {
+        "description" : "Creates Hosting Plan with resource limits and object limits",
+        "id" : "115",
+        "order" : "3",
+        "response" : false
+      }, {
+        "description" : "Returns Hosting Plan ID",
+        "id" : "128",
+        "order" : "4",
+        "response" : false
+      }, {
+        "description" : "Shows created hosting plan",
+        "id" : "137",
+        "order" : "5",
+        "response" : true
+      } ]
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "elementId" : "4",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "48",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalBoundariesVisible" : false,
+      "key" : "SubscriptionCreation",
+      "name" : "Dynamic View: Hosting Control System",
+      "order" : 13,
+      "relationships" : [ {
+        "description" : "Starts subscription creation command",
+        "id" : "137",
+        "order" : "1",
+        "response" : false
+      }, {
+        "description" : "Requests Subscription creation for a User based on a Hosting Plan via REST",
+        "id" : "114",
+        "order" : "2",
+        "response" : false
+      }, {
+        "description" : "Reads User account",
+        "id" : "115",
+        "order" : "3",
+        "response" : false
+      }, {
+        "description" : "Reads Hosting Plan limits and permissions",
+        "id" : "115",
+        "order" : "4",
+        "response" : false
+      }, {
+        "description" : "Validates and reserves subscription resource limits and object limits from the Hosting Plan to the User",
+        "id" : "115",
+        "order" : "5",
+        "response" : false
+      }, {
+        "description" : "Creates Subscription record bound to User and Hosting Plan",
+        "id" : "115",
+        "order" : "6",
+        "response" : false
+      }, {
+        "description" : "Returns Subscription ID",
+        "id" : "128",
+        "order" : "7",
+        "response" : false
+      }, {
+        "description" : "Shows created subscription",
+        "id" : "137",
+        "order" : "8",
+        "response" : true
+      } ]
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "elementId" : "6",
+      "elements" : [ {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "7",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "13",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "14",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "15",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "16",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "17",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "18",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "49",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "66",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "83",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "98",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalBoundariesVisible" : false,
+      "key" : "ServiceCreation",
+      "name" : "Dynamic View: Hosting Control System - Master Application",
+      "order" : 14,
+      "relationships" : [ {
+        "description" : "Starts service creation command",
+        "id" : "141",
+        "order" : "1",
+        "response" : false
+      }, {
+        "description" : "Requests service creation via REST",
+        "id" : "113",
+        "order" : "2",
+        "response" : false
+      }, {
+        "description" : "Creates requested service",
+        "id" : "25",
+        "order" : "3",
+        "response" : false
+      }, {
+        "description" : "Requests service placement",
+        "id" : "33",
+        "order" : "4",
+        "response" : false
+      }, {
+        "description" : "Checks resource availability",
+        "id" : "116",
+        "order" : "5",
+        "response" : false
+      }, {
+        "description" : "Checks node capabilities and availability",
+        "id" : "117",
+        "order" : "6",
+        "response" : false
+      }, {
+        "description" : "Creates assignment and desired state",
+        "id" : "36",
+        "order" : "7",
+        "response" : false
+      }, {
+        "description" : "Sends desired state",
+        "id" : "37",
+        "order" : "8",
+        "response" : false
+      }, {
+        "description" : "Sends Web desired state via REST",
+        "id" : "118",
+        "order" : "9",
+        "response" : false
+      }, {
+        "description" : "Sends DNS desired state via REST",
+        "id" : "120",
+        "order" : "10",
+        "response" : false
+      }, {
+        "description" : "Sends Mail desired state via REST",
+        "id" : "122",
+        "order" : "11",
+        "response" : false
+      }, {
+        "description" : "Sends DB desired state via REST",
+        "id" : "124",
+        "order" : "12",
+        "response" : false
+      }, {
+        "description" : "Reports actual state",
+        "id" : "118",
+        "order" : "13",
+        "response" : true
+      }, {
+        "description" : "Reports actual state",
+        "id" : "120",
+        "order" : "14",
+        "response" : true
+      }, {
+        "description" : "Reports actual state",
+        "id" : "122",
+        "order" : "15",
+        "response" : true
+      }, {
+        "description" : "Reports actual state",
+        "id" : "124",
+        "order" : "16",
+        "response" : true
+      }, {
+        "description" : "Processes actual state",
+        "id" : "38",
+        "order" : "17",
+        "response" : false
+      }, {
+        "description" : "Updates service state",
+        "id" : "126",
+        "order" : "18",
+        "response" : false
+      }, {
+        "description" : "Returns service information",
+        "id" : "127",
+        "order" : "19",
+        "response" : false
+      }, {
+        "description" : "Shows service status",
+        "id" : "141",
+        "order" : "20",
+        "response" : true
+      } ]
+    }, {
+      "automaticLayout" : {
+        "edgeSeparation" : 50,
+        "nodeSeparation" : 50,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 100,
+        "vertices" : true
+      },
+      "elementId" : "4",
+      "elements" : [ {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "48",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "49",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalBoundariesVisible" : false,
+      "key" : "NodeMonitoring",
+      "name" : "Dynamic View: Hosting Control System",
+      "order" : 15,
+      "relationships" : [ {
+        "description" : "Sends heartbeat and actual state",
+        "id" : "130",
+        "order" : "1",
+        "response" : false
+      }, {
+        "description" : "Update node heartbeat status",
+        "id" : "115",
+        "order" : "2",
+        "response" : false
+      } ]
     } ],
     "systemContextViews" : [ {
       "automaticLayout" : {
@@ -1880,11 +2572,11 @@
       "name" : "System Context View: Hosting Control System",
       "order" : 1,
       "relationships" : [ {
-        "id" : "124"
+        "id" : "138"
       }, {
-        "id" : "126"
+        "id" : "140"
       }, {
-        "id" : "128"
+        "id" : "142"
       } ],
       "softwareSystemId" : "4"
     } ]
