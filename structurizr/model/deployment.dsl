@@ -21,6 +21,30 @@ deploymentEnvironment "Production" {
             technology "Apache HTTP Server"
             -> webAgentInstance "Managed by"
         }
+
+        infrastructureNode bindRuntime "BIND" {
+            description "DNS server managed by DNS Agent"
+            technology "Bind DNS Server"
+            -> dnsAgentInstance "Managed by"
+        }
+
+        infrastructureNode postfixRuntime "Postfix" {
+            description "SMTP server managed by Mail Agent"
+            technology "Postfix SMTP Server"
+            -> mailAgentInstance "Managed by"
+        }
+
+        infrastructureNode qmailRuntime "Qmail" {
+            description "SMTP server managed by Mail Agent"
+            technology "Qmail SMTP Server"
+            -> mailAgentInstance "Managed by"
+        }
+        
+        infrastructureNode CourierRuntime "Courier" {
+            description "IMAP server managed by Mail Agent"
+            technology "Courier IMAP Server"
+            -> mailAgentInstance "Managed by"
+        }
     }
 
     deploymentNode "Database Worker Node" {
@@ -33,7 +57,7 @@ deploymentEnvironment "Production" {
         }
 
         infrastructureNode postgresqlRuntime "PostgreSQL" {
-            description "MySQL server managed by DB agent"
+            description "PostgreSQL server managed by DB agent"
             technology "postgresql"
             -> dbAgentInstance "Managed by"
         }  
