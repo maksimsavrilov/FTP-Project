@@ -47,16 +47,41 @@ DELETED
 ## Domain model
 ```text
 User
-  │
-  └── Subscription
-         │
-         ├── Domain
-         │     │
-         │     └── Website
-         │             │
-         │             └── Web Service
-         │
-         └── other Services
+ │
+ └── Subscription
+       │
+       ├── Domain
+       │    │
+       │    ├── Website
+       │    │     │
+       │    │     └── WebService
+       │    │
+       │    ├── DnsZone
+       │    │     └── DnsRecord
+       │    │
+       │    └── MailDomain
+       │          └── MailAccount
+       │
+       └── DatabaseService
+              └── DatabaseUser
+
+
+WebService ─────┐
+DnsService ─────┤
+MailService ────┤──► Service
+DatabaseService ┘
+
+Service
+   │
+   ▼
+ServiceAssignment
+   │
+   ▼
+WorkerNode
+
+Service
+   ├── DesiredState
+   └── ActualState
 ```
 
 ### Subscription (Business/logical user resources container)
@@ -91,20 +116,41 @@ Website
 └── created_at
 ```
 
+### Service
+```text
+Service
+ ├── WebService
+ ├── DnsService
+ ├── MailService
+ └── DatabaseService
+
+ Service
+├── id
+├── subscription_id
+├── type
+├── status
+├── desired_state
+├── created_at
+└── updated_at
+```
+
 ### Web service
 ```text
 WebService
-├── id
+├── service_id
 ├── website_id
-├── node_id
-├── status
-├── provider
+├── web_server
 ├── php_version
-├── document_root
-├── desired_state
-├── actual_state
-├── created_at
-└── updated_at
+└── document_root
+```
+
+### Database service
+```text
+DatabaseService
+├── service_id
+├── database_type
+├── database_name
+└── ...
 ```
 
 ## Relations

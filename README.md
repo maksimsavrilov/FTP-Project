@@ -783,14 +783,15 @@ Web Service
 ### Components relations
 ```text
 Subscription
-      │
-      └── Domain
-             │
-             └── Website
-                    │
-                    └── Web Service
-                           │
-                           └── Worker Node
+ └── Domain
+      └── Website
+           └── WebService
+
+WebService
+    │
+    └── ServiceAssignment
+            │
+            └── WorkerNode
 
 Subscription Management
         │
@@ -813,6 +814,10 @@ Repositories
         ├── Domain
         ├── Website
         └── Web Service
+
+Service
+ ├── DesiredState
+ └── ActualState
 ```
 
 

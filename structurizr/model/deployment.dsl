@@ -7,6 +7,8 @@ deploymentEnvironment "Production" {
 
     deploymentNode "Worker Node" {
         webAgentInstance = containerInstance hosting.webAgent
+        dnsAgentInstance = containerInstance hosting.dnsAgent
+        mailAgentInstance = containerInstance hosting.mailAgent
 
         infrastructureNode nginxRuntime "nginx" {
             description "Web server managed by Web Agent"
@@ -18,14 +20,6 @@ deploymentEnvironment "Production" {
             description "Web server managed by Web Agent"
             technology "Apache HTTP Server"
             -> webAgentInstance "Managed by"
-        }
-
-        deploymentNode "DNS Agent" {
-            containerInstance hosting.dnsAgent
-        }
-
-        deploymentNode "Mail Agent" {
-            containerInstance hosting.mailAgent
         }
     }
 

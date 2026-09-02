@@ -9,6 +9,7 @@ hosting.master.agentClient -> hosting.mailAgent "Sends Mail desired state via RE
 hosting.master.agentClient -> hosting.dbAgent "Sends DB desired state via REST"
 hosting.master.reconciliation -> hosting.master.services "Updates service state"
 hosting.master.services -> hosting.cli "Returns service information"
+hosting.master.reconciliation -> hosting.master.agentClient "Triggers reconciliation"
 
 hosting.master -> hosting.webAgent "Controls and sends desired state via REST/HTTP"
 hosting.webAgent -> hosting.master "Reports actual state and heartbeat via REST/HTTP"
