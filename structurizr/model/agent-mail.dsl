@@ -32,11 +32,11 @@ mailAgent = container "Mail Agent" {
     }
 
     # Relationships
-    mailApi -> mailAuth "Authenticates Master requests"
-    mailApi -> mailDesiredState "Accepts desired mail state"
-    mailDesiredState -> mailReconciliation "Triggers reconciliation"
-    mailReconciliation -> mailConfig "Applies required mail configuration"
-    mailConfig -> mailManager "Manages mail stack"
-    mailReconciliation -> mailStateReporter "Reports reconciliation result"
-    mailStateReporter -> mailApi "Exposes state and health information"
+    mailApi -> mailAuth "Authenticates Master requests" "Python"
+    mailApi -> mailDesiredState "Accepts desired mail state" "Python"
+    mailDesiredState -> mailReconciliation "Triggers reconciliation" "Python"
+    mailReconciliation -> mailConfig "Applies required mail configuration" "Python"
+    mailConfig -> mailManager "Manages mail stack" "Python"
+    mailReconciliation -> mailStateReporter "Reports reconciliation result" "Python"
+    mailStateReporter -> mailApi "Exposes state and health information" "Python"
 }

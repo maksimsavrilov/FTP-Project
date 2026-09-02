@@ -38,12 +38,12 @@ webAgent = container "Web Agent" {
     # ====================================================
     # Внутренние связи компонентов Web Agent (перенесены сюда)
     # ====================================================
-    webApi -> webAuth "Authenticates Master requests"
-    webApi -> webDesiredState "Accepts desired state"
-    webDesiredState -> webReconciliation "Triggers reconciliation"
-    webReconciliation -> webConfig "Applies required configuration"
-    webConfig -> nginxManager "Configures nginx"
-    webConfig -> apacheManager "Configures Apache"
-    webReconciliation -> webStateReporter "Reports reconciliation result"
-    webStateReporter -> webApi "Exposes state and health information"
+    webApi -> webAuth "Authenticates Master requests" "Python"
+    webApi -> webDesiredState "Accepts desired state" "Python"
+    webDesiredState -> webReconciliation "Triggers reconciliation" "Python"
+    webReconciliation -> webConfig "Applies required configuration" "Python"
+    webConfig -> nginxManager "Configures nginx" "Python"
+    webConfig -> apacheManager "Configures Apache" "Python"
+    webReconciliation -> webStateReporter "Reports reconciliation result" "Python"
+    webStateReporter -> webApi "Exposes state and health information" "Python"
 }

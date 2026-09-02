@@ -29,4 +29,9 @@ workspace "Hosting Control System" "Distributed hosting management system" {
         !include views/views.dsl
         !include views/styles.dsl
     }
+
+    configuration {
+        scope softwaresystem
+    }
+
 }

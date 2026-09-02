@@ -37,16 +37,16 @@ dbAgent = container "DB Agent" {
         technology "Python"
     }
 
-    dbApi -> dbAuth "Authenticates Master requests"
-    dbApi -> dbDesiredState "Accepts desired database state"
+    dbApi -> dbAuth "Authenticates Master requests" "Python"
+    dbApi -> dbDesiredState "Accepts and validates desired database state" "Python"
 
-    dbDesiredState -> dbReconciliation "Triggers reconciliation"
+    dbDesiredState -> dbReconciliation "Triggers reconciliation" "Python"
 
-    dbReconciliation -> dbConfig "Applies required database configuration"
+    dbReconciliation -> dbConfig "Applies required database configuration" "Python"
 
-    dbConfig -> dbManager "Manages database engine"
+    dbConfig -> dbManager "Manages database engine" "Python"
 
-    dbReconciliation -> dbStateReporter "Reports reconciliation result"
+    dbReconciliation -> dbStateReporter "Reports reconciliation result" "Python"
 
-    dbStateReporter -> dbApi "Exposes state and health information"
+    dbStateReporter -> dbApi "Exposes state and health information" "Python"
 }

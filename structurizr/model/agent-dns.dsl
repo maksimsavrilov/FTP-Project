@@ -36,12 +36,12 @@ dnsAgent = container "DNS Agent" {
     }
 
     # Relationships
-    dnsApi -> dnsAuth "Authenticates Master requests"
-    dnsApi -> dnsDesiredState "Accepts desired DNS state"
-    dnsDesiredState -> dnsReconciliation "Triggers reconciliation"
-    dnsReconciliation -> dnsConfig "Applies required DNS configuration"
-    dnsConfig -> zoneManager "Manages zones and records"
-    zoneManager -> bindManager "Applies BIND configuration"
-    dnsReconciliation -> dnsStateReporter "Reports reconciliation result"
-    dnsStateReporter -> dnsApi "Exposes state and health information"
+    dnsApi -> dnsAuth "Authenticates Master requests" "Python"
+    dnsApi -> dnsDesiredState "Accepts desired DNS state" "Python"
+    dnsDesiredState -> dnsReconciliation "Triggers reconciliation" "Python"
+    dnsReconciliation -> dnsConfig "Applies required DNS configuration" "Python"
+    dnsConfig -> zoneManager "Manages zones and records" "Python"
+    zoneManager -> bindManager "Applies BIND configuration" "Python"
+    dnsReconciliation -> dnsStateReporter "Reports reconciliation result" "Python"
+    dnsStateReporter -> dnsApi "Exposes state and health information" "Python"
 }

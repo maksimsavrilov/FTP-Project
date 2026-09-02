@@ -1,9 +1,11 @@
 {
-  "configuration" : { },
+  "configuration" : {
+    "scope" : "SoftwareSystem"
+  },
   "description" : "Distributed hosting management system",
   "documentation" : { },
   "id" : 1,
-  "lastModifiedDate" : "2026-09-02T15:49:04Z",
+  "lastModifiedDate" : "2026-09-02T20:36:50Z",
   "model" : {
     "deploymentNodes" : [ {
       "containerInstances" : [ {
@@ -12,38 +14,43 @@
         "id" : "131",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "b346acb4-3b24-43a2-89dd-13fe4834a6e2.f0abdc3f-e9ff-4312-84bc-26cd8f8aebcb.masterInstance"
+          "structurizr.dsl.identifier" : "f56c6a17-dd35-4c37-bc35-28f22d2a1853.a5295f26-a2d3-4acf-ba6f-9c095ba76e02.masterInstance"
         },
         "relationships" : [ {
           "description" : "Reads and writes state",
           "destinationId" : "132",
           "id" : "133",
           "linkedRelationshipId" : "115",
-          "sourceId" : "131"
+          "sourceId" : "131",
+          "technology" : "SQLAlchemy / PostgreSQL"
         }, {
           "description" : "Controls via REST/HTTP",
           "destinationId" : "135",
           "id" : "137",
           "linkedRelationshipId" : "116",
-          "sourceId" : "131"
+          "sourceId" : "131",
+          "technology" : "REST/HTTP"
         }, {
           "description" : "Controls via REST/HTTP",
           "destinationId" : "138",
           "id" : "140",
           "linkedRelationshipId" : "118",
-          "sourceId" : "131"
+          "sourceId" : "131",
+          "technology" : "REST/HTTP"
         }, {
           "description" : "Controls via REST/HTTP",
           "destinationId" : "141",
           "id" : "143",
           "linkedRelationshipId" : "120",
-          "sourceId" : "131"
+          "sourceId" : "131",
+          "technology" : "REST/HTTP"
         }, {
           "description" : "Controls via REST/HTTP",
           "destinationId" : "157",
           "id" : "159",
           "linkedRelationshipId" : "122",
-          "sourceId" : "131"
+          "sourceId" : "131",
+          "technology" : "REST/HTTP"
         } ],
         "tags" : "Container Instance"
       }, {
@@ -52,7 +59,7 @@
         "id" : "132",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "b346acb4-3b24-43a2-89dd-13fe4834a6e2.f0abdc3f-e9ff-4312-84bc-26cd8f8aebcb.databaseInstance"
+          "structurizr.dsl.identifier" : "f56c6a17-dd35-4c37-bc35-28f22d2a1853.a5295f26-a2d3-4acf-ba6f-9c095ba76e02.databaseInstance"
         },
         "tags" : "Container Instance"
       } ],
@@ -61,7 +68,7 @@
       "instances" : "1",
       "name" : "Master Node",
       "properties" : {
-        "structurizr.dsl.identifier" : "b346acb4-3b24-43a2-89dd-13fe4834a6e2.f0abdc3f-e9ff-4312-84bc-26cd8f8aebcb"
+        "structurizr.dsl.identifier" : "f56c6a17-dd35-4c37-bc35-28f22d2a1853.a5295f26-a2d3-4acf-ba6f-9c095ba76e02"
       },
       "tags" : "Element,Deployment Node"
     }, {
@@ -71,14 +78,15 @@
         "id" : "135",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "b346acb4-3b24-43a2-89dd-13fe4834a6e2.12afbac3-bbad-41bf-ba7e-5c3a9b437b79.webAgentInstance"
+          "structurizr.dsl.identifier" : "f56c6a17-dd35-4c37-bc35-28f22d2a1853.a4acb1d6-e7eb-4598-9c85-d3f3ab849690.webAgentInstance"
         },
         "relationships" : [ {
           "description" : "Reports state and heartbeat via REST/HTTP",
           "destinationId" : "131",
           "id" : "136",
           "linkedRelationshipId" : "117",
-          "sourceId" : "135"
+          "sourceId" : "135",
+          "technology" : "REST/HTTP"
         } ],
         "tags" : "Container Instance"
       }, {
@@ -87,14 +95,15 @@
         "id" : "138",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "b346acb4-3b24-43a2-89dd-13fe4834a6e2.12afbac3-bbad-41bf-ba7e-5c3a9b437b79.dnsAgentInstance"
+          "structurizr.dsl.identifier" : "f56c6a17-dd35-4c37-bc35-28f22d2a1853.a4acb1d6-e7eb-4598-9c85-d3f3ab849690.dnsAgentInstance"
         },
         "relationships" : [ {
           "description" : "Reports state and heartbeat via REST/HTTP",
           "destinationId" : "131",
           "id" : "139",
           "linkedRelationshipId" : "119",
-          "sourceId" : "138"
+          "sourceId" : "138",
+          "technology" : "REST/HTTP"
         } ],
         "tags" : "Container Instance"
       }, {
@@ -103,14 +112,15 @@
         "id" : "141",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "b346acb4-3b24-43a2-89dd-13fe4834a6e2.12afbac3-bbad-41bf-ba7e-5c3a9b437b79.mailAgentInstance"
+          "structurizr.dsl.identifier" : "f56c6a17-dd35-4c37-bc35-28f22d2a1853.a4acb1d6-e7eb-4598-9c85-d3f3ab849690.mailAgentInstance"
         },
         "relationships" : [ {
           "description" : "Reports state and heartbeat via REST/HTTP",
           "destinationId" : "131",
           "id" : "142",
           "linkedRelationshipId" : "121",
-          "sourceId" : "141"
+          "sourceId" : "141",
+          "technology" : "REST/HTTP"
         } ],
         "tags" : "Container Instance"
       } ],
@@ -122,7 +132,7 @@
         "id" : "144",
         "name" : "nginxRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "b346acb4-3b24-43a2-89dd-13fe4834a6e2.12afbac3-bbad-41bf-ba7e-5c3a9b437b79.dda06786-525a-4129-bc38-668ac4ddf0cf"
+          "structurizr.dsl.identifier" : "f56c6a17-dd35-4c37-bc35-28f22d2a1853.a4acb1d6-e7eb-4598-9c85-d3f3ab849690.e635f921-bebc-48a7-b873-859d5963b384"
         },
         "relationships" : [ {
           "description" : "Managed by",
@@ -139,7 +149,7 @@
         "id" : "146",
         "name" : "apacheRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "b346acb4-3b24-43a2-89dd-13fe4834a6e2.12afbac3-bbad-41bf-ba7e-5c3a9b437b79.bda9bf43-2b38-4c08-9d3f-21b5ea330d71"
+          "structurizr.dsl.identifier" : "f56c6a17-dd35-4c37-bc35-28f22d2a1853.a4acb1d6-e7eb-4598-9c85-d3f3ab849690.48f36a6a-0fdb-4c66-90fb-55c1bf49993d"
         },
         "relationships" : [ {
           "description" : "Managed by",
@@ -156,7 +166,7 @@
         "id" : "148",
         "name" : "bindRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "b346acb4-3b24-43a2-89dd-13fe4834a6e2.12afbac3-bbad-41bf-ba7e-5c3a9b437b79.9c16f6a9-52ad-4886-84cc-52628ad9c956"
+          "structurizr.dsl.identifier" : "f56c6a17-dd35-4c37-bc35-28f22d2a1853.a4acb1d6-e7eb-4598-9c85-d3f3ab849690.7295b782-04a8-4be3-a8b9-8a607d15cbd9"
         },
         "relationships" : [ {
           "description" : "Managed by",
@@ -173,7 +183,7 @@
         "id" : "150",
         "name" : "postfixRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "b346acb4-3b24-43a2-89dd-13fe4834a6e2.12afbac3-bbad-41bf-ba7e-5c3a9b437b79.b0cc68b4-0b79-44e7-995b-33ca05650c02"
+          "structurizr.dsl.identifier" : "f56c6a17-dd35-4c37-bc35-28f22d2a1853.a4acb1d6-e7eb-4598-9c85-d3f3ab849690.5dda7cd1-7d5e-40b4-b9b3-3f5527b3970e"
         },
         "relationships" : [ {
           "description" : "Managed by",
@@ -190,7 +200,7 @@
         "id" : "152",
         "name" : "qmailRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "b346acb4-3b24-43a2-89dd-13fe4834a6e2.12afbac3-bbad-41bf-ba7e-5c3a9b437b79.c994b470-d7aa-4c2d-ab76-e95e8b0365e2"
+          "structurizr.dsl.identifier" : "f56c6a17-dd35-4c37-bc35-28f22d2a1853.a4acb1d6-e7eb-4598-9c85-d3f3ab849690.76c106aa-8f2a-4711-9025-0f3cfa9ffb36"
         },
         "relationships" : [ {
           "description" : "Managed by",
@@ -207,7 +217,7 @@
         "id" : "154",
         "name" : "CourierRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "b346acb4-3b24-43a2-89dd-13fe4834a6e2.12afbac3-bbad-41bf-ba7e-5c3a9b437b79.b0d95e88-5e92-4a9a-838e-3885aae2835d"
+          "structurizr.dsl.identifier" : "f56c6a17-dd35-4c37-bc35-28f22d2a1853.a4acb1d6-e7eb-4598-9c85-d3f3ab849690.4367defa-fe1d-4219-b83a-ea44ef0ce04f"
         },
         "relationships" : [ {
           "description" : "Managed by",
@@ -222,7 +232,7 @@
       "instances" : "1",
       "name" : "Worker Node",
       "properties" : {
-        "structurizr.dsl.identifier" : "b346acb4-3b24-43a2-89dd-13fe4834a6e2.12afbac3-bbad-41bf-ba7e-5c3a9b437b79"
+        "structurizr.dsl.identifier" : "f56c6a17-dd35-4c37-bc35-28f22d2a1853.a4acb1d6-e7eb-4598-9c85-d3f3ab849690"
       },
       "tags" : "Element,Deployment Node"
     }, {
@@ -232,14 +242,15 @@
         "id" : "157",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "b346acb4-3b24-43a2-89dd-13fe4834a6e2.664d833f-5b2f-49b6-a011-d1ad7f5d2303.dbAgentInstance"
+          "structurizr.dsl.identifier" : "f56c6a17-dd35-4c37-bc35-28f22d2a1853.b26f9ff9-c3b0-4947-a115-6724a96d5a2d.dbAgentInstance"
         },
         "relationships" : [ {
           "description" : "Reports state and heartbeat via REST/HTTP",
           "destinationId" : "131",
           "id" : "158",
           "linkedRelationshipId" : "123",
-          "sourceId" : "157"
+          "sourceId" : "157",
+          "technology" : "REST/HTTP"
         } ],
         "tags" : "Container Instance"
       } ],
@@ -251,7 +262,7 @@
         "id" : "160",
         "name" : "mysqlRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "b346acb4-3b24-43a2-89dd-13fe4834a6e2.664d833f-5b2f-49b6-a011-d1ad7f5d2303.c572380f-e2a3-4bfe-90a0-2720e9421ad0"
+          "structurizr.dsl.identifier" : "f56c6a17-dd35-4c37-bc35-28f22d2a1853.b26f9ff9-c3b0-4947-a115-6724a96d5a2d.ed7414cb-4ec3-417e-b9cf-480ff2ea2c76"
         },
         "relationships" : [ {
           "description" : "Managed by",
@@ -268,7 +279,7 @@
         "id" : "162",
         "name" : "postgresqlRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "b346acb4-3b24-43a2-89dd-13fe4834a6e2.664d833f-5b2f-49b6-a011-d1ad7f5d2303.3b2dad0a-7206-49f9-be04-645c98f75ed9"
+          "structurizr.dsl.identifier" : "f56c6a17-dd35-4c37-bc35-28f22d2a1853.b26f9ff9-c3b0-4947-a115-6724a96d5a2d.fb20dfd9-5ecb-49ae-8131-6893d90f6311"
         },
         "relationships" : [ {
           "description" : "Managed by",
@@ -283,7 +294,7 @@
       "instances" : "1",
       "name" : "Database Worker Node",
       "properties" : {
-        "structurizr.dsl.identifier" : "b346acb4-3b24-43a2-89dd-13fe4834a6e2.664d833f-5b2f-49b6-a011-d1ad7f5d2303"
+        "structurizr.dsl.identifier" : "f56c6a17-dd35-4c37-bc35-28f22d2a1853.b26f9ff9-c3b0-4947-a115-6724a96d5a2d"
       },
       "tags" : "Element,Deployment Node"
     } ],
@@ -365,13 +376,15 @@
           "destinationId" : "7",
           "id" : "113",
           "sourceId" : "5",
-          "tags" : "Relationship"
+          "tags" : "Relationship",
+          "technology" : "REST/HTTP"
         }, {
           "description" : "Executes commands via REST/HTTP",
           "destinationId" : "6",
           "id" : "114",
           "linkedRelationshipId" : "113",
-          "sourceId" : "5"
+          "sourceId" : "5",
+          "technology" : "REST/HTTP"
         } ],
         "tags" : "Element,Container",
         "technology" : "Python"
@@ -389,49 +402,57 @@
             "destinationId" : "8",
             "id" : "20",
             "sourceId" : "7",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Manages users",
             "destinationId" : "9",
             "id" : "21",
             "sourceId" : "7",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Manages resellers",
             "destinationId" : "10",
             "id" : "22",
             "sourceId" : "7",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Manages service plans",
             "destinationId" : "11",
             "id" : "23",
             "sourceId" : "7",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Manages subscriptions",
             "destinationId" : "12",
             "id" : "24",
             "sourceId" : "7",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Manages services",
             "destinationId" : "13",
             "id" : "25",
             "sourceId" : "7",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Manages resources",
             "destinationId" : "14",
             "id" : "26",
             "sourceId" : "7",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Manages Worker Nodes",
             "destinationId" : "15",
             "id" : "27",
             "sourceId" : "7",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "FastAPI"
@@ -458,7 +479,8 @@
             "destinationId" : "19",
             "id" : "39",
             "sourceId" : "9",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "SQLAlchemy"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -475,13 +497,15 @@
             "destinationId" : "9",
             "id" : "28",
             "sourceId" : "10",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Persists reseller state",
             "destinationId" : "19",
             "id" : "40",
             "sourceId" : "10",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "SQLAlchemy"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -498,19 +522,22 @@
             "destinationId" : "12",
             "id" : "29",
             "sourceId" : "11",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Defines resource limits",
             "destinationId" : "14",
             "id" : "31",
             "sourceId" : "11",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Persists service plans",
             "destinationId" : "19",
             "id" : "41",
             "sourceId" : "11",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "SQLAlchemy"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -527,19 +554,22 @@
             "destinationId" : "13",
             "id" : "30",
             "sourceId" : "12",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Consumes resources",
             "destinationId" : "14",
             "id" : "32",
             "sourceId" : "12",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Persists subscriptions",
             "destinationId" : "19",
             "id" : "42",
             "sourceId" : "12",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "SQLAlchemy"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -556,13 +586,15 @@
             "destinationId" : "16",
             "id" : "33",
             "sourceId" : "13",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Persists services and desired state",
             "destinationId" : "19",
             "id" : "43",
             "sourceId" : "13",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "SQLAlchemy"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -579,13 +611,15 @@
             "destinationId" : "16",
             "id" : "35",
             "sourceId" : "14",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Persists resource allocation",
             "destinationId" : "19",
             "id" : "44",
             "sourceId" : "14",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "SQLAlchemy"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -602,13 +636,15 @@
             "destinationId" : "16",
             "id" : "34",
             "sourceId" : "15",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Persists node state",
             "destinationId" : "19",
             "id" : "45",
             "sourceId" : "15",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "SQLAlchemy"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -625,13 +661,15 @@
             "destinationId" : "17",
             "id" : "36",
             "sourceId" : "16",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Reads assignments and resource state",
             "destinationId" : "19",
             "id" : "46",
             "sourceId" : "16",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "SQLAlchemy"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -648,13 +686,15 @@
             "destinationId" : "18",
             "id" : "37",
             "sourceId" : "17",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Reads and updates desired state",
             "destinationId" : "19",
             "id" : "47",
             "sourceId" : "17",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "SQLAlchemy"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -671,7 +711,8 @@
             "destinationId" : "17",
             "id" : "38",
             "sourceId" : "18",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python / HTTP"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python / HTTP"
@@ -698,31 +739,36 @@
           "destinationId" : "48",
           "id" : "115",
           "sourceId" : "6",
-          "tags" : "Relationship"
+          "tags" : "Relationship",
+          "technology" : "SQLAlchemy / PostgreSQL"
         }, {
           "description" : "Controls via REST/HTTP",
           "destinationId" : "49",
           "id" : "116",
           "sourceId" : "6",
-          "tags" : "Relationship"
+          "tags" : "Relationship",
+          "technology" : "REST/HTTP"
         }, {
           "description" : "Controls via REST/HTTP",
           "destinationId" : "66",
           "id" : "118",
           "sourceId" : "6",
-          "tags" : "Relationship"
+          "tags" : "Relationship",
+          "technology" : "REST/HTTP"
         }, {
           "description" : "Controls via REST/HTTP",
           "destinationId" : "83",
           "id" : "120",
           "sourceId" : "6",
-          "tags" : "Relationship"
+          "tags" : "Relationship",
+          "technology" : "REST/HTTP"
         }, {
           "description" : "Controls via REST/HTTP",
           "destinationId" : "98",
           "id" : "122",
           "sourceId" : "6",
-          "tags" : "Relationship"
+          "tags" : "Relationship",
+          "technology" : "REST/HTTP"
         } ],
         "tags" : "Element,Container",
         "technology" : "Python / FastAPI"
@@ -750,13 +796,15 @@
             "destinationId" : "51",
             "id" : "58",
             "sourceId" : "50",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Accepts desired state",
             "destinationId" : "52",
             "id" : "59",
             "sourceId" : "50",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "FastAPI"
@@ -783,7 +831,8 @@
             "destinationId" : "53",
             "id" : "60",
             "sourceId" : "52",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -800,13 +849,15 @@
             "destinationId" : "54",
             "id" : "61",
             "sourceId" : "53",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Reports reconciliation result",
             "destinationId" : "57",
             "id" : "64",
             "sourceId" : "53",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -823,13 +874,15 @@
             "destinationId" : "55",
             "id" : "62",
             "sourceId" : "54",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Configures Apache",
             "destinationId" : "56",
             "id" : "63",
             "sourceId" : "54",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -866,7 +919,8 @@
             "destinationId" : "50",
             "id" : "65",
             "sourceId" : "57",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -883,7 +937,8 @@
           "destinationId" : "6",
           "id" : "117",
           "sourceId" : "49",
-          "tags" : "Relationship"
+          "tags" : "Relationship",
+          "technology" : "REST/HTTP"
         } ],
         "tags" : "Element,Container",
         "technology" : "Python"
@@ -901,13 +956,15 @@
             "destinationId" : "68",
             "id" : "75",
             "sourceId" : "67",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Accepts desired DNS state",
             "destinationId" : "69",
             "id" : "76",
             "sourceId" : "67",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "FastAPI"
@@ -934,7 +991,8 @@
             "destinationId" : "70",
             "id" : "77",
             "sourceId" : "69",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -951,13 +1009,15 @@
             "destinationId" : "71",
             "id" : "78",
             "sourceId" : "70",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Reports reconciliation result",
             "destinationId" : "74",
             "id" : "81",
             "sourceId" : "70",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -974,7 +1034,8 @@
             "destinationId" : "72",
             "id" : "79",
             "sourceId" : "71",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -991,7 +1052,8 @@
             "destinationId" : "73",
             "id" : "80",
             "sourceId" : "72",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -1018,7 +1080,8 @@
             "destinationId" : "67",
             "id" : "82",
             "sourceId" : "74",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -1035,7 +1098,8 @@
           "destinationId" : "6",
           "id" : "119",
           "sourceId" : "66",
-          "tags" : "Relationship"
+          "tags" : "Relationship",
+          "technology" : "REST/HTTP"
         } ],
         "tags" : "Element,Container",
         "technology" : "Python"
@@ -1053,13 +1117,15 @@
             "destinationId" : "85",
             "id" : "91",
             "sourceId" : "84",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Accepts desired mail state",
             "destinationId" : "86",
             "id" : "92",
             "sourceId" : "84",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "FastAPI"
@@ -1086,7 +1152,8 @@
             "destinationId" : "87",
             "id" : "93",
             "sourceId" : "86",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -1103,13 +1170,15 @@
             "destinationId" : "88",
             "id" : "94",
             "sourceId" : "87",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Reports reconciliation result",
             "destinationId" : "90",
             "id" : "96",
             "sourceId" : "87",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -1126,7 +1195,8 @@
             "destinationId" : "89",
             "id" : "95",
             "sourceId" : "88",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -1153,7 +1223,8 @@
             "destinationId" : "84",
             "id" : "97",
             "sourceId" : "90",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -1170,7 +1241,8 @@
           "destinationId" : "6",
           "id" : "121",
           "sourceId" : "83",
-          "tags" : "Relationship"
+          "tags" : "Relationship",
+          "technology" : "REST/HTTP"
         } ],
         "tags" : "Element,Container",
         "technology" : "Python"
@@ -1188,13 +1260,15 @@
             "destinationId" : "100",
             "id" : "106",
             "sourceId" : "99",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
-            "description" : "Accepts desired database state",
+            "description" : "Accepts and validates desired database state",
             "destinationId" : "101",
             "id" : "107",
             "sourceId" : "99",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "FastAPI"
@@ -1221,7 +1295,8 @@
             "destinationId" : "102",
             "id" : "108",
             "sourceId" : "101",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -1238,13 +1313,15 @@
             "destinationId" : "103",
             "id" : "109",
             "sourceId" : "102",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           }, {
             "description" : "Reports reconciliation result",
             "destinationId" : "105",
             "id" : "111",
             "sourceId" : "102",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -1261,7 +1338,8 @@
             "destinationId" : "104",
             "id" : "110",
             "sourceId" : "103",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -1288,7 +1366,8 @@
             "destinationId" : "99",
             "id" : "112",
             "sourceId" : "105",
-            "tags" : "Relationship"
+            "tags" : "Relationship",
+            "technology" : "Python"
           } ],
           "tags" : "Element,Component",
           "technology" : "Python"
@@ -1305,7 +1384,8 @@
           "destinationId" : "6",
           "id" : "123",
           "sourceId" : "98",
-          "tags" : "Relationship"
+          "tags" : "Relationship",
+          "technology" : "REST/HTTP"
         } ],
         "tags" : "Element,Container",
         "technology" : "Python / FastAPI"
@@ -1321,7 +1401,7 @@
   },
   "name" : "Hosting Control System",
   "properties" : {
-    "structurizr.inspection.error" : "103",
+    "structurizr.inspection.error" : "24",
     "structurizr.inspection.info" : "0",
     "structurizr.inspection.ignore" : "0",
     "structurizr.inspection.warning" : "0"
