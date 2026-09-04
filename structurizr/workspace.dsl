@@ -13,14 +13,16 @@ workspace "Hosting Control System" "Distributed hosting management system" {
             !include model/agent-dns.dsl
             !include model/agent-mail.dsl
             !include model/agent-db.dsl
+
+            description "CLI to REST API multi-node hosting control platform for Apache-Nginx + MySQL/PostgreSQL + Postfix-Courier/Qmail + Bind DNS"
             
         }
 
         !include model/relations.dsl
 
-        admin -> hosting.cli "Uses"
-        reseller -> hosting.cli "Uses"
-        siteUser -> hosting.cli "Uses"
+        admin -> hosting.cli "Uses" "Unix shell"
+        reseller -> hosting.cli "Uses" "Unix shell"
+        siteUser -> hosting.cli "Uses" "Unix shell"
 
         !include model/deployment.dsl
     }

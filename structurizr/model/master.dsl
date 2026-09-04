@@ -80,11 +80,14 @@ master = container "Master Application" {
 
     services -> scheduler "Requests service placement" "Python"
     nodes -> scheduler "Provides node capabilities and availability" "Python"
+    scheduler -> nodes "Requests for node capabilities and availability" "Python"
+    scheduler -> resources "Requests for available resources" "Python"
     resources -> scheduler "Provides resource availability" "Python"
     scheduler -> reconciliation "Creates or updates service assignment and desired state" "Python"
 
     reconciliation -> agentClient "Sends desired state and commands" "Python"
     agentClient -> reconciliation "Returns actual state and operation results" "Python / HTTP"
+    reconciliation -> services "Updates service state" "Python / HTTP"
 
     users -> repositories "Persists user state" "SQLAlchemy"
     resellers -> repositories "Persists reseller state" "SQLAlchemy"

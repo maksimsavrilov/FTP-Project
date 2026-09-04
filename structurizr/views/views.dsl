@@ -47,4 +47,5 @@ component hosting.dbAgent "DbAgentComponents" {
 !include dynamic-hosting-plan-creation.dsl
 !include dynamic-subscription-creation.dsl
 !include dynamic-service-creation.dsl
+!include dynamic-service-creation-internal.dsl
 !include dynamic-node-monitoring.dsl
