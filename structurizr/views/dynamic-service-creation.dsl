@@ -1,4 +1,4 @@
-dynamic hosting "ServiceCreation" {
+dynamic hosting "WebServiceCreation" {
 
     siteUser -> hosting.cli "Starts service creation command"
 
@@ -6,8 +6,8 @@ dynamic hosting "ServiceCreation" {
 
     hosting.master -> hosting.database "Persists service, assignment and desired state"
 
-    hosting.master -> hosting.webAgent "Sends service-specific desired state via REST"
-    hosting.webAgent -> hosting.master "Reports actual state via REST"
+    hosting.master -> hosting.webAgent "Sends Web service desired state via REST"
+    hosting.webAgent -> hosting.master "Reports Web service actual state via REST"
     hosting.master -> hosting.cli "Returns service information"
 
     hosting.cli -> siteUser "Shows service status"

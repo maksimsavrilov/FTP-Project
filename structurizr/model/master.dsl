@@ -7,11 +7,6 @@ master = container "Master Application" {
         description "HTTP API endpoints exposed to CLI and other clients"
         technology "FastAPI"
     }
-    auth = component "Authentication & Authorization" {
-        description "Authenticates users and authorizes operations"
-        technology "Python"
-    }
-
     # Domain Components
     users = component "User Management" {
         description "Manages Site Users and their lifecycle"
@@ -63,7 +58,6 @@ master = container "Master Application" {
     }
 
     # Relationships
-    api -> auth "Authenticates and authorizes requests" "Python"
     api -> users "Manages users" "Python"
     api -> resellers "Manages resellers" "Python"
     api -> plans "Manages service plans" "Python"
