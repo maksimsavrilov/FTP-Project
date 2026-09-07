@@ -15,8 +15,9 @@ User
     │   │   └── DnsRecord
     │   └── MailDomain
     │       └── MailAccount
-    └── DatabaseService
-        └── DatabaseUser
+      └── Service
+         └── DatabaseService
+            └── DatabaseUser
 
 Service
 ├── WebService

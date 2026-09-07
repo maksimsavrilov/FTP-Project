@@ -1,5 +1,6 @@
 !identifiers hierarchical
 hosting.cli -> hosting.master.api "Executes commands via REST/HTTP" "REST/HTTP"
+hosting.master.api -> authService "Authenticates and authorizes requests" "REST/HTTP"
 hosting.master -> hosting.database "Reads and writes state" "SQLAlchemy / PostgreSQL"
 hosting.master -> hosting.webAgent "Controls via REST/HTTP" "REST/HTTP"
 hosting.webAgent -> hosting.master "Reports state and heartbeat via REST/HTTP" "REST/HTTP"
@@ -9,4 +10,4 @@ hosting.master -> hosting.mailAgent "Controls via REST/HTTP" "REST/HTTP"
 hosting.mailAgent -> hosting.master "Reports state and heartbeat via REST/HTTP" "REST/HTTP"
 hosting.master -> hosting.dbAgent "Controls via REST/HTTP" "REST/HTTP"
 hosting.dbAgent -> hosting.master "Reports state and heartbeat via REST/HTTP" "REST/HTTP"
-hosting.master.agentClient -> hosting.webAgent "Sends Web desired state via REST" "Python / HTTP"
+hosting.master.agentClient -> hosting.webAgent "Sends Web service desired state via REST" "Python / HTTP"

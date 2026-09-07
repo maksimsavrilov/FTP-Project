@@ -5,6 +5,8 @@ workspace "Hosting Control System" "Distributed hosting management system" {
     model {
         !include model/people.dsl
 
+        authService = softwareSystem "Authentication Service"
+
         hosting = softwareSystem "Hosting Control System" {
             !include model/cli.dsl
             !include model/master.dsl

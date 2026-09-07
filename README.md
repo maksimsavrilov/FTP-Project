@@ -70,14 +70,15 @@ id: web-service-123
 website_id: website-123
 
 placement:
-  node_id: None
+  service_assignment:
+    node_id: None
 
 provider:
   name: nginx
 
 state:
-  desired: RUNNING
-  actual: PENDING
+  desired_state: RUNNING
+  actual_state: PENDING
 
 dns:
 zone: example.com
@@ -98,17 +99,16 @@ Scheduler
   │      web_service:
   │        id: web-service-123
   │        placement:
-  │          node_id: worker-03
+  │          service_assignment:
+  │            node_id: worker-03
   │        state:
   │          actual: PROVISIONING
   │
   ▼
 Worker Agent
   │
-  ├── configure DNS
   ├── install nginx
   ├── configure nginx
-  ├── configure Apache
   └── create vhost
   │
   ▼
@@ -365,7 +365,6 @@ services:
 Master Node
 │
 ├── FastAPI
-│   ├── Auth management
 │   ├── Users
 │   ├── Resellers
 │   ├── Subscriptions
@@ -378,6 +377,9 @@ Master Node
       │
       ├── State DB
       └── encrypted secrets
+
+    Authentication Service
+    └── Authentication API
 
 
 Encryption key
@@ -440,10 +442,11 @@ Site User ─┘      │
 ```text
 User
  └── Subscription
-      ├── Web Service
-      ├── DNS Service
-      ├── Mail Service
-      └── DB Service
+  └── Service
+    ├── WebService
+    ├── DnsService
+    ├── MailService
+    └── DatabaseService
 ```
 
 ### service model
@@ -451,13 +454,11 @@ User
 ```text
 Subscription
 │
-├── Web ──► Node 01
-├── DNS ──► Node 01
-├── Mail ──► Node 02
-└── DB ──► Node 17
+└── Service
+  └── ServiceAssignment ──► Worker Node
 ```
 
-### Services are independent and every service agent gets full data from master
+### Services are independent and each service agent receives service-specific desired state
 
 ```text
 Master
@@ -465,7 +466,6 @@ Master
   ├── Web desired state
   │      ├── domain
   │      ├── IP
-  │      ├── DNS records
   │      └── Users
   │
   ├── Mail desired state
@@ -499,8 +499,8 @@ Worker Agents do not interact to each other. All the cross-service dependencies 
     - доступному CPU/RAM/disk;
     - Service Plan limits;
     - уже размещённым сервисам.
-4. Master назначает Service Node.
-5. Desired state изменяется.
+4. Master создаёт ServiceAssignment для Service и Worker Node.
+5. DesiredState изменяется.
 6. Agent получает новое состояние.
 7. Agent выполняет reconciliation.
 8. Agent возвращает actual state.
@@ -516,7 +516,10 @@ Control loop
           Scheduler
                │
                ▼
-        Service Assignment
+        ServiceAssignment
+               │
+               ▼
+        DesiredState
                │
                ▼
              Agent
@@ -679,7 +682,7 @@ Web Service
                                │
              ┌─────────────────┼─────────────────┐
              ▼                 ▼                 ▼
-       Auth Component    User Management    Subscription
+      User Management    Subscription
                               │                 │
                               │                 ▼
                               │           Service Manager
@@ -707,7 +710,7 @@ Components
 
 API Layer
 - REST API
-- Authentication / Authorization
+- Authentication is provided by the independent Authentication Service
 
 Domain
 - User Management
@@ -762,12 +765,11 @@ Worker Node
 Web Service
 ├── id
 ├── website_id
-├── node_id
 ├── status
 ├── web_server
 ├── php_version
 ├── document_root
-└── desired_state
+└── configuration
 
 Website
     domain = example.com
@@ -803,11 +805,11 @@ Service Management
 
 Scheduler
         │
-        └── Web Service → Worker Node
+  └── Service → ServiceAssignment → Worker Node
 
 Reconciliation
         │
-        └── Web Service desired state
+  └── Service DesiredState → Agent
 
 Repositories
         │

@@ -3,6 +3,7 @@ systemContext hosting "SystemContext" {
     include reseller
     include siteUser
     include hosting
+    include authService
     autolayout lr
 }
 
