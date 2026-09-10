@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `d057c824d6a23772540018ea5581884338e66c9e`
+- Last verified commit: `5bb95a098174d2e3eac0a0436d59ee43f1653411` (baseline; uncommitted changes on `implementation-boundaries`)
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Ready for implementation design
 
@@ -83,6 +83,7 @@ architecture review.
 - Service Creation internal view is included from `views.dsl`.
 - Final consistency review of C4, dynamic views and domain model completed.
 - Structurizr DSL relationships and dynamic-view scopes validated.
+- Implementation boundaries for Master, Auth Service, Worker Agents, persistence and ServiceAssignment reconciliation defined in `docs/implementation-boundaries.md`.
 
 ### Domain Model
 
@@ -105,15 +106,14 @@ None identified in the validated architecture scope.
 
 ## Current Task
 
-Move from validated architecture modelling to implementation design.
+Implementation boundaries are defined; proceed to the first Master persistence design slice.
 
 ---
 
 ## Next Step
 
-Define implementation boundaries for the validated Master, independent
-Authentication Service, Worker Agents, persistence and ServiceAssignment
-reconciliation flow.
+Define the Master persistence schema and repository boundaries for WorkerNode,
+ServiceAssignment, DesiredState and ActualState.
 
 ---
 
