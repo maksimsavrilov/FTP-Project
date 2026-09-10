@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `5bb95a098174d2e3eac0a0436d59ee43f1653411` (baseline; uncommitted changes on `implementation-boundaries`)
+- Last verified commit: `509485ac81228a190b1fa447c2896317b847ac80`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Ready for implementation design
 
@@ -84,6 +84,7 @@ architecture review.
 - Final consistency review of C4, dynamic views and domain model completed.
 - Structurizr DSL relationships and dynamic-view scopes validated.
 - Implementation boundaries for Master, Auth Service, Worker Agents, persistence and ServiceAssignment reconciliation defined in `docs/implementation-boundaries.md`.
+- Master persistence schema and repository boundaries for WorkerNode, ServiceAssignment, DesiredState and ActualState defined in `docs/master-persistence.md`.
 
 ### Domain Model
 
@@ -106,13 +107,13 @@ None identified in the validated architecture scope.
 
 ## Current Task
 
-Implementation boundaries are defined; proceed to the first Master persistence design slice.
+Master persistence design slice is defined; proceed to implementation of the persistence models and repositories.
 
 ---
 
 ## Next Step
 
-Define the Master persistence schema and repository boundaries for WorkerNode,
+Implement the Master SQLAlchemy models and repositories for WorkerNode,
 ServiceAssignment, DesiredState and ActualState.
 
 ---
