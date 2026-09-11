@@ -7,12 +7,13 @@ from sqlalchemy.orm import Session
 
 from master.api import MasterApi
 from master.auth import AuthenticationClient, AuthenticationServiceUnavailable
-from master.persistence.models import Base, WorkerNode
+from master.persistence.models import Base, Service, WorkerNode
 from master.persistence.repositories import ServiceAssignmentRepository, DesiredStateRepository
 from master.services import (
     MasterNodeService,
     MasterReconciliationService,
     MasterDomainService,
+    MasterServiceService,
     MasterServicePlanService,
     MasterSubscriptionService,
     MasterUserService,
@@ -47,6 +48,7 @@ class MasterApiTests(unittest.TestCase):
             service_plan_service=MasterServicePlanService(lambda: Session(self.engine)),
             subscription_service=MasterSubscriptionService(lambda: Session(self.engine)),
             domain_service=MasterDomainService(lambda: Session(self.engine)),
+            service_service=MasterServiceService(lambda: Session(self.engine)),
         )
         self.node_id = node_id
 
@@ -148,6 +150,60 @@ class MasterApiTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.body["code"], "NOT_FOUND")
+
+    def test_service_creation_commits_resource_placement_and_desired_state(self):
+        user = self.api.create_user({}, request_id="req-service-user")
+        plan = self.api.create_service_plan({"name": "service-plan"}, request_id="req-service-plan")
+        subscription = self.api.create_subscription(
+            {"user_id": user.body["id"], "plan_id": plan.body["id"]},
+            request_id="req-service-subscription",
+        )
+
+        created = self.api.create_service(
+            {
+                "subscription_id": subscription.body["id"],
+                "type": "WEB",
+                "allocation": {"cpu": 2, "memory": 1024, "disk": 10000},
+                "lifecycle_state": "PROVISIONING",
+                "configuration": {"web_server": "nginx"},
+            },
+            request_id="req-service",
+        )
+
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.headers["X-Request-ID"], "req-service")
+        self.assertEqual(created.body["status"], "PROVISIONING")
+        self.assertEqual(created.body["assignment"]["worker_node_id"], self.node_id)
+        self.assertEqual(created.body["desired_state"]["version"], 1)
+
+        loaded = self.api.get_service(created.body["id"], request_id="req-service-get")
+
+        self.assertEqual(loaded.status_code, 200)
+        self.assertEqual(loaded.body, created.body)
+
+    def test_service_creation_rolls_back_when_no_node_is_available(self):
+        user = self.api.create_user({}, request_id="req-service-rollback-user")
+        plan = self.api.create_service_plan({"name": "rollback-plan"}, request_id="req-service-rollback-plan")
+        subscription = self.api.create_subscription(
+            {"user_id": user.body["id"], "plan_id": plan.body["id"]},
+            request_id="req-service-rollback-subscription",
+        )
+
+        response = self.api.create_service(
+            {
+                "subscription_id": subscription.body["id"],
+                "type": "DATABASE",
+                "allocation": {"cpu": 1, "memory": 512, "disk": 1000},
+                "lifecycle_state": "PROVISIONING",
+                "configuration": {},
+            },
+            request_id="req-service-rollback",
+        )
+
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.body["code"], "CONFLICT")
+        with Session(self.engine) as session:
+            self.assertEqual(session.query(Service).count(), 0)
 
     def test_heartbeat_returns_serialized_node_and_request_id(self):
         response = self.api.heartbeat(

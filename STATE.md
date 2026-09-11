@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `765db7ae06dbf84e7af2cb03db08e087c356a164`
+- Last verified commit: `41189174bb46fd1d404ed5a07dea7b6f73e6962f`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Master persistence slice implemented and verified
 
@@ -97,6 +97,7 @@ architecture review.
 - First Master business resource implemented: User persistence, transactional lifecycle service, and API create/read boundary with request validation and response serialization.
 - Subscription persistence, transactional lifecycle service, and API create/read boundary implemented with owner validation, request validation, and response serialization.
 - Domain persistence, transactional lifecycle service, and API create/read boundary implemented with subscription validation, request validation, and response serialization.
+- Service persistence, transactional creation with node placement and desired state, and API aggregate create/read boundary implemented and verified.
 
 ### Domain Model
 
@@ -120,17 +121,17 @@ None identified in the validated architecture scope.
 ## Current Task
 
 The first Master business resource boundaries are implemented for User,
-ServicePlan, Subscription, and Domain. Domain creation validates its
-Subscription owner inside its transaction and returns a committed resource
-representation; the API owns validation, authorization, request IDs,
-serialization, and status mapping.
+ServicePlan, Subscription, Domain, and Service. Service creation validates its
+Subscription owner, selects an online capable node, reserves capacity, and
+creates the ServiceAssignment and first DesiredState version atomically. The
+API returns the committed service aggregate with placement and desired state.
 
 ---
 
 ## Next Step
 
-Implement the Service business resource application service and API boundary,
-including its lifecycle and atomic creation contract with placement state.
+Implement the WebService-specific resource and configuration boundary on top
+of the common Service lifecycle.
 
 ---
 

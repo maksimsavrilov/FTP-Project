@@ -11,6 +11,7 @@ from .services import (
     MasterNodeService,
     MasterReconciliationService,
     MasterDomainService,
+    MasterServiceService,
     MasterServicePlanService,
     MasterSubscriptionService,
     MasterUserService,
@@ -193,6 +194,28 @@ def _domain_body(domain: Any) -> dict[str, Any]:
     }
 
 
+def _service_body(result: Any) -> dict[str, Any]:
+    return {
+        "id": str(result.id),
+        "subscription_id": str(result.subscription_id),
+        "type": result.type,
+        "status": result.status,
+        "created_at": _timestamp(result.created_at),
+        "updated_at": _timestamp(result.updated_at),
+        "assignment": {
+            "id": str(result.assignment_id),
+            "worker_node_id": str(result.worker_node_id),
+            "status": result.assignment_status,
+        },
+        "desired_state": {
+            "version": result.desired_version,
+            "lifecycle_state": result.lifecycle_state,
+            "configuration": result.configuration,
+            "updated_at": _timestamp(result.desired_updated_at),
+        },
+    }
+
+
 def _state_body(state: Any) -> dict[str, Any]:
     desired = state.desired
     assignment = state.assignment
@@ -240,6 +263,7 @@ class MasterApi:
     service_plan_service: MasterServicePlanService | None = None
     subscription_service: MasterSubscriptionService | None = None
     domain_service: MasterDomainService | None = None
+    service_service: MasterServiceService | None = None
     _request_id_factory: Callable[[], str] = field(default=lambda: str(uuid4()), repr=False)
 
     def _request_id(self, request_id: str | None) -> str:
@@ -408,6 +432,36 @@ class MasterApi:
             if not isinstance(status, str) or not status:
                 raise RequestValidationError("status must be a non-empty string")
             return _domain_body(self.domain_service.create(subscription_id, name, status))
+
+        response = self._call(request_id, operation)
+        if response.status_code == 200:
+            return ApiResponse(201, response.body, response.headers)
+        return response
+
+    def get_service(self, service_id: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+        return self._call(request_id, lambda: (self._authorize(credential, f"service:{service_id}", "read", request_id), _service_body(self.service_service.get(service_id)))[1])
+
+    def create_service(self, body: dict[str, Any], credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+
+        def operation() -> dict[str, Any]:
+            self._authorize(credential, "service:*", "write", request_id)
+            _require_object(body)
+            subscription_id = _required_string(body, "subscription_id")
+            service_type = _required_string(body, "type")
+            allocation = _required_object(body, "allocation")
+            lifecycle_state = _required_string(body, "lifecycle_state")
+            configuration = _required_object(body, "configuration")
+            return _service_body(
+                self.service_service.create(
+                    subscription_id,
+                    service_type,
+                    allocation,
+                    lifecycle_state,
+                    configuration,
+                )
+            )
 
         response = self._call(request_id, operation)
         if response.status_code == 200:
