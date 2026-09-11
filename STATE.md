@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `8fa1dd19763a347312dd3db8059afd9aaa196930`
+- Last verified commit: `61adedf8fc6324ba9000c41f4c525483a1a4bb68`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Master persistence slice implemented and verified
 
@@ -120,6 +120,9 @@ architecture review.
   and verified, including request correlation, bearer credential propagation,
   JSON validation, response mapping, and documented resource routes.
 - Standard `make test` command added for running the complete test suite.
+- Master production ASGI entrypoint and container Dockerfile added; runtime
+  configuration invokes the composition root through `DATABASE_URL` and
+  `AUTH_SERVICE_URL`.
 
 ### Domain Model
 
@@ -142,17 +145,19 @@ None identified in the validated architecture scope.
 
 ## Current Task
 
-The Master API adapter and composition root are available. Production wiring
-reads `DATABASE_URL` and `AUTH_SERVICE_URL`, creates the SQLAlchemy session
-factory and Authentication Client, and assembles all existing Master services
-without changing their HTTP or application-service contracts.
+The Master API adapter, composition root, and production container runtime are
+available. The container starts Uvicorn through `master.entrypoint:app`, while
+production wiring reads `DATABASE_URL` and `AUTH_SERVICE_URL`, creates the
+SQLAlchemy session factory and Authentication Client, and assembles all
+existing Master services without changing their HTTP or application-service
+contracts.
 
 ---
 
 ## Next Step
 
-Add the Master container runtime entrypoint and configuration that invokes the
-composition root in production.
+Add the Master service to `docker-compose.yml` and wire its database and
+authentication service configuration.
 
 ---
 
