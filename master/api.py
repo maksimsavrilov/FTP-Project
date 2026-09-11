@@ -12,6 +12,7 @@ from .services import (
     MasterReconciliationService,
     MasterDomainService,
     MasterDnsServiceService,
+    MasterMailServiceService,
     MasterServiceService,
     MasterServicePlanService,
     MasterSubscriptionService,
@@ -246,6 +247,10 @@ def _dns_service_body(result: Any) -> dict[str, Any]:
     return _service_body(result.service)
 
 
+def _mail_service_body(result: Any) -> dict[str, Any]:
+    return _service_body(result.service)
+
+
 def _state_body(state: Any) -> dict[str, Any]:
     desired = state.desired
     assignment = state.assignment
@@ -297,6 +302,7 @@ class MasterApi:
     service_service: MasterServiceService | None = None
     web_service_service: MasterWebServiceService | None = None
     dns_service_service: MasterDnsServiceService | None = None
+    mail_service_service: MasterMailServiceService | None = None
     _request_id_factory: Callable[[], str] = field(default=lambda: str(uuid4()), repr=False)
 
     def _request_id(self, request_id: str | None) -> str:
@@ -574,6 +580,36 @@ class MasterApi:
             configuration = _required_object(body, "configuration")
             return _dns_service_body(
                 self.dns_service_service.create(
+                    subscription_id,
+                    domain_id,
+                    allocation,
+                    lifecycle_state,
+                    configuration,
+                )
+            )
+
+        response = self._call(request_id, operation)
+        if response.status_code == 200:
+            return ApiResponse(201, response.body, response.headers)
+        return response
+
+    def get_mail_service(self, service_id: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+        return self._call(request_id, lambda: (self._authorize(credential, f"mail-service:{service_id}", "read", request_id), _mail_service_body(self.mail_service_service.get(service_id)))[1])
+
+    def create_mail_service(self, body: dict[str, Any], credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+
+        def operation() -> dict[str, Any]:
+            self._authorize(credential, "mail-service:*", "write", request_id)
+            _require_object(body)
+            subscription_id = _required_string(body, "subscription_id")
+            domain_id = _required_string(body, "domain_id")
+            allocation = _required_object(body, "allocation")
+            lifecycle_state = _required_string(body, "lifecycle_state")
+            configuration = _required_object(body, "configuration")
+            return _mail_service_body(
+                self.mail_service_service.create(
                     subscription_id,
                     domain_id,
                     allocation,

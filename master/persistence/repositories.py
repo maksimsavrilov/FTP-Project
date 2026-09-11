@@ -8,7 +8,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .models import ActualState, DesiredState, DnsService, Domain, Service, ServiceAssignment, ServicePlan, Subscription, User, Website, WebService, WorkerNode
+from .models import ActualState, DesiredState, DnsService, Domain, MailService, Service, ServiceAssignment, ServicePlan, Subscription, User, Website, WebService, WorkerNode
 
 
 def _normalize_id(value: uuid.UUID | str | None) -> str | None:
@@ -190,6 +190,20 @@ class DnsServiceRepository:
         self.session.add(dns_service)
         self.session.flush()
         return dns_service
+
+
+class MailServiceRepository:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def get(self, service_id):
+        return self.session.get(MailService, _normalize_id(service_id))
+
+    def create(self, service_id: str):
+        mail_service = MailService(service_id=_normalize_id(service_id))
+        self.session.add(mail_service)
+        self.session.flush()
+        return mail_service
 
 
 class WorkerNodeRepository:

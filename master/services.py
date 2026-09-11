@@ -10,6 +10,7 @@ from .persistence.repositories import (
     DnsServiceRepository,
     DesiredStateRepository,
     DomainRepository,
+    MailServiceRepository,
     ServiceAssignmentRepository,
     ServicePlanRepository,
     ServiceRepository,
@@ -115,6 +116,11 @@ class WebServiceResult:
 
 @dataclass(frozen=True)
 class DnsServiceResult:
+    service: ServiceResult
+
+
+@dataclass(frozen=True)
+class MailServiceResult:
     service: ServiceResult
 
 
@@ -472,6 +478,43 @@ class MasterDnsServiceService:
                 )
                 dns_service = DnsServiceRepository(session).create(service.id)
                 return DnsServiceResult(service)
+
+
+class MasterMailServiceService:
+    """Application boundary for MailService configuration and lifecycle."""
+
+    def __init__(self, session_factory: Callable[[], Session]):
+        self.session_factory = session_factory
+
+    def get(self, service_id: str):
+        with self.session_factory() as session:
+            mail_service = MailServiceRepository(session).get(service_id)
+            if mail_service is None:
+                raise LookupError(f"MailService {service_id} not found")
+            return MailServiceResult(MasterServiceService(self.session_factory).get(service_id))
+
+    def create(
+        self,
+        subscription_id: str,
+        domain_id: str,
+        allocation: dict[str, Any],
+        lifecycle_state: str,
+        configuration: dict[str, Any],
+    ):
+        with self.session_factory() as session:
+            with session.begin():
+                if DomainRepository(session).get(domain_id) is None:
+                    raise LookupError(f"Domain {domain_id} not found")
+                service = MasterServiceService(self.session_factory)._create_in_session(
+                    session,
+                    subscription_id,
+                    "MAIL",
+                    allocation,
+                    lifecycle_state,
+                    configuration,
+                )
+                MailServiceRepository(session).create(service.id)
+                return MailServiceResult(service)
 
 
 class MasterNodeService:

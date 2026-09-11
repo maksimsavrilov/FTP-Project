@@ -153,6 +153,12 @@ class DnsService(Base):
     service_id: Mapped[str] = mapped_column(String(36), primary_key=True)
 
 
+class MailService(Base):
+    __tablename__ = "mail_services"
+
+    service_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+
+
 class ActualState(Base):
     __tablename__ = "actual_states"
 
