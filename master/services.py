@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from .persistence.repositories import (
     ActualStateRepository,
+    DatabaseServiceRepository,
     DnsServiceRepository,
     DesiredStateRepository,
     DomainRepository,
@@ -141,6 +142,13 @@ class DnsServiceResult:
 @dataclass(frozen=True)
 class MailServiceResult:
     service: ServiceResult
+
+
+@dataclass(frozen=True)
+class DatabaseServiceResult:
+    service: ServiceResult
+    database_type: str
+    database_name: str
 
 
 class MasterUserService:
@@ -604,6 +612,57 @@ class MasterMailServiceService:
                 )
                 MailServiceRepository(session).create(service.id)
                 return MailServiceResult(service)
+
+
+class MasterDatabaseServiceService:
+    """Application boundary for DatabaseService configuration and lifecycle."""
+
+    def __init__(self, session_factory: Callable[[], Session]):
+        self.session_factory = session_factory
+
+    def get(self, service_id: str):
+        with self.session_factory() as session:
+            database_service = DatabaseServiceRepository(session).get(service_id)
+            if database_service is None:
+                raise LookupError(f"DatabaseService {service_id} not found")
+            service = MasterServiceService(self.session_factory).get(service_id)
+            return DatabaseServiceResult(
+                service,
+                database_service.database_type,
+                database_service.database_name,
+            )
+
+    def create(
+        self,
+        subscription_id: str,
+        allocation: dict[str, Any],
+        lifecycle_state: str,
+        database_type: str,
+        database_name: str,
+    ):
+        with self.session_factory() as session:
+            with session.begin():
+                service = MasterServiceService(self.session_factory)._create_in_session(
+                    session,
+                    subscription_id,
+                    "DATABASE",
+                    allocation,
+                    lifecycle_state,
+                    {
+                        "database_type": database_type,
+                        "database_name": database_name,
+                    },
+                )
+                database_service = DatabaseServiceRepository(session).create(
+                    service.id,
+                    database_type,
+                    database_name,
+                )
+                return DatabaseServiceResult(
+                    service,
+                    database_service.database_type,
+                    database_service.database_name,
+                )
 
 
 class MasterNodeService:

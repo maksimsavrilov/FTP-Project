@@ -8,6 +8,7 @@ from uuid import uuid4
 
 from .auth import AuthenticationClientError, AuthenticationServiceUnavailable
 from .services import (
+    MasterDatabaseServiceService,
     MasterNodeService,
     MasterReconciliationService,
     MasterDomainService,
@@ -272,6 +273,17 @@ def _mail_service_body(result: Any) -> dict[str, Any]:
     return _service_body(result.service)
 
 
+def _database_service_body(result: Any) -> dict[str, Any]:
+    body = _service_body(result.service)
+    body.update(
+        {
+            "database_type": result.database_type,
+            "database_name": result.database_name,
+        }
+    )
+    return body
+
+
 def _state_body(state: Any) -> dict[str, Any]:
     desired = state.desired
     assignment = state.assignment
@@ -324,6 +336,7 @@ class MasterApi:
     web_service_service: MasterWebServiceService | None = None
     dns_service_service: MasterDnsServiceService | None = None
     mail_service_service: MasterMailServiceService | None = None
+    database_service_service: MasterDatabaseServiceService | None = None
     mail_domain_service: MasterMailDomainService | None = None
     mail_account_service: MasterMailAccountService | None = None
     _request_id_factory: Callable[[], str] = field(default=lambda: str(uuid4()), repr=False)
@@ -686,6 +699,36 @@ class MasterApi:
                     allocation,
                     lifecycle_state,
                     configuration,
+                )
+            )
+
+        response = self._call(request_id, operation)
+        if response.status_code == 200:
+            return ApiResponse(201, response.body, response.headers)
+        return response
+
+    def get_database_service(self, service_id: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+        return self._call(request_id, lambda: (self._authorize(credential, f"database-service:{service_id}", "read", request_id), _database_service_body(self.database_service_service.get(service_id)))[1])
+
+    def create_database_service(self, body: dict[str, Any], credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+
+        def operation() -> dict[str, Any]:
+            self._authorize(credential, "database-service:*", "write", request_id)
+            _require_object(body)
+            subscription_id = _required_string(body, "subscription_id")
+            allocation = _required_object(body, "allocation")
+            lifecycle_state = _required_string(body, "lifecycle_state")
+            database_type = _required_string(body, "database_type")
+            database_name = _required_string(body, "database_name")
+            return _database_service_body(
+                self.database_service_service.create(
+                    subscription_id,
+                    allocation,
+                    lifecycle_state,
+                    database_type,
+                    database_name,
                 )
             )
 

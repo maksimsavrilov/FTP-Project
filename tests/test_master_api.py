@@ -12,6 +12,7 @@ from master.persistence.repositories import ServiceAssignmentRepository, Desired
 from master.services import (
     MasterNodeService,
     MasterReconciliationService,
+    MasterDatabaseServiceService,
     MasterDomainService,
     MasterMailAccountService,
     MasterDnsServiceService,
@@ -59,6 +60,7 @@ class MasterApiTests(unittest.TestCase):
             web_service_service=MasterWebServiceService(lambda: Session(self.engine)),
             dns_service_service=MasterDnsServiceService(lambda: Session(self.engine)),
             mail_service_service=MasterMailServiceService(lambda: Session(self.engine)),
+            database_service_service=MasterDatabaseServiceService(lambda: Session(self.engine)),
             mail_domain_service=MasterMailDomainService(lambda: Session(self.engine)),
             mail_account_service=MasterMailAccountService(lambda: Session(self.engine)),
         )
@@ -414,6 +416,50 @@ class MasterApiTests(unittest.TestCase):
         self.assertEqual(response.body["code"], "NOT_FOUND")
         with Session(self.engine) as session:
             self.assertEqual(session.query(MailAccount).count(), 0)
+
+    def test_database_service_lifecycle_commits_database_configuration_and_placement(self):
+        user = self.api.create_user({}, request_id="req-db-user")
+        plan = self.api.create_service_plan({"name": "database-plan"}, request_id="req-db-plan")
+        subscription = self.api.create_subscription(
+            {"user_id": user.body["id"], "plan_id": plan.body["id"]},
+            request_id="req-db-subscription",
+        )
+        with Session(self.engine) as session, session.begin():
+            session.add(
+                WorkerNode(
+                    id=str(uuid.uuid4()),
+                    hostname="db-node-1",
+                    status="ONLINE",
+                    capabilities={"database": True},
+                    cpu_capacity=8,
+                    memory_capacity=8192,
+                    disk_capacity=100000,
+                    cpu_usage=0,
+                    memory_usage=0,
+                    disk_usage=0,
+                )
+            )
+
+        created = self.api.create_database_service(
+            {
+                "subscription_id": subscription.body["id"],
+                "allocation": {"cpu": 1, "memory": 512, "disk": 1000},
+                "lifecycle_state": "PROVISIONING",
+                "database_type": "postgresql",
+                "database_name": "app_db",
+            },
+            request_id="req-database-service",
+        )
+
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.body["type"], "DATABASE")
+        self.assertEqual(created.body["database_type"], "postgresql")
+        self.assertEqual(created.body["database_name"], "app_db")
+
+        loaded = self.api.get_database_service(created.body["id"], request_id="req-database-service-get")
+
+        self.assertEqual(loaded.status_code, 200)
+        self.assertEqual(loaded.body, created.body)
 
     def test_service_creation_commits_resource_placement_and_desired_state(self):
         user = self.api.create_user({}, request_id="req-service-user")

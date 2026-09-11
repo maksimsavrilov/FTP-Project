@@ -180,6 +180,14 @@ class MailService(Base):
     service_id: Mapped[str] = mapped_column(String(36), primary_key=True)
 
 
+class DatabaseService(Base):
+    __tablename__ = "database_services"
+
+    service_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    database_type: Mapped[str] = mapped_column(String, nullable=False)
+    database_name: Mapped[str] = mapped_column(String, nullable=False)
+
+
 class ActualState(Base):
     __tablename__ = "actual_states"
 
