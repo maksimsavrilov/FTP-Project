@@ -1,0 +1,76 @@
+from __future__ import annotations
+
+import uuid
+from datetime import datetime, timezone
+from typing import Any
+
+from sqlalchemy import BigInteger, DateTime, Index, JSON, Numeric, String, func
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+class WorkerNode(Base):
+    __tablename__ = "worker_nodes"
+    __table_args__ = (
+        Index("ix_worker_nodes_status", "status"),
+        Index("ix_worker_nodes_last_heartbeat_at", "last_heartbeat_at"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    hostname: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    status: Mapped[str] = mapped_column(String, nullable=False)
+    capabilities: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    cpu_capacity: Mapped[float] = mapped_column(Numeric(precision=10, scale=2), nullable=False)
+    memory_capacity: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    disk_capacity: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    cpu_usage: Mapped[float] = mapped_column(Numeric(precision=10, scale=2), nullable=False, default=0)
+    memory_usage: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
+    disk_usage: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
+    last_heartbeat_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow, server_default=func.now())
+
+
+class ServiceAssignment(Base):
+    __tablename__ = "service_assignments"
+    __table_args__ = (
+        Index("ix_service_assignments_worker_node_status", "worker_node_id", "status"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    service_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    worker_node_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    status: Mapped[str] = mapped_column(String, nullable=False)
+    assigned_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow)
+    released_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow, server_default=func.now())
+
+
+class DesiredState(Base):
+    __tablename__ = "desired_states"
+
+    service_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    version: Mapped[int] = mapped_column(BigInteger, nullable=False, default=1)
+    lifecycle_state: Mapped[str] = mapped_column(String, nullable=False)
+    configuration: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow, server_default=func.now())
+
+
+class ActualState(Base):
+    __tablename__ = "actual_states"
+
+    service_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    version: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
+    status: Mapped[str] = mapped_column(String, nullable=False)
+    configuration: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    health: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    observed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow, server_default=func.now())
