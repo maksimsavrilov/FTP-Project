@@ -6,7 +6,7 @@
 - Master stores desired state in PostgreSQL.
 - Worker Agents never communicate directly with each other.
 - All Master ↔ Agent communication uses REST/HTTP.
-- Auth as independent microservice
+- Auth as independent microservice (ZITADEL in docker container)
 - Auth, Master, State database, Worker agents will operate as separate docker containers.
 - Worker agent container manages host services via standard CLI utilities and mounted configuration files and directories
 

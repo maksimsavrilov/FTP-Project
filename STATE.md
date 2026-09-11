@@ -5,9 +5,9 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `61adedf8fc6324ba9000c41f4c525483a1a4bb68`
+- Last verified commit: `1a65b03750ca3b4f7aed4e1324cf5c77628ef4c4`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
-- Status: Master persistence slice implemented and verified
+- Status: Master compose integration implemented; application tests verified
 
 ---
 
@@ -123,6 +123,8 @@ architecture review.
 - Master production ASGI entrypoint and container Dockerfile added; runtime
   configuration invokes the composition root through `DATABASE_URL` and
   `AUTH_SERVICE_URL`.
+- Master service added to `docker-compose.yml` with production build settings,
+  port exposure, and required database and authentication service URLs.
 
 ### Domain Model
 
@@ -145,19 +147,19 @@ None identified in the validated architecture scope.
 
 ## Current Task
 
-The Master API adapter, composition root, and production container runtime are
-available. The container starts Uvicorn through `master.entrypoint:app`, while
-production wiring reads `DATABASE_URL` and `AUTH_SERVICE_URL`, creates the
-SQLAlchemy session factory and Authentication Client, and assembles all
-existing Master services without changing their HTTP or application-service
-contracts.
+The Master API adapter, composition root, production container runtime, and
+compose service definition are available. The container starts Uvicorn through
+`master.entrypoint:app`; compose passes `DATABASE_URL` and
+`AUTH_SERVICE_URL`, while production wiring creates the SQLAlchemy session
+factory and Authentication Client and assembles all existing Master services
+without changing their HTTP or application-service contracts.
 
 ---
 
 ## Next Step
 
-Add the Master service to `docker-compose.yml` and wire its database and
-authentication service configuration.
+Add PostgreSQL and ZITADEL service definitions to `docker-compose.yml` and
+connect the Master service to those containers.
 
 ---
 

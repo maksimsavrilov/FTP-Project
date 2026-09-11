@@ -1,4 +1,14 @@
 services:
+  master:
+    build:
+      context: .
+      dockerfile: master/Dockerfile
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set}
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:?AUTH_SERVICE_URL must be set}
+    ports:
+      - "8000:8000"
+
   dsl:
     image: docker.io/structurizr/structurizr
     user: "0:0"
