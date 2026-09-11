@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `304b5a5f0db6f21591cd97e29b8e2ccd0aa1a40e`
+- Last verified commit: `ba7cb32695730f3e9e78cf200c7c66e1f8843dae`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Master persistence slice implemented and verified
 
@@ -107,6 +107,11 @@ architecture review.
 - DatabaseService persistence model, repository, transactional lifecycle service, and API create/read boundary implemented and verified.
 - DatabaseUser persistence model, repository, transactional lifecycle service, and API create/read boundary implemented and verified.
 - DatabaseService and DatabaseUser Master API resource boundaries documented in `docs/master-api.md`.
+- DatabaseService and DatabaseUser API documentation reviewed against the Master
+  handlers, application services, shared API contract, and existing tests.
+- Remaining Master API resource documentation reviewed against the Master
+  handlers, application services, and existing tests; request and response
+  boundaries are aligned.
 
 ### Domain Model
 
@@ -129,17 +134,17 @@ None identified in the validated architecture scope.
 
 ## Current Task
 
-The DatabaseService and DatabaseUser resource boundaries are implemented,
-verified, and documented. Database service creation persists typed database
-configuration with common service placement state; database user creation
-validates the parent DatabaseService and returns the typed user payload.
+The remaining Master API resource documentation is aligned with the handlers,
+application services, shared API contract, and existing tests. The review
+covered business resources, node listing and heartbeat, and reconciliation
+state reporting without changing the established architecture.
 
 ---
 
 ## Next Step
 
-Review the documented DatabaseService and DatabaseUser API boundaries against
-the implementation and existing Master API contract without changing the
+Review Master API authorization and error mapping for consistency with the
+handlers, shared API contract, and existing tests, without changing the
 established architecture.
 
 ---

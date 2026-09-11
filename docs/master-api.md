@@ -147,6 +147,19 @@ service-specific configuration:
 The common `assignment` and `desired_state` fields from the service aggregate
 are also returned.
 
+### DnsService and MailService
+
+Both resources return the common service aggregate, including `assignment` and
+`desired_state`. Their provider-specific configuration is stored in
+`desired_state.configuration` and is returned unchanged by the corresponding
+read endpoint.
+
+`DnsService` creation requires `subscription_id`, `domain_id`, `allocation`,
+`lifecycle_state`, and `configuration`.
+
+`MailService` creation requires `subscription_id`, `domain_id`, `allocation`,
+`lifecycle_state`, and `configuration`.
+
 ### Service
 
 ```json
@@ -286,6 +299,35 @@ represented by the observation.
 
 ### Client-facing business endpoints
 
+Creation request fields are validated by the handler as follows:
+
+- `User`: optional `status`, default `ACTIVE`.
+- `ServicePlan`: required `name`; optional `status` (default `ACTIVE`),
+  `resource_limits` (default `{}`), and `object_limits` (default `{}`).
+- `Subscription`: required `user_id` and `plan_id`; optional `status` (default
+  `ACTIVE`) and nullable `expires_at`.
+- `Domain`: required `subscription_id` and `name`; optional `status` (default
+  `PENDING`).
+- `Website`: required `domain_id` and `document_root`; optional `status`
+  (default `PENDING`).
+- `MailDomain`: required `subscription_id` and `domain_id`; optional `status`
+  (default `PENDING`).
+- `MailAccount`: required `mail_domain_id` and `address`; optional `status`
+  (default `PENDING`).
+- `Service`: required `subscription_id`, `type`, `allocation`,
+  `lifecycle_state`, and `configuration`.
+- `WebService`: required `subscription_id`, `website_id`, `allocation`,
+  `lifecycle_state`, `web_server`, `php_version`, and `document_root`.
+- `DnsService` and `MailService`: required `subscription_id`, `domain_id`,
+  `allocation`, `lifecycle_state`, and `configuration`.
+- `DatabaseService`: required `subscription_id`, `allocation`,
+  `lifecycle_state`, `database_type`, and `database_name`.
+- `DatabaseUser`: required `database_service_id` and `username`; optional
+  `status` (default `PENDING`) and `privileges` (default `{}`).
+
+All required string fields must be non-empty strings, and all `object` fields
+must be JSON objects. Successful resource creation returns `201`.
+
 | Method | Path | Request | Response | Owning application operation |
 | --- | --- | --- | --- | --- |
 | `GET` | `/v1/users/{user_id}` | none | `User` | load user |
@@ -310,7 +352,7 @@ represented by the observation.
 | `POST` | `/v1/database-services` | DatabaseService creation request | `DatabaseService` | create, configure, and place database service |
 | `GET` | `/v1/database-users/{database_user_id}` | none | `DatabaseUser` | load database user |
 | `POST` | `/v1/database-users` | DatabaseUser creation request | `DatabaseUser` | create database user |
-| `GET` | `/v1/nodes` | status/capability filters | `WorkerNode[]` | list nodes |
+| `GET` | `/v1/nodes` | status/capability filters | `{"items": WorkerNode[]}` | list nodes |
 | `GET` | `/v1/nodes/{node_id}` | none | `WorkerNode` | load node |
 | `GET` | `/v1/services/{service_id}/state` | none | desired/actual state view | load reconciliation state |
 
@@ -336,12 +378,19 @@ corresponding `GET` endpoints and return `201` for successful creation.
 | Method | Path | Request | Response | Transaction |
 | --- | --- | --- | --- | --- |
 | `POST` | `/v1/nodes/{node_id}/heartbeat` | status, usage, heartbeat timestamp | `WorkerNode` | heartbeat update |
-| `POST` | `/v1/services/{service_id}/actual-state` | `ActualState` report | acceptance status | assignment validation and stale-version check |
+| `POST` | `/v1/services/{service_id}/actual-state` | `assignment_id`, `version`, `status`, `configuration`, `health`, `observed_at` | `{"accepted": boolean}` | assignment validation and stale-version check |
 
 These endpoints are called by authenticated Worker Agents. A heartbeat updates
 only the identified node. An actual-state report is accepted only for the
 current `ServiceAssignment`; an older version or older observation is ignored
-idempotently and does not overwrite newer state.
+idempotently and does not overwrite newer state. The `service_id` for the
+report is supplied by the URL, not repeated in the request body.
+
+`GET /v1/services/{service_id}/state` returns an object with nullable
+`desired`, `assignment`, and `actual` members. `desired` and `actual` contain
+the fields defined above; `assignment` contains the `ServiceAssignment`
+fields. The `actual.assignment_id` in this response is the current assignment
+identifier used to validate the observation.
 
 ## Handler boundary
 
