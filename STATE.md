@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `2715740b97bb0555be6d1320d3ef56d6e5d31d0f0`
+- Last verified commit: `cbca03c5061d37f168576e88c95f50e0bb263ff7`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Master persistence slice implemented and verified
 
@@ -62,6 +62,7 @@ architecture review.
 - Subscription creation flow defined.
 - Web Service Creation flow validated.
 - Master SQLAlchemy models and repositories for WorkerNode, ServiceAssignment, DesiredState and ActualState implemented and validated.
+- Persistence repository transaction boundary reviewed against the next Master slice; repositories now flush within caller-owned transactions and lock mutable rows for PostgreSQL concurrency.
 
 ### C4 / Structurizr
 
@@ -108,16 +109,16 @@ None identified in the validated architecture scope.
 
 ## Current Task
 
-Master persistence models and repositories for WorkerNode, ServiceAssignment,
-DesiredState and ActualState are implemented and validated.
+Persistence contracts are aligned with the next Master service slice. The
+repository changes were validated with the focused persistence test and an
+external transaction rollback check.
 
 ---
 
 ## Next Step
 
-Review the persistence layer against the next Master service slice and confirm
-whether any contract adjustments are needed before expanding to scheduler and
-reconciliation application code.
+Define the Master application-service transaction contract that composes
+placement, assignment replacement and desired-state version updates.
 
 ---
 

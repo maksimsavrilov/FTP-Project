@@ -51,11 +51,13 @@ class WorkerNodeRepository:
     def create(self, node: WorkerNode):
         node.id = _normalize_id(node.id) or str(uuid.uuid4())
         self.session.add(node)
-        self.session.commit()
+        self.session.flush()
         return node
 
     def update_health(self, node_id, status: str, usage: dict[str, Any], last_heartbeat_at):
-        node = self.get(node_id)
+        node = self.session.execute(
+            select(WorkerNode).where(WorkerNode.id == _normalize_id(node_id)).with_for_update()
+        ).scalar_one_or_none()
         if node is None:
             raise LookupError(f"WorkerNode {node_id} not found")
 
@@ -65,11 +67,13 @@ class WorkerNodeRepository:
         node.disk_usage = int(usage.get("disk", node.disk_usage or 0))
         node.last_heartbeat_at = _parse_datetime(last_heartbeat_at) or _utcnow()
         node.updated_at = _utcnow()
-        self.session.commit()
+        self.session.flush()
         return node
 
     def reserve_capacity(self, node_id, allocation: dict[str, Any]):
-        node = self.get(node_id)
+        node = self.session.execute(
+            select(WorkerNode).where(WorkerNode.id == _normalize_id(node_id)).with_for_update()
+        ).scalar_one_or_none()
         if node is None:
             raise LookupError(f"WorkerNode {node_id} not found")
 
@@ -88,11 +92,13 @@ class WorkerNodeRepository:
         node.memory_usage += requested_memory
         node.disk_usage += requested_disk
         node.updated_at = _utcnow()
-        self.session.commit()
+        self.session.flush()
         return node
 
     def decommission(self, node_id):
-        node = self.get(node_id)
+        node = self.session.execute(
+            select(WorkerNode).where(WorkerNode.id == _normalize_id(node_id)).with_for_update()
+        ).scalar_one_or_none()
         if node is None:
             raise LookupError(f"WorkerNode {node_id} not found")
 
@@ -107,7 +113,7 @@ class WorkerNodeRepository:
 
         node.status = "DECOMMISSIONED"
         node.updated_at = _utcnow()
-        self.session.commit()
+        self.session.flush()
         return node
 
 
@@ -120,7 +126,7 @@ class ServiceAssignmentRepository:
             select(ServiceAssignment).where(
                 ServiceAssignment.service_id == _normalize_id(service_id),
                 ServiceAssignment.status.in_(["ASSIGNED", "DRAINING"]),
-            )
+            ).with_for_update()
         ).scalars().first()
 
     def list_for_node(self, node_id, active_only: bool = True):
@@ -150,7 +156,7 @@ class ServiceAssignmentRepository:
             updated_at=current_time,
         )
         self.session.add(assignment)
-        self.session.commit()
+        self.session.flush()
         return assignment
 
     def release(self, assignment_id):
@@ -160,7 +166,7 @@ class ServiceAssignmentRepository:
         assignment.status = "RELEASED"
         assignment.released_at = _utcnow()
         assignment.updated_at = _utcnow()
-        self.session.commit()
+        self.session.flush()
         return assignment
 
     def validate_current(self, service_id, assignment_id):
@@ -178,7 +184,9 @@ class DesiredStateRepository:
     def put_next(self, service_id, lifecycle_state: str, configuration: dict[str, Any]):
         service_id = _normalize_id(service_id)
         now = _utcnow()
-        current = self.get(service_id)
+        current = self.session.execute(
+            select(DesiredState).where(DesiredState.service_id == service_id).with_for_update()
+        ).scalar_one_or_none()
         if current is None:
             next_version = 1
             state = DesiredState(
@@ -189,7 +197,7 @@ class DesiredStateRepository:
                 updated_at=now,
             )
             self.session.add(state)
-            self.session.commit()
+            self.session.flush()
             return next_version
 
         next_version = int(current.version) + 1
@@ -197,7 +205,7 @@ class DesiredStateRepository:
         current.lifecycle_state = lifecycle_state
         current.configuration = configuration or {}
         current.updated_at = now
-        self.session.commit()
+        self.session.flush()
         return next_version
 
     def get_for_reconciliation(self, service_id):
@@ -221,7 +229,9 @@ class ActualStateRepository:
         if not assignment_ok:
             raise ValueError("Assignment does not match the current active assignment")
 
-        existing = self.get(normalized_service_id)
+        existing = self.session.execute(
+            select(ActualState).where(ActualState.service_id == normalized_service_id).with_for_update()
+        ).scalar_one_or_none()
         observed_dt = _parse_datetime(observed_at) or _utcnow()
 
         if existing is not None and int(existing.version) > int(version):
@@ -238,5 +248,5 @@ class ActualStateRepository:
         record.updated_at = _utcnow()
         if existing is None:
             self.session.add(record)
-        self.session.commit()
+        self.session.flush()
         return True
