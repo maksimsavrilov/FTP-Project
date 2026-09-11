@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `0ac2f8afc6b6f20cfe151965bab9d65a3a66382b`
+- Last verified commit: `2168fc73cff8a0c5fcc544510f256c57d961cbe0`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Master persistence slice implemented and verified
 
@@ -89,6 +89,7 @@ architecture review.
 - Implementation boundaries for Master, Auth Service, Worker Agents, persistence and ServiceAssignment reconciliation defined in `docs/implementation-boundaries.md`.
 - Master persistence schema and repository boundaries for WorkerNode, ServiceAssignment, DesiredState and ActualState defined in `docs/master-persistence.md`.
 - Shared API schemas and the Master-to-Authentication Service client contract defined in `docs/api-contracts.md`.
+- Master REST API resource schemas and handler boundaries defined in `docs/master-api.md`.
 
 ### Domain Model
 
@@ -111,15 +112,15 @@ None identified in the validated architecture scope.
 
 ## Current Task
 
-Shared API schemas and the Master-to-Authentication Service client contract are
-defined. The contract was validated with JSON parsing and required-clause
-checks.
+Master REST API resource schemas and handler boundaries are defined. The
+contract covers client-facing resources, Worker Agent reports, transaction
+ownership, authentication, and HTTP error mapping.
 
 ---
 
 ## Next Step
 
-Define Master REST API resource schemas and handler boundaries.
+Define Master application services for the documented REST handlers.
 
 ---
 
