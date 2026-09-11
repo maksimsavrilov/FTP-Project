@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from .persistence.repositories import (
     ActualStateRepository,
     DatabaseServiceRepository,
+    DatabaseUserRepository,
     DnsServiceRepository,
     DesiredStateRepository,
     DomainRepository,
@@ -149,6 +150,15 @@ class DatabaseServiceResult:
     service: ServiceResult
     database_type: str
     database_name: str
+
+
+@dataclass(frozen=True)
+class DatabaseUserResult:
+    id: str
+    database_service_id: str
+    username: str
+    status: str
+    privileges: dict[str, Any]
 
 
 class MasterUserService:
@@ -662,6 +672,42 @@ class MasterDatabaseServiceService:
                     service,
                     database_service.database_type,
                     database_service.database_name,
+                )
+
+
+class MasterDatabaseUserService:
+    """Application boundary for DatabaseUser lifecycle operations."""
+
+    def __init__(self, session_factory: Callable[[], Session]):
+        self.session_factory = session_factory
+
+    def get(self, database_user_id: str):
+        with self.session_factory() as session:
+            database_user = DatabaseUserRepository(session).get(database_user_id)
+            if database_user is None:
+                raise LookupError(f"DatabaseUser {database_user_id} not found")
+            return database_user
+
+    def create(
+        self,
+        database_service_id: str,
+        username: str,
+        status: str = "PENDING",
+        privileges: dict[str, Any] | None = None,
+    ):
+        with self.session_factory() as session:
+            with session.begin():
+                if DatabaseServiceRepository(session).get(database_service_id) is None:
+                    raise LookupError(f"DatabaseService {database_service_id} not found")
+                database_user = DatabaseUserRepository(session).create(
+                    database_service_id, username, status, privileges
+                )
+                return DatabaseUserResult(
+                    database_user.id,
+                    database_user.database_service_id,
+                    database_user.username,
+                    database_user.status,
+                    database_user.privileges,
                 )
 
 
