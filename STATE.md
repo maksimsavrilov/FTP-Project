@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `db671a90150d1030cd33ad5f65fb0d5eddecd141`
+- Last verified commit: `9a78fe3938e51e1794585cde881aa2c2d6db89a5`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Master persistence slice implemented and verified
 
@@ -115,6 +115,10 @@ architecture review.
 - Master API authorization and error mapping reviewed against the shared
   contracts and existing tests; correlation mismatches and malformed
   authorization decisions now map to dependency errors.
+- Minimal FastAPI adapter for the reviewed Master API boundaries implemented
+  and verified, including request correlation, bearer credential propagation,
+  JSON validation, response mapping, and documented resource routes.
+- Standard `make test` command added for running the complete test suite.
 
 ### Domain Model
 
@@ -137,18 +141,18 @@ None identified in the validated architecture scope.
 
 ## Current Task
 
-Master API authorization and error mapping are aligned with the handlers,
-shared API contract, and existing tests. The Master preserves request
-correlation and rejects malformed authorization decisions as dependency
-failures without changing the established architecture.
+The reviewed Master API boundaries are available through a minimal FastAPI
+adapter. The adapter preserves request correlation, forwards bearer
+credentials to the existing API boundary, and maps malformed JSON and
+application responses without changing the established architecture.
 
 ---
 
 ## Next Step
 
-Implement the minimal FastAPI adapter for the reviewed Master API boundaries,
-without changing the established architecture or application-service
-contracts.
+Implement the Master composition root that wires the FastAPI adapter to the
+production database session factory and authentication client, without
+changing the established HTTP or application-service contracts.
 
 ---
 
@@ -167,6 +171,8 @@ Before changing architecture:
 - Keep Agent-to-Agent communication prohibited.
 - Keep scheduling and placement in Master.
 - Keep reconciliation between desired and actual state explicit.
+- If required libraries are missing from the environment, stop and ask the
+  user to install them; continue only after the user confirms installation.
 
 ---
 
