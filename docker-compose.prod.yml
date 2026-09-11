@@ -22,8 +22,8 @@ services:
       dockerfile: auth/Dockerfile
     environment:
       ZITADEL_URL: ${ZITADEL_URL:-http://zitadel:8080}
-      ZITADEL_CLIENT_ID: ${ZITADEL_CLIENT_ID:-}
-      ZITADEL_CLIENT_SECRET: ${ZITADEL_CLIENT_SECRET:-}
+      ZITADEL_CLIENT_ID: ${ZITADEL_CLIENT_ID:?Set ZITADEL_CLIENT_ID to the ZITADEL OAuth client ID}
+      ZITADEL_CLIENT_SECRET: ${ZITADEL_CLIENT_SECRET:?Set ZITADEL_CLIENT_SECRET to the ZITADEL OAuth client secret}
     ports:
       - "8001:8001"
     depends_on:

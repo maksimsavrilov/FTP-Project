@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `260f128a5ee5010a87be8388e56faa58c0e2c89a`
+- Last verified commit: `ab96088106479a0565e57b1d17f3758c084bdc7c`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Master and Authentication Service compose integration implemented; application tests verified
 
@@ -133,6 +133,10 @@ architecture review.
   ZITADEL databases initialized in PostgreSQL.
 - Development and production compose configurations separated; production
   excludes the DSL and Plesk services.
+- Production Authentication Service credentials are now required through
+  `ZITADEL_CLIENT_ID` and `ZITADEL_CLIENT_SECRET`; `.env.example` and the
+  production authorization setup instructions were added, and Compose
+  rendering with non-empty credentials was verified.
 
 ### Domain Model
 
@@ -159,17 +163,16 @@ The Master API adapter, composition root, production container runtime, and
 compose service definitions are available in `docker-compose.yml` and
 `docker-compose.prod.yml`. The default development configuration includes DSL
 and Plesk; the production configuration includes Master, Authentication
-Service, PostgreSQL and ZITADEL. The container starts Uvicorn through
-`master.entrypoint:app`, while the Authentication Service starts Uvicorn
-through `auth.entrypoint:app` and validates bearer credentials through the
-configured ZITADEL introspection endpoint.
+Service, PostgreSQL and ZITADEL. The Authentication Service now requires
+explicit ZITADEL OAuth client credentials and validates bearer credentials
+through the configured ZITADEL introspection endpoint.
 
 ---
 
 ## Next Step
 
-Configure ZITADEL client credentials and validate the Master → Authentication
-Service → ZITADEL authorization flow through the production compose stack.
+Run the production compose stack with a real ZITADEL OAuth client and validate
+the live Master → Authentication Service → ZITADEL authorization flow.
 
 ---
 

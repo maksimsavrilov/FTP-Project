@@ -2,6 +2,22 @@
 
 FTP Project is a learning/pet project to create a distributed Web/DB hosting management system using CLI2API and the desired state concept.
 
+## Production authorization
+
+The production stack requires a confidential ZITADEL OAuth client for the
+Authentication Service. Create the client in ZITADEL, grant it permission to
+introspect tokens, and place its credentials in a local `.env` copied from
+`.env.example`:
+
+```sh
+cp .env.example .env
+```
+
+Set `ZITADEL_CLIENT_ID` and `ZITADEL_CLIENT_SECRET` before starting the
+production stack. Compose fails during configuration when either value is
+missing, so the Authentication Service cannot silently start without a
+configured ZITADEL client.
+
 The CLI command set is inspired by the one in the Plesk panel
 (the contents of the $PLESK_DIR/bin and $PLESK_DIR/admin/sbin directories or
 https://docs.plesk.com/en-US/obsidian/cli-linux/using-command-line-utilities.40984/).

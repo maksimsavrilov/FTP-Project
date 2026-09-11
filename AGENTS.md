@@ -23,6 +23,7 @@
 - Use "plesk" service from docker-compose.yml to check references to Plesk Panel functions, files, CLI utilities and other entities.
     - CLI utilities located at /usr/local/psa/bin and /usr/local/psa/admin/sbin
 - Use python enterpreuter from .venv directory if available, install there all required modules using "uv" virtual environment manager if required
+- If environment prevents agent to perform some action, ask user first to perform this action in separate terminal window and provide exact commant to execute. Ask to paste command output to chat and continue after data received.
 
 
 ## Purpose
