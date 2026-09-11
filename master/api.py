@@ -12,6 +12,7 @@ from .services import (
     MasterReconciliationService,
     MasterDomainService,
     MasterDnsServiceService,
+    MasterMailAccountService,
     MasterMailDomainService,
     MasterMailServiceService,
     MasterServiceService,
@@ -218,6 +219,16 @@ def _mail_domain_body(mail_domain: Any) -> dict[str, Any]:
     }
 
 
+def _mail_account_body(mail_account: Any) -> dict[str, Any]:
+    return {
+        "id": str(mail_account.id),
+        "mail_domain_id": str(mail_account.mail_domain_id),
+        "address": mail_account.address,
+        "status": mail_account.status,
+        "created_at": _timestamp(mail_account.created_at),
+    }
+
+
 def _service_body(result: Any) -> dict[str, Any]:
     return {
         "id": str(result.id),
@@ -314,6 +325,7 @@ class MasterApi:
     dns_service_service: MasterDnsServiceService | None = None
     mail_service_service: MasterMailServiceService | None = None
     mail_domain_service: MasterMailDomainService | None = None
+    mail_account_service: MasterMailAccountService | None = None
     _request_id_factory: Callable[[], str] = field(default=lambda: str(uuid4()), repr=False)
 
     def _request_id(self, request_id: str | None) -> str:
@@ -527,6 +539,30 @@ class MasterApi:
                 raise RequestValidationError("status must be a non-empty string")
             return _mail_domain_body(
                 self.mail_domain_service.create(subscription_id, domain_id, status)
+            )
+
+        response = self._call(request_id, operation)
+        if response.status_code == 200:
+            return ApiResponse(201, response.body, response.headers)
+        return response
+
+    def get_mail_account(self, mail_account_id: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+        return self._call(request_id, lambda: (self._authorize(credential, f"mail-account:{mail_account_id}", "read", request_id), _mail_account_body(self.mail_account_service.get(mail_account_id)))[1])
+
+    def create_mail_account(self, body: dict[str, Any], credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+
+        def operation() -> dict[str, Any]:
+            self._authorize(credential, "mail-account:*", "write", request_id)
+            _require_object(body)
+            mail_domain_id = _required_string(body, "mail_domain_id")
+            address = _required_string(body, "address")
+            status = body.get("status", "PENDING")
+            if not isinstance(status, str) or not status:
+                raise RequestValidationError("status must be a non-empty string")
+            return _mail_account_body(
+                self.mail_account_service.create(mail_domain_id, address, status)
             )
 
         response = self._call(request_id, operation)

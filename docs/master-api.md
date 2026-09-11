@@ -112,6 +112,21 @@ Required fields: `id`, `domain_id`, `status`, `document_root`, `created_at`.
 Required fields: `id`, `domain_id`, `status`, `created_at`. A MailDomain can
 only be created for a domain belonging to the supplied subscription.
 
+### MailAccount
+
+```json
+{
+  "id": "mail-account-123",
+  "mail_domain_id": "mail-domain-123",
+  "address": "postmaster@example.com",
+  "status": "PENDING",
+  "created_at": "2026-01-01T00:00:00Z"
+}
+```
+
+Required fields: `id`, `mail_domain_id`, `address`, `status`, `created_at`. A
+MailAccount can only be created for an existing MailDomain.
+
 ### WebService
 
 The WebService response contains the common service aggregate and its
@@ -233,6 +248,8 @@ represented by the observation.
 | `POST` | `/v1/websites` | website creation request | `Website` | create website |
 | `GET` | `/v1/mail-domains/{mail_domain_id}` | none | `MailDomain` | load mail domain |
 | `POST` | `/v1/mail-domains` | mail domain creation request | `MailDomain` | create mail domain |
+| `GET` | `/v1/mail-accounts/{mail_account_id}` | none | `MailAccount` | load mail account |
+| `POST` | `/v1/mail-accounts` | mail account creation request | `MailAccount` | create mail account |
 | `GET` | `/v1/services/{service_id}` | none | service aggregate view | load service |
 | `POST` | `/v1/services` | service creation request | service aggregate view | create and place service |
 | `GET` | `/v1/web-services/{service_id}` | none | `WebService` | load web service |

@@ -10,6 +10,7 @@ from .persistence.repositories import (
     DnsServiceRepository,
     DesiredStateRepository,
     DomainRepository,
+    MailAccountRepository,
     MailDomainRepository,
     MailServiceRepository,
     ServiceAssignmentRepository,
@@ -93,6 +94,15 @@ class WebsiteResult:
 class MailDomainResult:
     id: str
     domain_id: str
+    status: str
+    created_at: Any
+
+
+@dataclass(frozen=True)
+class MailAccountResult:
+    id: str
+    mail_domain_id: str
+    address: str
     status: str
     created_at: Any
 
@@ -321,6 +331,41 @@ class MasterMailDomainService:
                     mail_domain.domain_id,
                     mail_domain.status,
                     mail_domain.created_at,
+                )
+
+
+class MasterMailAccountService:
+    """Application boundary for mail account lifecycle operations."""
+
+    def __init__(self, session_factory: Callable[[], Session]):
+        self.session_factory = session_factory
+
+    def get(self, mail_account_id: str):
+        with self.session_factory() as session:
+            mail_account = MailAccountRepository(session).get(mail_account_id)
+            if mail_account is None:
+                raise LookupError(f"MailAccount {mail_account_id} not found")
+            return mail_account
+
+    def create(
+        self,
+        mail_domain_id: str,
+        address: str,
+        status: str = "PENDING",
+    ):
+        with self.session_factory() as session:
+            with session.begin():
+                if MailDomainRepository(session).get(mail_domain_id) is None:
+                    raise LookupError(f"MailDomain {mail_domain_id} not found")
+                mail_account = MailAccountRepository(session).create(
+                    mail_domain_id, address, status
+                )
+                return MailAccountResult(
+                    mail_account.id,
+                    mail_account.mail_domain_id,
+                    mail_account.address,
+                    mail_account.status,
+                    mail_account.created_at,
                 )
 
 

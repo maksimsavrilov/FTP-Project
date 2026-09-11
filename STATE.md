@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `d118fca8a07b45b109b6bdae9c07a5aabb6c445e`
+- Last verified commit: `c4f91a282760788ddbc6d20aab918dd6437d3992`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Master persistence slice implemented and verified
 
@@ -103,6 +103,7 @@ architecture review.
 - DnsService typed resource persistence, atomic creation on the common Service lifecycle, and API create/read boundary implemented and verified.
 - MailService typed resource persistence, atomic creation on the common Service lifecycle, and API create/read boundary implemented and verified.
 - MailDomain persistence model, repository, transactional lifecycle service, and API create/read boundary implemented and verified.
+- MailAccount persistence model, repository, transactional lifecycle service, and API create/read boundary implemented and verified.
 
 ### Domain Model
 
@@ -125,16 +126,16 @@ None identified in the validated architecture scope.
 
 ## Current Task
 
-The MailDomain resource boundary is implemented for domains owned by a
-subscription. MailDomain persistence and API create/read operations validate
-the subscription-domain relationship and commit atomically. Mail accounts
-remain outside the resource boundary until the next step.
+The MailDomain and MailAccount resource boundaries are implemented. MailDomain
+operations validate the subscription-domain relationship, MailAccount
+operations validate the MailDomain relationship, and both commit atomically.
 
 ---
 
 ## Next Step
 
-Implement the MailAccount resource boundary for a MailDomain.
+Implement the next resource boundary after MailAccount, following the
+canonical domain model and existing Master persistence/API patterns.
 
 ---
 

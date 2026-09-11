@@ -99,6 +99,17 @@ class MailDomain(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, server_default=func.now())
 
 
+class MailAccount(Base):
+    __tablename__ = "mail_accounts"
+    __table_args__ = (Index("ix_mail_accounts_mail_domain_id", "mail_domain_id"), Index("ix_mail_accounts_status", "status"))
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    mail_domain_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    address: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, server_default=func.now())
+
+
 class WorkerNode(Base):
     __tablename__ = "worker_nodes"
     __table_args__ = (
