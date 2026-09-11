@@ -163,6 +163,58 @@ are also returned.
 Required fields: `id`, `subscription_id`, `type`, `status`, `created_at`,
 `updated_at`. `type` is one of `WEB`, `DNS`, `MAIL`, or `DATABASE`.
 
+### DatabaseService
+
+The DatabaseService response contains the common service aggregate and its
+database-specific configuration:
+
+```json
+{
+  "id": "service-123",
+  "subscription_id": "subscription-123",
+  "type": "DATABASE",
+  "status": "PROVISIONING",
+  "created_at": "2026-01-01T00:00:00Z",
+  "updated_at": "2026-01-01T00:00:00Z",
+  "assignment": {
+    "id": "assignment-123",
+    "worker_node_id": "node-123",
+    "status": "ASSIGNED"
+  },
+  "desired_state": {
+    "version": 1,
+    "lifecycle_state": "PROVISIONING",
+    "configuration": {
+      "database_type": "postgresql",
+      "database_name": "app_db"
+    },
+    "updated_at": "2026-01-01T00:00:00Z"
+  },
+  "database_type": "postgresql",
+  "database_name": "app_db"
+}
+```
+
+The common service, assignment, and desired-state fields are required as
+described by `Service`, `ServiceAssignment`, and `DesiredState`. The
+DatabaseService-specific fields `database_type` and `database_name` are also
+required.
+
+### DatabaseUser
+
+```json
+{
+  "id": "database-user-123",
+  "database_service_id": "service-123",
+  "username": "app_user",
+  "status": "PENDING",
+  "privileges": {"read": true, "write": true}
+}
+```
+
+All fields are returned. `privileges` is an object owned by the database
+service boundary and defaults to `{}`.
+
 ### WorkerNode
 
 ```json
@@ -254,6 +306,10 @@ represented by the observation.
 | `POST` | `/v1/services` | service creation request | service aggregate view | create and place service |
 | `GET` | `/v1/web-services/{service_id}` | none | `WebService` | load web service |
 | `POST` | `/v1/web-services` | WebService creation request | `WebService` | create, configure, and place web service |
+| `GET` | `/v1/database-services/{service_id}` | none | `DatabaseService` | load database service |
+| `POST` | `/v1/database-services` | DatabaseService creation request | `DatabaseService` | create, configure, and place database service |
+| `GET` | `/v1/database-users/{database_user_id}` | none | `DatabaseUser` | load database user |
+| `POST` | `/v1/database-users` | DatabaseUser creation request | `DatabaseUser` | create database user |
 | `GET` | `/v1/nodes` | status/capability filters | `WorkerNode[]` | list nodes |
 | `GET` | `/v1/nodes/{node_id}` | none | `WorkerNode` | load node |
 | `GET` | `/v1/services/{service_id}/state` | none | desired/actual state view | load reconciliation state |
@@ -265,6 +321,15 @@ selects a node through scheduling, and commits the service, assignment, and
 first desired-state version atomically. The response includes the resulting
 service, assignment, and desired state; actual state may be absent until an
 Agent reports it.
+
+DatabaseService creation contains `subscription_id`, `allocation`,
+`lifecycle_state`, `database_type`, and `database_name`. Master validates the
+subscription, places the common `DATABASE` service, and commits its assignment,
+desired state, and typed database configuration atomically. DatabaseUser
+creation contains `database_service_id`, `username`, and optional `status` and
+`privileges`; Master requires the referenced DatabaseService to exist before
+committing the user. Both resources support read-after-create through their
+corresponding `GET` endpoints and return `201` for successful creation.
 
 ### Node and Agent report endpoints
 
