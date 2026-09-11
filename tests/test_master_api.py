@@ -13,6 +13,7 @@ from master.services import (
     MasterNodeService,
     MasterReconciliationService,
     MasterServicePlanService,
+    MasterSubscriptionService,
     MasterUserService,
 )
 
@@ -43,6 +44,7 @@ class MasterApiTests(unittest.TestCase):
             MasterReconciliationService(lambda: Session(self.engine)),
             user_service=MasterUserService(lambda: Session(self.engine)),
             service_plan_service=MasterServicePlanService(lambda: Session(self.engine)),
+            subscription_service=MasterSubscriptionService(lambda: Session(self.engine)),
         )
         self.node_id = node_id
 
@@ -81,6 +83,38 @@ class MasterApiTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.body["code"], "INVALID_REQUEST")
+
+    def test_subscription_lifecycle_commits_and_returns_resource(self):
+        user = self.api.create_user({}, request_id="req-sub-user")
+        plan = self.api.create_service_plan({"name": "subscription-plan"}, request_id="req-sub-plan")
+
+        created = self.api.create_subscription(
+            {
+                "user_id": user.body["id"],
+                "plan_id": plan.body["id"],
+                "expires_at": "2026-12-31T00:00:00Z",
+            },
+            request_id="req-sub",
+        )
+
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.headers["X-Request-ID"], "req-sub")
+        self.assertEqual(created.body["status"], "ACTIVE")
+        self.assertEqual(created.body["expires_at"], "2026-12-31T00:00:00Z")
+
+        loaded = self.api.get_subscription(created.body["id"], request_id="req-sub-get")
+
+        self.assertEqual(loaded.status_code, 200)
+        self.assertEqual(loaded.body, created.body)
+
+    def test_subscription_requires_existing_user_and_plan(self):
+        response = self.api.create_subscription(
+            {"user_id": str(uuid.uuid4()), "plan_id": str(uuid.uuid4())},
+            request_id="req-sub-invalid",
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.body["code"], "NOT_FOUND")
 
     def test_heartbeat_returns_serialized_node_and_request_id(self):
         response = self.api.heartbeat(

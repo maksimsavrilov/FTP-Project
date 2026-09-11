@@ -10,6 +10,7 @@ from .persistence.repositories import (
     DesiredStateRepository,
     ServiceAssignmentRepository,
     ServicePlanRepository,
+    SubscriptionRepository,
     UserRepository,
     WorkerNodeRepository,
 )
@@ -51,6 +52,16 @@ class ServicePlanResult:
     object_limits: dict[str, Any]
     created_at: Any
     updated_at: Any
+
+
+@dataclass(frozen=True)
+class SubscriptionResult:
+    id: str
+    user_id: str
+    plan_id: str
+    status: str
+    created_at: Any
+    expires_at: Any
 
 
 class MasterUserService:
@@ -106,6 +117,45 @@ class MasterServicePlanService:
                     plan.object_limits,
                     plan.created_at,
                     plan.updated_at,
+                )
+
+
+class MasterSubscriptionService:
+    """Application boundary for subscription lifecycle operations."""
+
+    def __init__(self, session_factory: Callable[[], Session]):
+        self.session_factory = session_factory
+
+    def get(self, subscription_id: str):
+        with self.session_factory() as session:
+            subscription = SubscriptionRepository(session).get(subscription_id)
+            if subscription is None:
+                raise LookupError(f"Subscription {subscription_id} not found")
+            return subscription
+
+    def create(
+        self,
+        user_id: str,
+        plan_id: str,
+        status: str = "ACTIVE",
+        expires_at: str | None = None,
+    ):
+        with self.session_factory() as session:
+            with session.begin():
+                if UserRepository(session).get(user_id) is None:
+                    raise LookupError(f"User {user_id} not found")
+                if ServicePlanRepository(session).get(plan_id) is None:
+                    raise LookupError(f"ServicePlan {plan_id} not found")
+                subscription = SubscriptionRepository(session).create(
+                    user_id, plan_id, status, expires_at
+                )
+                return SubscriptionResult(
+                    subscription.id,
+                    subscription.user_id,
+                    subscription.plan_id,
+                    subscription.status,
+                    subscription.created_at,
+                    subscription.expires_at,
                 )
 
 

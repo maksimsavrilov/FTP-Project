@@ -11,6 +11,7 @@ from .services import (
     MasterNodeService,
     MasterReconciliationService,
     MasterServicePlanService,
+    MasterSubscriptionService,
     MasterUserService,
 )
 
@@ -170,6 +171,17 @@ def _service_plan_body(plan: Any) -> dict[str, Any]:
     }
 
 
+def _subscription_body(subscription: Any) -> dict[str, Any]:
+    return {
+        "id": str(subscription.id),
+        "user_id": str(subscription.user_id),
+        "plan_id": str(subscription.plan_id),
+        "status": subscription.status,
+        "created_at": _timestamp(subscription.created_at),
+        "expires_at": _timestamp(subscription.expires_at),
+    }
+
+
 def _state_body(state: Any) -> dict[str, Any]:
     desired = state.desired
     assignment = state.assignment
@@ -215,6 +227,7 @@ class MasterApi:
     authorization_client: AuthorizationClient | None = None
     user_service: MasterUserService | None = None
     service_plan_service: MasterServicePlanService | None = None
+    subscription_service: MasterSubscriptionService | None = None
     _request_id_factory: Callable[[], str] = field(default=lambda: str(uuid4()), repr=False)
 
     def _request_id(self, request_id: str | None) -> str:
@@ -333,6 +346,33 @@ class MasterApi:
                 self.service_plan_service.create(
                     name, status, resource_limits, object_limits
                 )
+            )
+
+        response = self._call(request_id, operation)
+        if response.status_code == 200:
+            return ApiResponse(201, response.body, response.headers)
+        return response
+
+    def get_subscription(self, subscription_id: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+        return self._call(request_id, lambda: (self._authorize(credential, f"subscription:{subscription_id}", "read", request_id), _subscription_body(self.subscription_service.get(subscription_id)))[1])
+
+    def create_subscription(self, body: dict[str, Any], credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+
+        def operation() -> dict[str, Any]:
+            self._authorize(credential, "subscription:*", "write", request_id)
+            _require_object(body)
+            user_id = _required_string(body, "user_id")
+            plan_id = _required_string(body, "plan_id")
+            status = body.get("status", "ACTIVE")
+            if not isinstance(status, str) or not status:
+                raise RequestValidationError("status must be a non-empty string")
+            expires_at = body.get("expires_at")
+            if expires_at is not None and (not isinstance(expires_at, str) or not expires_at):
+                raise RequestValidationError("expires_at must be a non-empty string or null")
+            return _subscription_body(
+                self.subscription_service.create(user_id, plan_id, status, expires_at)
             )
 
         response = self._call(request_id, operation)
