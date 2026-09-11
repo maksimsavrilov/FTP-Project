@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `aa39bb62e561e8b99ff24cd8e15d3e799104a9d8`
+- Last verified commit: `d3528fe12e2de5b9cb39daf02d57a8a348be497a`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Master persistence slice implemented and verified
 
@@ -91,6 +91,7 @@ architecture review.
 - Shared API schemas and the Master-to-Authentication Service client contract defined in `docs/api-contracts.md`.
 - Master REST API resource schemas and handler boundaries defined in `docs/master-api.md`.
 - Master application services for node operations, placement, and reconciliation reports implemented and verified.
+- Master API schemas and handlers for node reads, heartbeats, reconciliation-state reads and actual-state reports implemented and verified.
 
 ### Domain Model
 
@@ -113,15 +114,18 @@ None identified in the validated architecture scope.
 
 ## Current Task
 
-Master application services for the documented REST operation boundaries are
-implemented. The slice covers node reads and heartbeats, atomic placement, and
-desired/actual reconciliation state handling.
+Master REST API schemas and handlers for the currently implemented application
+services are in place. The slice covers node reads and heartbeats plus desired/
+actual reconciliation state handling, including request validation, request ID
+propagation, response serialization, authorization delegation, and documented
+error mapping.
 
 ---
 
 ## Next Step
 
-Define the Master REST API schemas and handlers over the application services.
+Implement the Master Authentication Client and connect it to the API handler
+authorization boundary.
 
 ---
 

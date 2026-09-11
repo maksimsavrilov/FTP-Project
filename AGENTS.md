@@ -9,6 +9,7 @@
 - Auth as independent microservice
 
 ## Technology
+- Docker
 - Python
 - FastAPI
 - PostgreSQL
@@ -27,6 +28,7 @@
     - Create commit with short informative message
     - Merge branch into main
     - Delete branch
+- For Python development feel free to install new or modify existing virtual environments inside this project, including new libraries installation inside virtual environment.
 
 
 ## Purpose
