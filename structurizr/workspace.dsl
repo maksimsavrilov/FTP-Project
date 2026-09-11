@@ -5,7 +5,9 @@ workspace "Hosting Control System" "Distributed hosting management system" {
     model {
         !include model/people.dsl
 
-        authService = softwareSystem "Authentication Service"
+        authService = softwareSystem "ZITADEL" {
+            description "Identity and access management service for authentication and authorization using OIDC / OAuth 2.0"
+        }
 
         hosting = softwareSystem "Hosting Control System" {
             !include model/cli.dsl

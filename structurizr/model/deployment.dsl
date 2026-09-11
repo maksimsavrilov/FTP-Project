@@ -5,6 +5,10 @@ deploymentEnvironment "Production" {
         databaseInstance = containerInstance hosting.database
     }
 
+    deploymentNode "Authentication Node" {
+       authServiceInstance = softwareSystemInstance authService
+    }
+
     deploymentNode "Worker Node" {
         webAgentInstance = containerInstance hosting.webAgent
         dnsAgentInstance = containerInstance hosting.dnsAgent

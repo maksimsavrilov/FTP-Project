@@ -1,6 +1,6 @@
 !identifiers hierarchical
 hosting.cli -> hosting.master.api "Executes commands via REST/HTTP" "REST/HTTP"
-hosting.master.api -> authService "Authenticates and authorizes requests" "REST/HTTP"
+hosting.master.api -> authService "Authenticates and authorizes requests" "OIDC / OAuth 2.0"
 hosting.master -> hosting.database "Reads and writes state" "SQLAlchemy / PostgreSQL"
 hosting.master -> hosting.webAgent "Controls via REST/HTTP" "REST/HTTP"
 hosting.webAgent -> hosting.master "Reports state and heartbeat via REST/HTTP" "REST/HTTP"
