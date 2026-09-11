@@ -11,6 +11,7 @@ from .services import (
     MasterNodeService,
     MasterReconciliationService,
     MasterDomainService,
+    MasterDnsServiceService,
     MasterServiceService,
     MasterServicePlanService,
     MasterSubscriptionService,
@@ -241,6 +242,10 @@ def _web_service_body(result: Any) -> dict[str, Any]:
     return body
 
 
+def _dns_service_body(result: Any) -> dict[str, Any]:
+    return _service_body(result.service)
+
+
 def _state_body(state: Any) -> dict[str, Any]:
     desired = state.desired
     assignment = state.assignment
@@ -291,6 +296,7 @@ class MasterApi:
     website_service: MasterWebsiteService | None = None
     service_service: MasterServiceService | None = None
     web_service_service: MasterWebServiceService | None = None
+    dns_service_service: MasterDnsServiceService | None = None
     _request_id_factory: Callable[[], str] = field(default=lambda: str(uuid4()), repr=False)
 
     def _request_id(self, request_id: str | None) -> str:
@@ -543,6 +549,36 @@ class MasterApi:
                     web_server,
                     php_version,
                     document_root,
+                )
+            )
+
+        response = self._call(request_id, operation)
+        if response.status_code == 200:
+            return ApiResponse(201, response.body, response.headers)
+        return response
+
+    def get_dns_service(self, service_id: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+        return self._call(request_id, lambda: (self._authorize(credential, f"dns-service:{service_id}", "read", request_id), _dns_service_body(self.dns_service_service.get(service_id)))[1])
+
+    def create_dns_service(self, body: dict[str, Any], credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+
+        def operation() -> dict[str, Any]:
+            self._authorize(credential, "dns-service:*", "write", request_id)
+            _require_object(body)
+            subscription_id = _required_string(body, "subscription_id")
+            domain_id = _required_string(body, "domain_id")
+            allocation = _required_object(body, "allocation")
+            lifecycle_state = _required_string(body, "lifecycle_state")
+            configuration = _required_object(body, "configuration")
+            return _dns_service_body(
+                self.dns_service_service.create(
+                    subscription_id,
+                    domain_id,
+                    allocation,
+                    lifecycle_state,
+                    configuration,
                 )
             )
 

@@ -147,6 +147,12 @@ class WebService(Base):
     document_root: Mapped[str] = mapped_column(String, nullable=False)
 
 
+class DnsService(Base):
+    __tablename__ = "dns_services"
+
+    service_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+
+
 class ActualState(Base):
     __tablename__ = "actual_states"
 

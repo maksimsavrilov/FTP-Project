@@ -10,7 +10,7 @@
 
 ## Technology
 - Docker
-- Python
+- Python (version 3.12)
 - FastAPI
 - PostgreSQL
 - SQLAlchemy

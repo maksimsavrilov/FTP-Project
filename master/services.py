@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from .persistence.repositories import (
     ActualStateRepository,
+    DnsServiceRepository,
     DesiredStateRepository,
     DomainRepository,
     ServiceAssignmentRepository,
@@ -110,6 +111,11 @@ class WebServiceResult:
     web_server: str
     php_version: str
     document_root: str
+
+
+@dataclass(frozen=True)
+class DnsServiceResult:
+    service: ServiceResult
 
 
 class MasterUserService:
@@ -428,6 +434,44 @@ class MasterWebServiceService:
                     web_service.php_version,
                     web_service.document_root,
                 )
+
+
+class MasterDnsServiceService:
+    """Application boundary for DnsService configuration and lifecycle."""
+
+    def __init__(self, session_factory: Callable[[], Session]):
+        self.session_factory = session_factory
+
+    def get(self, service_id: str):
+        with self.session_factory() as session:
+            dns_service = DnsServiceRepository(session).get(service_id)
+            if dns_service is None:
+                raise LookupError(f"DnsService {service_id} not found")
+            return DnsServiceResult(MasterServiceService(self.session_factory).get(service_id))
+
+    def create(
+        self,
+        subscription_id: str,
+        domain_id: str,
+        allocation: dict[str, Any],
+        lifecycle_state: str,
+        configuration: dict[str, Any],
+    ):
+        with self.session_factory() as session:
+            with session.begin():
+                domain = DomainRepository(session).get(domain_id)
+                if domain is None:
+                    raise LookupError(f"Domain {domain_id} not found")
+                service = MasterServiceService(self.session_factory)._create_in_session(
+                    session,
+                    subscription_id,
+                    "DNS",
+                    allocation,
+                    lifecycle_state,
+                    configuration,
+                )
+                dns_service = DnsServiceRepository(session).create(service.id)
+                return DnsServiceResult(service)
 
 
 class MasterNodeService:
