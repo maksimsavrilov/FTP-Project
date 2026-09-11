@@ -70,6 +70,20 @@ Required fields: `id`, `name`, `status`, `resource_limits`, `object_limits`,
 Required fields: `id`, `user_id`, `plan_id`, `status`, `created_at`.
 `expires_at` is optional.
 
+### Domain
+
+```json
+{
+  "id": "domain-123",
+  "subscription_id": "subscription-123",
+  "name": "example.test",
+  "status": "PENDING",
+  "created_at": "2026-01-01T00:00:00Z"
+}
+```
+
+Required fields: `id`, `subscription_id`, `name`, `status`, `created_at`.
+
 ### Service
 
 ```json
@@ -165,6 +179,8 @@ represented by the observation.
 | `POST` | `/v1/service-plans` | plan creation request | `ServicePlan` | create plan |
 | `GET` | `/v1/subscriptions/{subscription_id}` | none | `Subscription` | load subscription |
 | `POST` | `/v1/subscriptions` | subscription creation request | `Subscription` | create subscription |
+| `GET` | `/v1/domains/{domain_id}` | none | `Domain` | load domain |
+| `POST` | `/v1/domains` | domain creation request | `Domain` | create domain |
 | `GET` | `/v1/services/{service_id}` | none | service aggregate view | load service |
 | `POST` | `/v1/services` | service creation request | service aggregate view | create and place service |
 | `GET` | `/v1/nodes` | status/capability filters | `WorkerNode[]` | list nodes |

@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `6c1749e694c5bf17c59dde2e0d06b57d0b21b320`
+- Last verified commit: `765db7ae06dbf84e7af2cb03db08e087c356a164`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Master persistence slice implemented and verified
 
@@ -96,6 +96,7 @@ architecture review.
 - Master Authentication Client implemented with response validation, bounded timeout/retries, request ID propagation, and API dependency error mapping.
 - First Master business resource implemented: User persistence, transactional lifecycle service, and API create/read boundary with request validation and response serialization.
 - Subscription persistence, transactional lifecycle service, and API create/read boundary implemented with owner validation, request validation, and response serialization.
+- Domain persistence, transactional lifecycle service, and API create/read boundary implemented with subscription validation, request validation, and response serialization.
 
 ### Domain Model
 
@@ -119,8 +120,8 @@ None identified in the validated architecture scope.
 ## Current Task
 
 The first Master business resource boundaries are implemented for User,
-ServicePlan, and Subscription. Subscription creation validates its User and
-ServicePlan owners inside its transaction and returns a committed resource
+ServicePlan, Subscription, and Domain. Domain creation validates its
+Subscription owner inside its transaction and returns a committed resource
 representation; the API owns validation, authorization, request IDs,
 serialization, and status mapping.
 
@@ -128,8 +129,8 @@ serialization, and status mapping.
 
 ## Next Step
 
-Implement the Domain business resource application service and API boundary,
-starting with its lifecycle and transaction contract.
+Implement the Service business resource application service and API boundary,
+including its lifecycle and atomic creation contract with placement state.
 
 ---
 

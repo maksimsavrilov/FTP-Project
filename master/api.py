@@ -10,6 +10,7 @@ from .auth import AuthenticationClientError, AuthenticationServiceUnavailable
 from .services import (
     MasterNodeService,
     MasterReconciliationService,
+    MasterDomainService,
     MasterServicePlanService,
     MasterSubscriptionService,
     MasterUserService,
@@ -182,6 +183,16 @@ def _subscription_body(subscription: Any) -> dict[str, Any]:
     }
 
 
+def _domain_body(domain: Any) -> dict[str, Any]:
+    return {
+        "id": str(domain.id),
+        "subscription_id": str(domain.subscription_id),
+        "name": domain.name,
+        "status": domain.status,
+        "created_at": _timestamp(domain.created_at),
+    }
+
+
 def _state_body(state: Any) -> dict[str, Any]:
     desired = state.desired
     assignment = state.assignment
@@ -228,6 +239,7 @@ class MasterApi:
     user_service: MasterUserService | None = None
     service_plan_service: MasterServicePlanService | None = None
     subscription_service: MasterSubscriptionService | None = None
+    domain_service: MasterDomainService | None = None
     _request_id_factory: Callable[[], str] = field(default=lambda: str(uuid4()), repr=False)
 
     def _request_id(self, request_id: str | None) -> str:
@@ -374,6 +386,28 @@ class MasterApi:
             return _subscription_body(
                 self.subscription_service.create(user_id, plan_id, status, expires_at)
             )
+
+        response = self._call(request_id, operation)
+        if response.status_code == 200:
+            return ApiResponse(201, response.body, response.headers)
+        return response
+
+    def get_domain(self, domain_id: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+        return self._call(request_id, lambda: (self._authorize(credential, f"domain:{domain_id}", "read", request_id), _domain_body(self.domain_service.get(domain_id)))[1])
+
+    def create_domain(self, body: dict[str, Any], credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+
+        def operation() -> dict[str, Any]:
+            self._authorize(credential, "domain:*", "write", request_id)
+            _require_object(body)
+            subscription_id = _required_string(body, "subscription_id")
+            name = _required_string(body, "name")
+            status = body.get("status", "PENDING")
+            if not isinstance(status, str) or not status:
+                raise RequestValidationError("status must be a non-empty string")
+            return _domain_body(self.domain_service.create(subscription_id, name, status))
 
         response = self._call(request_id, operation)
         if response.status_code == 200:

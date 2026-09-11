@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from .persistence.repositories import (
     ActualStateRepository,
     DesiredStateRepository,
+    DomainRepository,
     ServiceAssignmentRepository,
     ServicePlanRepository,
     SubscriptionRepository,
@@ -62,6 +63,15 @@ class SubscriptionResult:
     status: str
     created_at: Any
     expires_at: Any
+
+
+@dataclass(frozen=True)
+class DomainResult:
+    id: str
+    subscription_id: str
+    name: str
+    status: str
+    created_at: Any
 
 
 class MasterUserService:
@@ -156,6 +166,39 @@ class MasterSubscriptionService:
                     subscription.status,
                     subscription.created_at,
                     subscription.expires_at,
+                )
+
+
+class MasterDomainService:
+    """Application boundary for domain lifecycle operations."""
+
+    def __init__(self, session_factory: Callable[[], Session]):
+        self.session_factory = session_factory
+
+    def get(self, domain_id: str):
+        with self.session_factory() as session:
+            domain = DomainRepository(session).get(domain_id)
+            if domain is None:
+                raise LookupError(f"Domain {domain_id} not found")
+            return domain
+
+    def create(
+        self,
+        subscription_id: str,
+        name: str,
+        status: str = "PENDING",
+    ):
+        with self.session_factory() as session:
+            with session.begin():
+                if SubscriptionRepository(session).get(subscription_id) is None:
+                    raise LookupError(f"Subscription {subscription_id} not found")
+                domain = DomainRepository(session).create(subscription_id, name, status)
+                return DomainResult(
+                    domain.id,
+                    domain.subscription_id,
+                    domain.name,
+                    domain.status,
+                    domain.created_at,
                 )
 
 

@@ -12,6 +12,7 @@ from master.persistence.repositories import ServiceAssignmentRepository, Desired
 from master.services import (
     MasterNodeService,
     MasterReconciliationService,
+    MasterDomainService,
     MasterServicePlanService,
     MasterSubscriptionService,
     MasterUserService,
@@ -45,6 +46,7 @@ class MasterApiTests(unittest.TestCase):
             user_service=MasterUserService(lambda: Session(self.engine)),
             service_plan_service=MasterServicePlanService(lambda: Session(self.engine)),
             subscription_service=MasterSubscriptionService(lambda: Session(self.engine)),
+            domain_service=MasterDomainService(lambda: Session(self.engine)),
         )
         self.node_id = node_id
 
@@ -111,6 +113,37 @@ class MasterApiTests(unittest.TestCase):
         response = self.api.create_subscription(
             {"user_id": str(uuid.uuid4()), "plan_id": str(uuid.uuid4())},
             request_id="req-sub-invalid",
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.body["code"], "NOT_FOUND")
+
+    def test_domain_lifecycle_commits_and_returns_resource(self):
+        user = self.api.create_user({}, request_id="req-domain-user")
+        plan = self.api.create_service_plan({"name": "domain-plan"}, request_id="req-domain-plan")
+        subscription = self.api.create_subscription(
+            {"user_id": user.body["id"], "plan_id": plan.body["id"]},
+            request_id="req-domain-subscription",
+        )
+
+        created = self.api.create_domain(
+            {"subscription_id": subscription.body["id"], "name": "example.test"},
+            request_id="req-domain",
+        )
+
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.headers["X-Request-ID"], "req-domain")
+        self.assertEqual(created.body["status"], "PENDING")
+
+        loaded = self.api.get_domain(created.body["id"], request_id="req-domain-get")
+
+        self.assertEqual(loaded.status_code, 200)
+        self.assertEqual(loaded.body, created.body)
+
+    def test_domain_requires_existing_subscription(self):
+        response = self.api.create_domain(
+            {"subscription_id": str(uuid.uuid4()), "name": "example.test"},
+            request_id="req-domain-invalid",
         )
 
         self.assertEqual(response.status_code, 404)
