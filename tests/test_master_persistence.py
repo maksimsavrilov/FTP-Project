@@ -11,7 +11,7 @@ from master.persistence.repositories import (
     DesiredStateRepository,
     ActualStateRepository,
 )
-from master.services import MasterPlacementService
+from master.services import MasterNodeService, MasterPlacementService, MasterReconciliationService
 
 
 class MasterPersistenceTests(unittest.TestCase):
@@ -165,6 +165,86 @@ class MasterPersistenceTests(unittest.TestCase):
             self.assertIsNone(DesiredStateRepository(session).get("service-123"))
             self.assertIsNone(ServiceAssignmentRepository(session).get_active_for_service("service-123"))
             self.assertEqual(WorkerNodeRepository(session).get(node_id).cpu_usage, 0)
+
+    def test_node_service_updates_heartbeat(self):
+        node_id = str(uuid.uuid4())
+        with self.session.begin():
+            self.worker_repo.create(
+                WorkerNode(
+                    id=node_id,
+                    hostname="node-1",
+                    status="ONLINE",
+                    capabilities={"web": True},
+                    cpu_capacity=8,
+                    memory_capacity=8192,
+                    disk_capacity=100000,
+                    cpu_usage=0,
+                    memory_usage=0,
+                    disk_usage=0,
+                )
+            )
+
+        node = MasterNodeService(lambda: Session(self.engine)).heartbeat(
+            node_id,
+            status="DEGRADED",
+            usage={"cpu": 2, "memory": 3500, "disk": 5000},
+            last_heartbeat_at="2026-01-01T00:10:00Z",
+        )
+
+        self.assertEqual(node.status, "DEGRADED")
+        self.assertEqual(node.memory_usage, 3500)
+
+    def test_reconciliation_service_reports_and_reads_actual_state(self):
+        node_id = str(uuid.uuid4())
+        with self.session.begin():
+            self.worker_repo.create(
+                WorkerNode(
+                    id=node_id,
+                    hostname="node-1",
+                    status="ONLINE",
+                    capabilities={"web": True},
+                    cpu_capacity=8,
+                    memory_capacity=8192,
+                    disk_capacity=100000,
+                    cpu_usage=0,
+                    memory_usage=0,
+                    disk_usage=0,
+                )
+            )
+            assignment = self.assignment_repo.create_or_replace(
+                "service-123", node_id, "ASSIGNED"
+            )
+            self.desired_repo.put_next(
+                "service-123", "RUNNING", {"web_server": "nginx"}
+            )
+
+        service = MasterReconciliationService(lambda: Session(self.engine))
+        result = service.report_actual_state(
+            "service-123",
+            assignment.id,
+            1,
+            "RUNNING",
+            {"web_server": "nginx"},
+            {"ready": True},
+            "2026-01-01T00:10:00Z",
+        )
+        state = service.get_state("service-123")
+
+        self.assertTrue(result.accepted)
+        self.assertEqual(state.desired.version, 1)
+        self.assertEqual(state.actual.status, "RUNNING")
+        self.assertEqual(state.assignment.id, assignment.id)
+
+        stale = service.report_actual_state(
+            "service-123",
+            assignment.id,
+            1,
+            "PROVISIONING",
+            {},
+            {},
+            "2026-01-01T00:09:00Z",
+        )
+        self.assertFalse(stale.accepted)
 
 
 if __name__ == "__main__":

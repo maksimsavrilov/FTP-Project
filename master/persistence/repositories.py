@@ -237,7 +237,8 @@ class ActualStateRepository:
 
         if existing is not None and int(existing.version) > int(version):
             return False
-        if existing is not None and int(existing.version) == int(version) and observed_dt <= existing.observed_at:
+        existing_observed_at = _parse_datetime(existing.observed_at) if existing else None
+        if existing is not None and int(existing.version) == int(version) and observed_dt <= existing_observed_at:
             return False
 
         record = existing or ActualState(service_id=normalized_service_id)
