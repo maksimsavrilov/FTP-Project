@@ -9,6 +9,7 @@ from .persistence.repositories import (
     ActualStateRepository,
     DesiredStateRepository,
     ServiceAssignmentRepository,
+    UserRepository,
     WorkerNodeRepository,
 )
 
@@ -30,6 +31,34 @@ class ReconciliationState:
     desired: Any
     assignment: Any
     actual: Any
+
+
+@dataclass(frozen=True)
+class UserResult:
+    id: str
+    status: str
+    created_at: Any
+    updated_at: Any
+
+
+class MasterUserService:
+    """Application boundary for user lifecycle operations."""
+
+    def __init__(self, session_factory: Callable[[], Session]):
+        self.session_factory = session_factory
+
+    def get(self, user_id: str):
+        with self.session_factory() as session:
+            user = UserRepository(session).get(user_id)
+            if user is None:
+                raise LookupError(f"User {user_id} not found")
+            return user
+
+    def create(self, status: str = "ACTIVE"):
+        with self.session_factory() as session:
+            with session.begin():
+                user = UserRepository(session).create(status)
+                return UserResult(user.id, user.status, user.created_at, user.updated_at)
 
 
 class MasterNodeService:

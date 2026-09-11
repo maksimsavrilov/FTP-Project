@@ -8,7 +8,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .models import ActualState, DesiredState, ServiceAssignment, WorkerNode
+from .models import ActualState, DesiredState, ServiceAssignment, User, WorkerNode
 
 
 def _normalize_id(value: uuid.UUID | str | None) -> str | None:
@@ -31,6 +31,20 @@ def _parse_datetime(value: datetime | str | None) -> datetime | None:
     if value.endswith("Z"):
         value = value[:-1] + "+00:00"
     return datetime.fromisoformat(value).astimezone(timezone.utc)
+
+
+class UserRepository:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def get(self, user_id):
+        return self.session.get(User, _normalize_id(user_id))
+
+    def create(self, status: str = "ACTIVE"):
+        user = User(status=status)
+        self.session.add(user)
+        self.session.flush()
+        return user
 
 
 class WorkerNodeRepository:

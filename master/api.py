@@ -7,7 +7,7 @@ from typing import Any, Callable, Protocol
 from uuid import uuid4
 
 from .auth import AuthenticationClientError, AuthenticationServiceUnavailable
-from .services import MasterNodeService, MasterReconciliationService
+from .services import MasterNodeService, MasterReconciliationService, MasterUserService
 
 
 class AuthorizationClient(Protocol):
@@ -144,6 +144,15 @@ def _node_body(node: Any) -> dict[str, Any]:
     }
 
 
+def _user_body(user: Any) -> dict[str, Any]:
+    return {
+        "id": str(user.id),
+        "status": user.status,
+        "created_at": _timestamp(user.created_at),
+        "updated_at": _timestamp(user.updated_at),
+    }
+
+
 def _state_body(state: Any) -> dict[str, Any]:
     desired = state.desired
     assignment = state.assignment
@@ -187,6 +196,7 @@ class MasterApi:
     node_service: MasterNodeService
     reconciliation_service: MasterReconciliationService
     authorization_client: AuthorizationClient | None = None
+    user_service: MasterUserService | None = None
     _request_id_factory: Callable[[], str] = field(default=lambda: str(uuid4()), repr=False)
 
     def _request_id(self, request_id: str | None) -> str:
@@ -260,3 +270,23 @@ class MasterApi:
             )
             return {"accepted": result.accepted}
         return self._call(request_id, operation)
+
+    def get_user(self, user_id: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+        return self._call(request_id, lambda: (self._authorize(credential, f"user:{user_id}", "read", request_id), _user_body(self.user_service.get(user_id)))[1])
+
+    def create_user(self, body: dict[str, Any], credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+
+        def operation() -> dict[str, Any]:
+            self._authorize(credential, "user:*", "write", request_id)
+            _require_object(body)
+            status = body.get("status", "ACTIVE")
+            if not isinstance(status, str) or not status:
+                raise RequestValidationError("status must be a non-empty string")
+            return _user_body(self.user_service.create(status))
+
+        response = self._call(request_id, operation)
+        if response.status_code == 200:
+            return ApiResponse(201, response.body, response.headers)
+        return response

@@ -1,6 +1,6 @@
 """Persistence layer for Master domain entities."""
 
-from .models import ActualState, Base, DesiredState, ServiceAssignment, WorkerNode
+from .models import ActualState, Base, DesiredState, ServiceAssignment, User, WorkerNode
 from .repositories import (
     ActualStateRepository,
     DesiredStateRepository,

@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `4b3972d5c25367861158eba83f051b65277917f5`
+- Last verified commit: `290ddfa1dd36952c741b2b83e42aafdd8bc6d4c7`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Master persistence slice implemented and verified
 
@@ -93,6 +93,7 @@ architecture review.
 - Master application services for node operations, placement, and reconciliation reports implemented and verified.
 - Master API schemas and handlers for node reads, heartbeats, reconciliation-state reads and actual-state reports implemented and verified.
 - Master Authentication Client implemented with response validation, bounded timeout/retries, request ID propagation, and API dependency error mapping.
+- First Master business resource implemented: User persistence, transactional lifecycle service, and API create/read boundary with request validation and response serialization.
 
 ### Domain Model
 
@@ -115,17 +116,17 @@ None identified in the validated architecture scope.
 
 ## Current Task
 
-The Master REST API now delegates authorization through the implemented
-Authentication Client. The client sends credentials only in the Authorization
-header, validates AuthorizationDecision responses, retries only transient
-dependency failures, and preserves request IDs through the handler boundary.
+The first Master business resource boundary is implemented for User. User
+creation owns its transaction and returns a committed resource representation;
+the API owns validation, authorization, request IDs, serialization, and status
+mapping.
 
 ---
 
 ## Next Step
 
-Implement the first Master business resource application service and its API
-boundary, starting with the resource lifecycle and transaction contract.
+Implement the ServicePlan business resource application service and API
+boundary, starting with its lifecycle and transaction contract.
 
 ---
 

@@ -9,7 +9,7 @@ from master.api import MasterApi
 from master.auth import AuthenticationClient, AuthenticationServiceUnavailable
 from master.persistence.models import Base, WorkerNode
 from master.persistence.repositories import ServiceAssignmentRepository, DesiredStateRepository
-from master.services import MasterNodeService, MasterReconciliationService
+from master.services import MasterNodeService, MasterReconciliationService, MasterUserService
 
 
 class MasterApiTests(unittest.TestCase):
@@ -36,8 +36,21 @@ class MasterApiTests(unittest.TestCase):
         self.api = MasterApi(
             MasterNodeService(lambda: Session(self.engine)),
             MasterReconciliationService(lambda: Session(self.engine)),
+            user_service=MasterUserService(lambda: Session(self.engine)),
         )
         self.node_id = node_id
+
+    def test_user_lifecycle_commits_and_returns_resource(self):
+        created = self.api.create_user({"status": "ACTIVE"}, request_id="req-user")
+
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.headers["X-Request-ID"], "req-user")
+        self.assertEqual(created.body["status"], "ACTIVE")
+
+        loaded = self.api.get_user(created.body["id"], request_id="req-user-get")
+
+        self.assertEqual(loaded.status_code, 200)
+        self.assertEqual(loaded.body, created.body)
 
     def test_heartbeat_returns_serialized_node_and_request_id(self):
         response = self.api.heartbeat(
