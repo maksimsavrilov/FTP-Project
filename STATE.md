@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `9a78fe3938e51e1794585cde881aa2c2d6db89a5`
+- Last verified commit: `8fa1dd19763a347312dd3db8059afd9aaa196930`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Master persistence slice implemented and verified
 
@@ -94,6 +94,7 @@ architecture review.
 - Master API schemas and handlers for node reads, heartbeats, reconciliation-state reads and actual-state reports implemented and verified.
 - ServicePlan persistence model, repository, lifecycle application service, and API create/read boundary implemented and verified.
 - Master Authentication Client implemented with response validation, bounded timeout/retries, request ID propagation, and API dependency error mapping.
+- Master composition root implemented and verified; it wires the production SQLAlchemy session factory and Authentication Client into the existing Master API and FastAPI adapter.
 - First Master business resource implemented: User persistence, transactional lifecycle service, and API create/read boundary with request validation and response serialization.
 - Subscription persistence, transactional lifecycle service, and API create/read boundary implemented with owner validation, request validation, and response serialization.
 - Domain persistence, transactional lifecycle service, and API create/read boundary implemented with subscription validation, request validation, and response serialization.
@@ -141,18 +142,17 @@ None identified in the validated architecture scope.
 
 ## Current Task
 
-The reviewed Master API boundaries are available through a minimal FastAPI
-adapter. The adapter preserves request correlation, forwards bearer
-credentials to the existing API boundary, and maps malformed JSON and
-application responses without changing the established architecture.
+The Master API adapter and composition root are available. Production wiring
+reads `DATABASE_URL` and `AUTH_SERVICE_URL`, creates the SQLAlchemy session
+factory and Authentication Client, and assembles all existing Master services
+without changing their HTTP or application-service contracts.
 
 ---
 
 ## Next Step
 
-Implement the Master composition root that wires the FastAPI adapter to the
-production database session factory and authentication client, without
-changing the established HTTP or application-service contracts.
+Add the Master container runtime entrypoint and configuration that invokes the
+composition root in production.
 
 ---
 
