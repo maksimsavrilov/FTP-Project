@@ -9,7 +9,12 @@ from master.api import MasterApi
 from master.auth import AuthenticationClient, AuthenticationServiceUnavailable
 from master.persistence.models import Base, WorkerNode
 from master.persistence.repositories import ServiceAssignmentRepository, DesiredStateRepository
-from master.services import MasterNodeService, MasterReconciliationService, MasterUserService
+from master.services import (
+    MasterNodeService,
+    MasterReconciliationService,
+    MasterServicePlanService,
+    MasterUserService,
+)
 
 
 class MasterApiTests(unittest.TestCase):
@@ -37,6 +42,7 @@ class MasterApiTests(unittest.TestCase):
             MasterNodeService(lambda: Session(self.engine)),
             MasterReconciliationService(lambda: Session(self.engine)),
             user_service=MasterUserService(lambda: Session(self.engine)),
+            service_plan_service=MasterServicePlanService(lambda: Session(self.engine)),
         )
         self.node_id = node_id
 
@@ -51,6 +57,30 @@ class MasterApiTests(unittest.TestCase):
 
         self.assertEqual(loaded.status_code, 200)
         self.assertEqual(loaded.body, created.body)
+
+    def test_service_plan_lifecycle_commits_and_returns_resource(self):
+        created = self.api.create_service_plan(
+            {
+                "name": "small",
+                "resource_limits": {"cpu": 2, "memory": 2048, "disk": 20000},
+            },
+            request_id="req-plan",
+        )
+
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.headers["X-Request-ID"], "req-plan")
+        self.assertEqual(created.body["status"], "ACTIVE")
+
+        loaded = self.api.get_service_plan(created.body["id"], request_id="req-plan-get")
+
+        self.assertEqual(loaded.status_code, 200)
+        self.assertEqual(loaded.body, created.body)
+
+    def test_service_plan_requires_name(self):
+        response = self.api.create_service_plan({}, request_id="req-plan-invalid")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.body["code"], "INVALID_REQUEST")
 
     def test_heartbeat_returns_serialized_node_and_request_id(self):
         response = self.api.heartbeat(

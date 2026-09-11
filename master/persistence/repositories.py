@@ -8,7 +8,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .models import ActualState, DesiredState, ServiceAssignment, User, WorkerNode
+from .models import ActualState, DesiredState, ServiceAssignment, ServicePlan, User, WorkerNode
 
 
 def _normalize_id(value: uuid.UUID | str | None) -> str | None:
@@ -45,6 +45,31 @@ class UserRepository:
         self.session.add(user)
         self.session.flush()
         return user
+
+
+class ServicePlanRepository:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def get(self, plan_id):
+        return self.session.get(ServicePlan, _normalize_id(plan_id))
+
+    def create(
+        self,
+        name: str,
+        status: str = "ACTIVE",
+        resource_limits: dict[str, Any] | None = None,
+        object_limits: dict[str, Any] | None = None,
+    ):
+        plan = ServicePlan(
+            name=name,
+            status=status,
+            resource_limits=resource_limits or {},
+            object_limits=object_limits or {},
+        )
+        self.session.add(plan)
+        self.session.flush()
+        return plan
 
 
 class WorkerNodeRepository:

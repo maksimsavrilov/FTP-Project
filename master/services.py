@@ -9,6 +9,7 @@ from .persistence.repositories import (
     ActualStateRepository,
     DesiredStateRepository,
     ServiceAssignmentRepository,
+    ServicePlanRepository,
     UserRepository,
     WorkerNodeRepository,
 )
@@ -41,6 +42,17 @@ class UserResult:
     updated_at: Any
 
 
+@dataclass(frozen=True)
+class ServicePlanResult:
+    id: str
+    name: str
+    status: str
+    resource_limits: dict[str, Any]
+    object_limits: dict[str, Any]
+    created_at: Any
+    updated_at: Any
+
+
 class MasterUserService:
     """Application boundary for user lifecycle operations."""
 
@@ -59,6 +71,42 @@ class MasterUserService:
             with session.begin():
                 user = UserRepository(session).create(status)
                 return UserResult(user.id, user.status, user.created_at, user.updated_at)
+
+
+class MasterServicePlanService:
+    """Application boundary for service plan lifecycle operations."""
+
+    def __init__(self, session_factory: Callable[[], Session]):
+        self.session_factory = session_factory
+
+    def get(self, plan_id: str):
+        with self.session_factory() as session:
+            plan = ServicePlanRepository(session).get(plan_id)
+            if plan is None:
+                raise LookupError(f"ServicePlan {plan_id} not found")
+            return plan
+
+    def create(
+        self,
+        name: str,
+        status: str = "ACTIVE",
+        resource_limits: dict[str, Any] | None = None,
+        object_limits: dict[str, Any] | None = None,
+    ):
+        with self.session_factory() as session:
+            with session.begin():
+                plan = ServicePlanRepository(session).create(
+                    name, status, resource_limits, object_limits
+                )
+                return ServicePlanResult(
+                    plan.id,
+                    plan.name,
+                    plan.status,
+                    plan.resource_limits,
+                    plan.object_limits,
+                    plan.created_at,
+                    plan.updated_at,
+                )
 
 
 class MasterNodeService:

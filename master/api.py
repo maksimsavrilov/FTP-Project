@@ -7,7 +7,12 @@ from typing import Any, Callable, Protocol
 from uuid import uuid4
 
 from .auth import AuthenticationClientError, AuthenticationServiceUnavailable
-from .services import MasterNodeService, MasterReconciliationService, MasterUserService
+from .services import (
+    MasterNodeService,
+    MasterReconciliationService,
+    MasterServicePlanService,
+    MasterUserService,
+)
 
 
 class AuthorizationClient(Protocol):
@@ -153,6 +158,18 @@ def _user_body(user: Any) -> dict[str, Any]:
     }
 
 
+def _service_plan_body(plan: Any) -> dict[str, Any]:
+    return {
+        "id": str(plan.id),
+        "name": plan.name,
+        "status": plan.status,
+        "resource_limits": plan.resource_limits or {},
+        "object_limits": plan.object_limits or {},
+        "created_at": _timestamp(plan.created_at),
+        "updated_at": _timestamp(plan.updated_at),
+    }
+
+
 def _state_body(state: Any) -> dict[str, Any]:
     desired = state.desired
     assignment = state.assignment
@@ -197,6 +214,7 @@ class MasterApi:
     reconciliation_service: MasterReconciliationService
     authorization_client: AuthorizationClient | None = None
     user_service: MasterUserService | None = None
+    service_plan_service: MasterServicePlanService | None = None
     _request_id_factory: Callable[[], str] = field(default=lambda: str(uuid4()), repr=False)
 
     def _request_id(self, request_id: str | None) -> str:
@@ -285,6 +303,37 @@ class MasterApi:
             if not isinstance(status, str) or not status:
                 raise RequestValidationError("status must be a non-empty string")
             return _user_body(self.user_service.create(status))
+
+        response = self._call(request_id, operation)
+        if response.status_code == 200:
+            return ApiResponse(201, response.body, response.headers)
+        return response
+
+    def get_service_plan(self, plan_id: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+        return self._call(request_id, lambda: (self._authorize(credential, f"service-plan:{plan_id}", "read", request_id), _service_plan_body(self.service_plan_service.get(plan_id)))[1])
+
+    def create_service_plan(self, body: dict[str, Any], credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+
+        def operation() -> dict[str, Any]:
+            self._authorize(credential, "service-plan:*", "write", request_id)
+            _require_object(body)
+            name = _required_string(body, "name")
+            status = body.get("status", "ACTIVE")
+            if not isinstance(status, str) or not status:
+                raise RequestValidationError("status must be a non-empty string")
+            resource_limits = body.get("resource_limits", {})
+            if not isinstance(resource_limits, dict):
+                raise RequestValidationError("resource_limits must be an object")
+            object_limits = body.get("object_limits", {})
+            if not isinstance(object_limits, dict):
+                raise RequestValidationError("object_limits must be an object")
+            return _service_plan_body(
+                self.service_plan_service.create(
+                    name, status, resource_limits, object_limits
+                )
+            )
 
         response = self._call(request_id, operation)
         if response.status_code == 200:

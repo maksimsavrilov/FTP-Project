@@ -26,6 +26,19 @@ class User(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow, server_default=func.now())
 
 
+class ServicePlan(Base):
+    __tablename__ = "service_plans"
+    __table_args__ = (Index("ix_service_plans_status", "status"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    status: Mapped[str] = mapped_column(String, nullable=False)
+    resource_limits: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    object_limits: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow, server_default=func.now())
+
+
 class WorkerNode(Base):
     __tablename__ = "worker_nodes"
     __table_args__ = (

@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `290ddfa1dd36952c741b2b83e42aafdd8bc6d4c7`
+- Last verified commit: `fc2734a41956b378146f83612eb189c4c6e86380`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Master persistence slice implemented and verified
 
@@ -92,6 +92,7 @@ architecture review.
 - Master REST API resource schemas and handler boundaries defined in `docs/master-api.md`.
 - Master application services for node operations, placement, and reconciliation reports implemented and verified.
 - Master API schemas and handlers for node reads, heartbeats, reconciliation-state reads and actual-state reports implemented and verified.
+- ServicePlan persistence model, repository, lifecycle application service, and API create/read boundary implemented and verified.
 - Master Authentication Client implemented with response validation, bounded timeout/retries, request ID propagation, and API dependency error mapping.
 - First Master business resource implemented: User persistence, transactional lifecycle service, and API create/read boundary with request validation and response serialization.
 
@@ -116,16 +117,16 @@ None identified in the validated architecture scope.
 
 ## Current Task
 
-The first Master business resource boundary is implemented for User. User
-creation owns its transaction and returns a committed resource representation;
-the API owns validation, authorization, request IDs, serialization, and status
-mapping.
+The first Master business resource boundaries are implemented for User and
+ServicePlan. User and ServicePlan creation own their transactions and return
+committed resource representations; the API owns validation, authorization,
+request IDs, serialization, and status mapping.
 
 ---
 
 ## Next Step
 
-Implement the ServicePlan business resource application service and API
+Implement the Subscription business resource application service and API
 boundary, starting with its lifecycle and transaction contract.
 
 ---
