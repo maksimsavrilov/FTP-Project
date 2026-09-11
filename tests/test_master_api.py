@@ -7,13 +7,14 @@ from sqlalchemy.orm import Session
 
 from master.api import MasterApi
 from master.auth import AuthenticationClient, AuthenticationServiceUnavailable
-from master.persistence.models import Base, DnsService, Service, WebService, WorkerNode
+from master.persistence.models import Base, DnsService, MailService, Service, WebService, WorkerNode
 from master.persistence.repositories import ServiceAssignmentRepository, DesiredStateRepository
 from master.services import (
     MasterNodeService,
     MasterReconciliationService,
     MasterDomainService,
     MasterDnsServiceService,
+    MasterMailServiceService,
     MasterServiceService,
     MasterServicePlanService,
     MasterSubscriptionService,
@@ -33,7 +34,7 @@ class MasterApiTests(unittest.TestCase):
                 id=node_id,
                 hostname="node-1",
                 status="ONLINE",
-                capabilities={"web": True, "dns": True},
+                capabilities={"web": True, "dns": True, "mail": True},
                 cpu_capacity=8,
                 memory_capacity=8192,
                 disk_capacity=100000,
@@ -55,6 +56,7 @@ class MasterApiTests(unittest.TestCase):
             service_service=MasterServiceService(lambda: Session(self.engine)),
             web_service_service=MasterWebServiceService(lambda: Session(self.engine)),
             dns_service_service=MasterDnsServiceService(lambda: Session(self.engine)),
+            mail_service_service=MasterMailServiceService(lambda: Session(self.engine)),
         )
         self.node_id = node_id
 
@@ -264,6 +266,55 @@ class MasterApiTests(unittest.TestCase):
         self.assertEqual(response.body["code"], "NOT_FOUND")
         with Session(self.engine) as session:
             self.assertEqual(session.query(DnsService).count(), 0)
+
+    def test_mail_service_lifecycle_commits_domain_configuration_and_placement(self):
+        user = self.api.create_user({}, request_id="req-mail-user")
+        plan = self.api.create_service_plan({"name": "mail-plan"}, request_id="req-mail-plan")
+        subscription = self.api.create_subscription(
+            {"user_id": user.body["id"], "plan_id": plan.body["id"]},
+            request_id="req-mail-subscription",
+        )
+        domain = self.api.create_domain(
+            {"subscription_id": subscription.body["id"], "name": "mail.test"},
+            request_id="req-mail-domain",
+        )
+
+        created = self.api.create_mail_service(
+            {
+                "subscription_id": subscription.body["id"],
+                "domain_id": domain.body["id"],
+                "allocation": {"cpu": 1, "memory": 512, "disk": 1000},
+                "lifecycle_state": "PROVISIONING",
+                "configuration": {"mail_domains": []},
+            },
+            request_id="req-mail-service",
+        )
+
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.body["type"], "MAIL")
+        self.assertEqual(created.body["desired_state"]["configuration"], {"mail_domains": []})
+
+        loaded = self.api.get_mail_service(created.body["id"], request_id="req-mail-service-get")
+
+        self.assertEqual(loaded.status_code, 200)
+        self.assertEqual(loaded.body, created.body)
+
+    def test_mail_service_requires_existing_domain_and_rolls_back(self):
+        response = self.api.create_mail_service(
+            {
+                "subscription_id": str(uuid.uuid4()),
+                "domain_id": str(uuid.uuid4()),
+                "allocation": {"cpu": 1, "memory": 512, "disk": 1000},
+                "lifecycle_state": "PROVISIONING",
+                "configuration": {},
+            },
+            request_id="req-mail-invalid",
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.body["code"], "NOT_FOUND")
+        with Session(self.engine) as session:
+            self.assertEqual(session.query(MailService).count(), 0)
 
     def test_service_creation_commits_resource_placement_and_desired_state(self):
         user = self.api.create_user({}, request_id="req-service-user")

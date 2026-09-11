@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `53345c2599f75b6ba1637547935e6fa0bc718a25`
+- Last verified commit: `33107e7ad89e3b09ffb0256a945c6bc5d3b55c71`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Master persistence slice implemented and verified
 
@@ -101,6 +101,7 @@ architecture review.
 - Website persistence, transactional lifecycle service, and API create/read boundary implemented with domain validation.
 - WebService typed configuration persistence, atomic creation on the common Service lifecycle, and API create/read boundary implemented and verified.
 - DnsService typed resource persistence, atomic creation on the common Service lifecycle, and API create/read boundary implemented and verified.
+- MailService typed resource persistence, atomic creation on the common Service lifecycle, and API create/read boundary implemented and verified.
 
 ### Domain Model
 
@@ -123,18 +124,17 @@ None identified in the validated architecture scope.
 
 ## Current Task
 
-The DnsService resource boundary is implemented on top of the common Service
-lifecycle. Domain validation, DnsService persistence, node placement, and the
-first desired-state version are committed atomically. DNS-specific records
-remain represented by the desired-state configuration until the DnsZone
-resource boundary is implemented.
+The MailService resource boundary is implemented on top of the common Service
+lifecycle. Domain validation, MailService persistence, node placement, and
+the first desired-state version are committed atomically. Mail-specific
+domains and accounts remain represented by the desired-state configuration
+until the MailDomain resource boundary is implemented.
 
 ---
 
 ## Next Step
 
-Implement the MailService-specific resource and configuration boundary on top
-of the common Service lifecycle.
+Implement the MailDomain resource boundary for a subscription domain.
 
 ---
 
