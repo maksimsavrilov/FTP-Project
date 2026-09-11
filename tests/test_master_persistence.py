@@ -11,6 +11,7 @@ from master.persistence.repositories import (
     DesiredStateRepository,
     ActualStateRepository,
 )
+from master.services import MasterPlacementService
 
 
 class MasterPersistenceTests(unittest.TestCase):
@@ -85,6 +86,85 @@ class MasterPersistenceTests(unittest.TestCase):
         actual = self.actual_repo.get("service-123")
         self.assertEqual(actual.status, "RUNNING")
         self.assertEqual(actual.version, 1)
+
+    def test_placement_service_replaces_assignment_and_increments_desired_state(self):
+        node_id = str(uuid.uuid4())
+        with self.session.begin():
+            self.worker_repo.create(
+                WorkerNode(
+                    id=node_id,
+                    hostname="node-1",
+                    status="ONLINE",
+                    capabilities={"web": True},
+                    cpu_capacity=8,
+                    memory_capacity=8192,
+                    disk_capacity=100000,
+                    cpu_usage=0,
+                    memory_usage=0,
+                    disk_usage=0,
+                )
+            )
+
+        result = MasterPlacementService(lambda: Session(self.engine)).place(
+            service_id="service-123",
+            worker_node_id=node_id,
+            allocation={"cpu": 2, "memory": 1024, "disk": 5000},
+            lifecycle_state="PROVISIONING",
+            configuration={"web_server": "nginx"},
+        )
+        replacement = MasterPlacementService(lambda: Session(self.engine)).place(
+            service_id="service-123",
+            worker_node_id=node_id,
+            allocation={"cpu": 1, "memory": 512, "disk": 1000},
+            lifecycle_state="RUNNING",
+            configuration={"web_server": "nginx", "workers": 2},
+        )
+
+        with Session(self.engine) as session:
+            assignment = ServiceAssignmentRepository(session).get_active_for_service("service-123")
+            desired = DesiredStateRepository(session).get("service-123")
+            node = WorkerNodeRepository(session).get(node_id)
+            previous_assignment = session.get(ServiceAssignment, result.assignment_id)
+
+        self.assertEqual(assignment.id, replacement.assignment_id)
+        self.assertNotEqual(assignment.id, result.assignment_id)
+        self.assertEqual(assignment.worker_node_id, node_id)
+        self.assertEqual(previous_assignment.status, "RELEASED")
+        self.assertEqual(desired.version, replacement.desired_version)
+        self.assertEqual(desired.version, 2)
+        self.assertEqual(node.cpu_usage, 3)
+
+    def test_placement_service_rolls_back_capacity_and_assignment_on_failure(self):
+        node_id = str(uuid.uuid4())
+        with self.session.begin():
+            self.worker_repo.create(
+                WorkerNode(
+                    id=node_id,
+                    hostname="node-1",
+                    status="ONLINE",
+                    capabilities={"web": True},
+                    cpu_capacity=1,
+                    memory_capacity=8192,
+                    disk_capacity=100000,
+                    cpu_usage=0,
+                    memory_usage=0,
+                    disk_usage=0,
+                )
+            )
+
+        with self.assertRaises(ValueError):
+            MasterPlacementService(lambda: Session(self.engine)).place(
+                service_id="service-123",
+                worker_node_id=node_id,
+                allocation={"cpu": 2, "memory": 1024, "disk": 5000},
+                lifecycle_state="PROVISIONING",
+                configuration={"web_server": "nginx"},
+            )
+
+        with Session(self.engine) as session:
+            self.assertIsNone(DesiredStateRepository(session).get("service-123"))
+            self.assertIsNone(ServiceAssignmentRepository(session).get_active_for_service("service-123"))
+            self.assertEqual(WorkerNodeRepository(session).get(node_id).cpu_usage, 0)
 
 
 if __name__ == "__main__":

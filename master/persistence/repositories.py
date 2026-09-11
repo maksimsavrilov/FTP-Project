@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
+from decimal import Decimal
 from typing import Any
 
 from sqlalchemy import select
@@ -77,7 +78,7 @@ class WorkerNodeRepository:
         if node is None:
             raise LookupError(f"WorkerNode {node_id} not found")
 
-        requested_cpu = float(allocation.get("cpu", 0))
+        requested_cpu = Decimal(str(allocation.get("cpu", 0)))
         requested_memory = int(allocation.get("memory", 0))
         requested_disk = int(allocation.get("disk", 0))
 
