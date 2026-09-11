@@ -51,6 +51,22 @@ class Subscription(Base):
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
+class Service(Base):
+    __tablename__ = "services"
+    __table_args__ = (
+        Index("ix_services_subscription_id", "subscription_id"),
+        Index("ix_services_type", "type"),
+        Index("ix_services_status", "status"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    subscription_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    type: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow, server_default=func.now())
+
+
 class Domain(Base):
     __tablename__ = "domains"
     __table_args__ = (Index("ix_domains_subscription_id", "subscription_id"), Index("ix_domains_status", "status"))

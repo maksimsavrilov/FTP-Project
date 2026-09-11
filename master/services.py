@@ -11,6 +11,7 @@ from .persistence.repositories import (
     DomainRepository,
     ServiceAssignmentRepository,
     ServicePlanRepository,
+    ServiceRepository,
     SubscriptionRepository,
     UserRepository,
     WorkerNodeRepository,
@@ -72,6 +73,23 @@ class DomainResult:
     name: str
     status: str
     created_at: Any
+
+
+@dataclass(frozen=True)
+class ServiceResult:
+    id: str
+    subscription_id: str
+    type: str
+    status: str
+    created_at: Any
+    updated_at: Any
+    assignment_id: str
+    worker_node_id: str
+    assignment_status: str
+    desired_version: int
+    lifecycle_state: str
+    configuration: dict[str, Any]
+    desired_updated_at: Any
 
 
 class MasterUserService:
@@ -199,6 +217,95 @@ class MasterDomainService:
                     domain.name,
                     domain.status,
                     domain.created_at,
+                )
+
+
+class MasterServiceService:
+    """Application boundary for service creation, placement, and reads."""
+
+    SUPPORTED_TYPES = {"WEB", "DNS", "MAIL", "DATABASE"}
+
+    def __init__(self, session_factory: Callable[[], Session]):
+        self.session_factory = session_factory
+
+    def get(self, service_id: str):
+        with self.session_factory() as session:
+            service = ServiceRepository(session).get(service_id)
+            if service is None:
+                raise LookupError(f"Service {service_id} not found")
+            desired, assignment = DesiredStateRepository(session).get_for_reconciliation(service_id)
+            if desired is None or assignment is None:
+                raise LookupError(f"Placement state for Service {service_id} not found")
+            return ServiceResult(
+                service.id,
+                service.subscription_id,
+                service.type,
+                service.status,
+                service.created_at,
+                service.updated_at,
+                assignment.id,
+                assignment.worker_node_id,
+                assignment.status,
+                desired.version,
+                desired.lifecycle_state,
+                desired.configuration or {},
+                desired.updated_at,
+            )
+
+    def create(
+        self,
+        subscription_id: str,
+        service_type: str,
+        allocation: dict[str, Any],
+        lifecycle_state: str,
+        configuration: dict[str, Any],
+    ):
+        with self.session_factory() as session:
+            with session.begin():
+                if SubscriptionRepository(session).get(subscription_id) is None:
+                    raise LookupError(f"Subscription {subscription_id} not found")
+                if service_type not in self.SUPPORTED_TYPES:
+                    raise ValueError(f"Unsupported service type: {service_type}")
+
+                service = ServiceRepository(session).create(
+                    subscription_id, service_type, lifecycle_state
+                )
+                candidates = WorkerNodeRepository(session).list(
+                    status="ONLINE", capability=service_type.lower()
+                )
+                worker_node = None
+                for candidate in candidates:
+                    try:
+                        worker_node = WorkerNodeRepository(session).reserve_capacity(
+                            candidate.id, allocation
+                        )
+                        break
+                    except ValueError:
+                        continue
+                if worker_node is None:
+                    raise ValueError("No worker node available for service placement")
+
+                assignment = ServiceAssignmentRepository(session).create_or_replace(
+                    service.id, worker_node.id, "ASSIGNED"
+                )
+                DesiredStateRepository(session).put_next(
+                    service.id, lifecycle_state, configuration
+                )
+                desired = DesiredStateRepository(session).get(service.id)
+                return ServiceResult(
+                    service.id,
+                    service.subscription_id,
+                    service.type,
+                    service.status,
+                    service.created_at,
+                    service.updated_at,
+                    assignment.id,
+                    assignment.worker_node_id,
+                    assignment.status,
+                    desired.version,
+                    desired.lifecycle_state,
+                    desired.configuration or {},
+                    desired.updated_at,
                 )
 
 
