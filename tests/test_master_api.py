@@ -1,10 +1,12 @@
-import uuid
+import json
 import unittest
+import uuid
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from master.api import MasterApi
+from master.auth import AuthenticationClient, AuthenticationServiceUnavailable
 from master.persistence.models import Base, WorkerNode
 from master.persistence.repositories import ServiceAssignmentRepository, DesiredStateRepository
 from master.services import MasterNodeService, MasterReconciliationService
@@ -54,6 +56,81 @@ class MasterApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.body["code"], "INVALID_REQUEST")
         self.assertEqual(response.body["request_id"], "req-2")
+
+    def test_authentication_client_sends_credential_and_request_id(self):
+        captured = {}
+
+        class Response:
+            def getcode(self):
+                return 200
+
+            def read(self):
+                return json.dumps(
+                    {
+                        "allowed": True,
+                        "principal": {
+                            "subject_id": "user-1",
+                            "subject_type": "USER",
+                            "scopes": ["node:read"],
+                        },
+                        "request_id": "req-3",
+                    }
+                ).encode()
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+        def opener(request, timeout):
+            captured["headers"] = request.headers
+            captured["body"] = json.loads(request.data.decode())
+            captured["timeout"] = timeout
+            return Response()
+
+        decision = AuthenticationClient("http://auth", opener=opener).authorize(
+            "secret", "node:node-1", "read", request_id="req-3"
+        )
+
+        self.assertTrue(decision.allowed)
+        self.assertEqual(decision.principal.subject_id, "user-1")
+        self.assertEqual(captured["headers"]["Authorization"], "Bearer secret")
+        self.assertEqual(captured["headers"]["X-request-id"], "req-3")
+        self.assertEqual(captured["body"]["resource"], "node:node-1")
+
+    def test_api_passes_request_id_to_authorization_client(self):
+        calls = []
+
+        class Client:
+            def authorize(self, credential, resource, action, context, request_id):
+                calls.append((credential, resource, action, request_id))
+                return {"allowed": True}
+
+        api = MasterApi(
+            self.api.node_service,
+            self.api.reconciliation_service,
+            authorization_client=Client(),
+        )
+        response = api.get_node(self.node_id, credential="secret", request_id="req-4")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(calls, [("secret", f"node:{self.node_id}", "read", "req-4")])
+
+    def test_api_maps_authentication_dependency_failure(self):
+        class Client:
+            def authorize(self, *args):
+                raise AuthenticationServiceUnavailable("auth is down")
+
+        api = MasterApi(
+            self.api.node_service,
+            self.api.reconciliation_service,
+            authorization_client=Client(),
+        )
+        response = api.get_node(self.node_id, credential="secret", request_id="req-5")
+
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.body["code"], "DEPENDENCY_UNAVAILABLE")
 
 
 if __name__ == "__main__":

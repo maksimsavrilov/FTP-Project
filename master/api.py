@@ -6,11 +6,19 @@ from decimal import Decimal
 from typing import Any, Callable, Protocol
 from uuid import uuid4
 
+from .auth import AuthenticationClientError, AuthenticationServiceUnavailable
 from .services import MasterNodeService, MasterReconciliationService
 
 
 class AuthorizationClient(Protocol):
-    def authorize(self, credential: str, resource: str, action: str, context: object | None = None) -> Any:
+    def authorize(
+        self,
+        credential: str,
+        resource: str,
+        action: str,
+        context: object | None = None,
+        request_id: str | None = None,
+    ) -> Any:
         ...
 
 
@@ -184,12 +192,14 @@ class MasterApi:
     def _request_id(self, request_id: str | None) -> str:
         return request_id or self._request_id_factory()
 
-    def _authorize(self, credential: str | None, resource: str, action: str) -> None:
+    def _authorize(self, credential: str | None, resource: str, action: str, request_id: str) -> None:
         if self.authorization_client is None:
             return
         if not credential:
             raise PermissionError("missing credential")
-        decision = self.authorization_client.authorize(credential, resource, action, None)
+        decision = self.authorization_client.authorize(
+            credential, resource, action, None, request_id
+        )
         allowed = decision.get("allowed", False) if isinstance(decision, dict) else getattr(decision, "allowed", False)
         if not allowed:
             raise AuthorizationDenied("request is not authorized")
@@ -203,6 +213,8 @@ class MasterApi:
             return self._error(403, "AUTHORIZATION_DENIED", str(exc), request_id)
         except PermissionError as exc:
             return self._error(401, "AUTHENTICATION_FAILED", str(exc), request_id)
+        except (AuthenticationServiceUnavailable, AuthenticationClientError) as exc:
+            return self._error(503, "DEPENDENCY_UNAVAILABLE", str(exc), request_id)
         except LookupError as exc:
             return self._error(404, "NOT_FOUND", str(exc), request_id)
         except ValueError as exc:
@@ -214,28 +226,28 @@ class MasterApi:
 
     def get_node(self, node_id: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
         request_id = self._request_id(request_id)
-        return self._call(request_id, lambda: (self._authorize(credential, f"node:{node_id}", "read"), _node_body(self.node_service.get(node_id)))[1])
+        return self._call(request_id, lambda: (self._authorize(credential, f"node:{node_id}", "read", request_id), _node_body(self.node_service.get(node_id)))[1])
 
     def list_nodes(self, status: str | None = None, capability: str | None = None, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
         request_id = self._request_id(request_id)
-        return self._call(request_id, lambda: (self._authorize(credential, "node:*", "read"), {"items": [_node_body(node) for node in self.node_service.list(status, capability)]})[1])
+        return self._call(request_id, lambda: (self._authorize(credential, "node:*", "read", request_id), {"items": [_node_body(node) for node in self.node_service.list(status, capability)]})[1])
 
     def heartbeat(self, node_id: str, body: dict[str, Any], credential: str | None = None, request_id: str | None = None) -> ApiResponse:
         request_id = self._request_id(request_id)
         def operation() -> dict[str, Any]:
-            self._authorize(credential, f"node:{node_id}", "write")
+            self._authorize(credential, f"node:{node_id}", "write", request_id)
             request = HeartbeatRequest.from_dict(body)
             return _node_body(self.node_service.heartbeat(node_id, request.status, request.usage, request.last_heartbeat_at))
         return self._call(request_id, operation)
 
     def get_state(self, service_id: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
         request_id = self._request_id(request_id)
-        return self._call(request_id, lambda: (self._authorize(credential, f"service:{service_id}", "read"), _state_body(self.reconciliation_service.get_state(service_id)))[1])
+        return self._call(request_id, lambda: (self._authorize(credential, f"service:{service_id}", "read", request_id), _state_body(self.reconciliation_service.get_state(service_id)))[1])
 
     def report_actual_state(self, service_id: str, body: dict[str, Any], credential: str | None = None, request_id: str | None = None) -> ApiResponse:
         request_id = self._request_id(request_id)
         def operation() -> dict[str, Any]:
-            self._authorize(credential, f"service:{service_id}", "write")
+            self._authorize(credential, f"service:{service_id}", "write", request_id)
             request = ActualStateRequest.from_dict(body)
             result = self.reconciliation_service.report_actual_state(
                 service_id,
