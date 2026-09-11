@@ -7,12 +7,13 @@ from sqlalchemy.orm import Session
 
 from master.api import MasterApi
 from master.auth import AuthenticationClient, AuthenticationServiceUnavailable
-from master.persistence.models import Base, Service, WebService, WorkerNode
+from master.persistence.models import Base, DnsService, Service, WebService, WorkerNode
 from master.persistence.repositories import ServiceAssignmentRepository, DesiredStateRepository
 from master.services import (
     MasterNodeService,
     MasterReconciliationService,
     MasterDomainService,
+    MasterDnsServiceService,
     MasterServiceService,
     MasterServicePlanService,
     MasterSubscriptionService,
@@ -32,7 +33,7 @@ class MasterApiTests(unittest.TestCase):
                 id=node_id,
                 hostname="node-1",
                 status="ONLINE",
-                capabilities={"web": True},
+                capabilities={"web": True, "dns": True},
                 cpu_capacity=8,
                 memory_capacity=8192,
                 disk_capacity=100000,
@@ -53,6 +54,7 @@ class MasterApiTests(unittest.TestCase):
             website_service=MasterWebsiteService(lambda: Session(self.engine)),
             service_service=MasterServiceService(lambda: Session(self.engine)),
             web_service_service=MasterWebServiceService(lambda: Session(self.engine)),
+            dns_service_service=MasterDnsServiceService(lambda: Session(self.engine)),
         )
         self.node_id = node_id
 
@@ -213,6 +215,55 @@ class MasterApiTests(unittest.TestCase):
         self.assertEqual(response.body["code"], "NOT_FOUND")
         with Session(self.engine) as session:
             self.assertEqual(session.query(WebService).count(), 0)
+
+    def test_dns_service_lifecycle_commits_domain_configuration_and_placement(self):
+        user = self.api.create_user({}, request_id="req-dns-user")
+        plan = self.api.create_service_plan({"name": "dns-plan"}, request_id="req-dns-plan")
+        subscription = self.api.create_subscription(
+            {"user_id": user.body["id"], "plan_id": plan.body["id"]},
+            request_id="req-dns-subscription",
+        )
+        domain = self.api.create_domain(
+            {"subscription_id": subscription.body["id"], "name": "dns.test"},
+            request_id="req-dns-domain",
+        )
+
+        created = self.api.create_dns_service(
+            {
+                "subscription_id": subscription.body["id"],
+                "domain_id": domain.body["id"],
+                "allocation": {"cpu": 1, "memory": 512, "disk": 1000},
+                "lifecycle_state": "PROVISIONING",
+                "configuration": {"records": []},
+            },
+            request_id="req-dns-service",
+        )
+
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.body["type"], "DNS")
+        self.assertEqual(created.body["desired_state"]["configuration"], {"records": []})
+
+        loaded = self.api.get_dns_service(created.body["id"], request_id="req-dns-service-get")
+
+        self.assertEqual(loaded.status_code, 200)
+        self.assertEqual(loaded.body, created.body)
+
+    def test_dns_service_requires_existing_domain_and_rolls_back(self):
+        response = self.api.create_dns_service(
+            {
+                "subscription_id": str(uuid.uuid4()),
+                "domain_id": str(uuid.uuid4()),
+                "allocation": {"cpu": 1, "memory": 512, "disk": 1000},
+                "lifecycle_state": "PROVISIONING",
+                "configuration": {},
+            },
+            request_id="req-dns-invalid",
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.body["code"], "NOT_FOUND")
+        with Session(self.engine) as session:
+            self.assertEqual(session.query(DnsService).count(), 0)
 
     def test_service_creation_commits_resource_placement_and_desired_state(self):
         user = self.api.create_user({}, request_id="req-service-user")
