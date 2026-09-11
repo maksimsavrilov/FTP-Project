@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `c0563841a549d62749b4b2cc0e43e00e1e631323`
+- Last verified commit: `304b5a5f0db6f21591cd97e29b8e2ccd0aa1a40e`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Master persistence slice implemented and verified
 
@@ -106,6 +106,7 @@ architecture review.
 - MailAccount persistence model, repository, transactional lifecycle service, and API create/read boundary implemented and verified.
 - DatabaseService persistence model, repository, transactional lifecycle service, and API create/read boundary implemented and verified.
 - DatabaseUser persistence model, repository, transactional lifecycle service, and API create/read boundary implemented and verified.
+- DatabaseService and DatabaseUser Master API resource boundaries documented in `docs/master-api.md`.
 
 ### Domain Model
 
@@ -128,16 +129,18 @@ None identified in the validated architecture scope.
 
 ## Current Task
 
-The DatabaseUser resource boundary is implemented and verified. Database user
-creation validates the parent DatabaseService, persists the typed user
-configuration, and returns the resource payload through the Master API.
+The DatabaseService and DatabaseUser resource boundaries are implemented,
+verified, and documented. Database service creation persists typed database
+configuration with common service placement state; database user creation
+validates the parent DatabaseService and returns the typed user payload.
 
 ---
 
 ## Next Step
 
-Document the DatabaseService and DatabaseUser Master API resource boundaries in
-`docs/master-api.md` without changing the established architecture.
+Review the documented DatabaseService and DatabaseUser API boundaries against
+the implementation and existing Master API contract without changing the
+established architecture.
 
 ---
 
