@@ -125,6 +125,11 @@ architecture review.
   `AUTH_SERVICE_URL`.
 - Master service added to `docker-compose.yml` with production build settings,
   port exposure, and required database and authentication service URLs.
+- PostgreSQL and ZITADEL services added to `docker-compose.yml`; Master now
+  connects to the PostgreSQL and ZITADEL containers, with separate Master and
+  ZITADEL databases initialized in PostgreSQL.
+- Development and production compose configurations separated; production
+  excludes the DSL and Plesk services.
 
 ### Domain Model
 
@@ -148,18 +153,19 @@ None identified in the validated architecture scope.
 ## Current Task
 
 The Master API adapter, composition root, production container runtime, and
-compose service definition are available. The container starts Uvicorn through
-`master.entrypoint:app`; compose passes `DATABASE_URL` and
-`AUTH_SERVICE_URL`, while production wiring creates the SQLAlchemy session
-factory and Authentication Client and assembles all existing Master services
-without changing their HTTP or application-service contracts.
+compose service definitions are available in `docker-compose.yml` and
+`docker-compose.prod.yml`. The default development configuration includes DSL
+and Plesk; the production configuration includes only Master, PostgreSQL and
+ZITADEL. The container starts Uvicorn through `master.entrypoint:app`, while
+production wiring creates the SQLAlchemy session factory and Authentication
+Client without changing their HTTP or application-service contracts.
 
 ---
 
 ## Next Step
 
-Add PostgreSQL and ZITADEL service definitions to `docker-compose.yml` and
-connect the Master service to those containers.
+Implement the Authentication Service `/v1/authorize` endpoint that the Master
+Authentication Client calls, backed by the configured ZITADEL instance.
 
 ---
 
