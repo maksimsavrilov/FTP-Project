@@ -13,6 +13,7 @@ from master.services import (
     MasterNodeService,
     MasterReconciliationService,
     MasterDatabaseServiceService,
+    MasterDatabaseUserService,
     MasterDomainService,
     MasterMailAccountService,
     MasterDnsServiceService,
@@ -61,6 +62,7 @@ class MasterApiTests(unittest.TestCase):
             dns_service_service=MasterDnsServiceService(lambda: Session(self.engine)),
             mail_service_service=MasterMailServiceService(lambda: Session(self.engine)),
             database_service_service=MasterDatabaseServiceService(lambda: Session(self.engine)),
+            database_user_service=MasterDatabaseUserService(lambda: Session(self.engine)),
             mail_domain_service=MasterMailDomainService(lambda: Session(self.engine)),
             mail_account_service=MasterMailAccountService(lambda: Session(self.engine)),
         )
@@ -458,6 +460,57 @@ class MasterApiTests(unittest.TestCase):
 
         loaded = self.api.get_database_service(created.body["id"], request_id="req-database-service-get")
 
+        self.assertEqual(loaded.status_code, 200)
+        self.assertEqual(loaded.body, created.body)
+
+    def test_database_user_lifecycle_commits_for_database_service(self):
+        user = self.api.create_user({}, request_id="req-db-user-resource-user")
+        plan = self.api.create_service_plan({"name": "database-user-plan"}, request_id="req-db-user-resource-plan")
+        subscription = self.api.create_subscription(
+            {"user_id": user.body["id"], "plan_id": plan.body["id"]},
+            request_id="req-db-user-resource-subscription",
+        )
+        with Session(self.engine) as session, session.begin():
+            session.add(
+                WorkerNode(
+                    id=str(uuid.uuid4()),
+                    hostname="database-user-node",
+                    status="ONLINE",
+                    capabilities={"database": True},
+                    cpu_capacity=8,
+                    memory_capacity=8192,
+                    disk_capacity=100000,
+                    cpu_usage=0,
+                    memory_usage=0,
+                    disk_usage=0,
+                )
+            )
+        database_service = self.api.create_database_service(
+            {
+                "subscription_id": subscription.body["id"],
+                "allocation": {"cpu": 1, "memory": 512, "disk": 1000},
+                "lifecycle_state": "PROVISIONING",
+                "database_type": "postgresql",
+                "database_name": "users_db",
+            },
+            request_id="req-db-user-resource-service",
+        )
+
+        created = self.api.create_database_user(
+            {
+                "database_service_id": database_service.body["id"],
+                "username": "app_user",
+                "privileges": {"read": True, "write": True},
+            },
+            request_id="req-db-user-resource",
+        )
+
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.body["database_service_id"], database_service.body["id"])
+        self.assertEqual(created.body["username"], "app_user")
+        self.assertEqual(created.body["status"], "PENDING")
+        self.assertEqual(created.body["privileges"], {"read": True, "write": True})
+        loaded = self.api.get_database_user(created.body["id"], request_id="req-db-user-resource-get")
         self.assertEqual(loaded.status_code, 200)
         self.assertEqual(loaded.body, created.body)
 

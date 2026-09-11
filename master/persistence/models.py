@@ -188,6 +188,20 @@ class DatabaseService(Base):
     database_name: Mapped[str] = mapped_column(String, nullable=False)
 
 
+class DatabaseUser(Base):
+    __tablename__ = "database_users"
+    __table_args__ = (
+        Index("ix_database_users_database_service_id", "database_service_id"),
+        Index("ix_database_users_status", "status"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    database_service_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    username: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[str] = mapped_column(String, nullable=False)
+    privileges: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+
+
 class ActualState(Base):
     __tablename__ = "actual_states"
 

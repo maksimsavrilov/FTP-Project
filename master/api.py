@@ -9,6 +9,7 @@ from uuid import uuid4
 from .auth import AuthenticationClientError, AuthenticationServiceUnavailable
 from .services import (
     MasterDatabaseServiceService,
+    MasterDatabaseUserService,
     MasterNodeService,
     MasterReconciliationService,
     MasterDomainService,
@@ -284,6 +285,16 @@ def _database_service_body(result: Any) -> dict[str, Any]:
     return body
 
 
+def _database_user_body(database_user: Any) -> dict[str, Any]:
+    return {
+        "id": str(database_user.id),
+        "database_service_id": str(database_user.database_service_id),
+        "username": database_user.username,
+        "status": database_user.status,
+        "privileges": database_user.privileges or {},
+    }
+
+
 def _state_body(state: Any) -> dict[str, Any]:
     desired = state.desired
     assignment = state.assignment
@@ -337,6 +348,7 @@ class MasterApi:
     dns_service_service: MasterDnsServiceService | None = None
     mail_service_service: MasterMailServiceService | None = None
     database_service_service: MasterDatabaseServiceService | None = None
+    database_user_service: MasterDatabaseUserService | None = None
     mail_domain_service: MasterMailDomainService | None = None
     mail_account_service: MasterMailAccountService | None = None
     _request_id_factory: Callable[[], str] = field(default=lambda: str(uuid4()), repr=False)
@@ -729,6 +741,35 @@ class MasterApi:
                     lifecycle_state,
                     database_type,
                     database_name,
+                )
+            )
+
+        response = self._call(request_id, operation)
+        if response.status_code == 200:
+            return ApiResponse(201, response.body, response.headers)
+        return response
+
+    def get_database_user(self, database_user_id: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+        return self._call(request_id, lambda: (self._authorize(credential, f"database-user:{database_user_id}", "read", request_id), _database_user_body(self.database_user_service.get(database_user_id)))[1])
+
+    def create_database_user(self, body: dict[str, Any], credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+
+        def operation() -> dict[str, Any]:
+            self._authorize(credential, "database-user:*", "write", request_id)
+            _require_object(body)
+            database_service_id = _required_string(body, "database_service_id")
+            username = _required_string(body, "username")
+            status = body.get("status", "PENDING")
+            if not isinstance(status, str) or not status:
+                raise RequestValidationError("status must be a non-empty string")
+            privileges = body.get("privileges", {})
+            if not isinstance(privileges, dict):
+                raise RequestValidationError("privileges must be an object")
+            return _database_user_body(
+                self.database_user_service.create(
+                    database_service_id, username, status, privileges
                 )
             )
 
