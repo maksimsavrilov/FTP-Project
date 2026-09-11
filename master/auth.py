@@ -130,6 +130,8 @@ class AuthenticationClient:
         response_request_id = body.get("request_id")
         if not isinstance(allowed, bool) or not isinstance(response_request_id, str):
             raise AuthenticationClientError("invalid authorization decision")
+        if response_request_id != request_id:
+            raise AuthenticationClientError("authorization response request_id mismatch")
         principal = None
         if allowed:
             raw_principal = body.get("principal")

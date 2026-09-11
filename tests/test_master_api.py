@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from master.api import MasterApi
-from master.auth import AuthenticationClient, AuthenticationServiceUnavailable
+from master.auth import AuthenticationClient, AuthenticationClientError, AuthenticationServiceUnavailable
 from master.persistence.models import Base, DnsService, MailAccount, MailDomain, MailService, Service, WebService, WorkerNode
 from master.persistence.repositories import ServiceAssignmentRepository, DesiredStateRepository
 from master.services import (
@@ -628,6 +628,27 @@ class MasterApiTests(unittest.TestCase):
         self.assertEqual(captured["headers"]["X-request-id"], "req-3")
         self.assertEqual(captured["body"]["resource"], "node:node-1")
 
+    def test_authentication_client_rejects_mismatched_response_request_id(self):
+        class Response:
+            def getcode(self):
+                return 200
+
+            def read(self):
+                return json.dumps(
+                    {"allowed": False, "request_id": "other-request"}
+                ).encode()
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+        with self.assertRaisesRegex(AuthenticationClientError, "request_id mismatch"):
+            AuthenticationClient(
+                "http://auth", opener=lambda request, timeout: Response()
+            ).authorize("secret", "node:node-1", "read", request_id="req-3")
+
     def test_api_passes_request_id_to_authorization_client(self):
         calls = []
 
@@ -657,6 +678,21 @@ class MasterApiTests(unittest.TestCase):
             authorization_client=Client(),
         )
         response = api.get_node(self.node_id, credential="secret", request_id="req-5")
+
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.body["code"], "DEPENDENCY_UNAVAILABLE")
+
+    def test_api_maps_malformed_authorization_decision_to_dependency_failure(self):
+        class Client:
+            def authorize(self, *args):
+                return {"unexpected": True}
+
+        api = MasterApi(
+            self.api.node_service,
+            self.api.reconciliation_service,
+            authorization_client=Client(),
+        )
+        response = api.get_node(self.node_id, credential="secret", request_id="req-6")
 
         self.assertEqual(response.status_code, 503)
         self.assertEqual(response.body["code"], "DEPENDENCY_UNAVAILABLE")

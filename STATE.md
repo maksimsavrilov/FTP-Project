@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `ba7cb32695730f3e9e78cf200c7c66e1f8843dae`
+- Last verified commit: `db671a90150d1030cd33ad5f65fb0d5eddecd141`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Master persistence slice implemented and verified
 
@@ -112,6 +112,9 @@ architecture review.
 - Remaining Master API resource documentation reviewed against the Master
   handlers, application services, and existing tests; request and response
   boundaries are aligned.
+- Master API authorization and error mapping reviewed against the shared
+  contracts and existing tests; correlation mismatches and malformed
+  authorization decisions now map to dependency errors.
 
 ### Domain Model
 
@@ -134,18 +137,18 @@ None identified in the validated architecture scope.
 
 ## Current Task
 
-The remaining Master API resource documentation is aligned with the handlers,
-application services, shared API contract, and existing tests. The review
-covered business resources, node listing and heartbeat, and reconciliation
-state reporting without changing the established architecture.
+Master API authorization and error mapping are aligned with the handlers,
+shared API contract, and existing tests. The Master preserves request
+correlation and rejects malformed authorization decisions as dependency
+failures without changing the established architecture.
 
 ---
 
 ## Next Step
 
-Review Master API authorization and error mapping for consistency with the
-handlers, shared API contract, and existing tests, without changing the
-established architecture.
+Implement the minimal FastAPI adapter for the reviewed Master API boundaries,
+without changing the established architecture or application-service
+contracts.
 
 ---
 

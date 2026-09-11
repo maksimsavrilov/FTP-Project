@@ -364,7 +364,9 @@ class MasterApi:
         decision = self.authorization_client.authorize(
             credential, resource, action, None, request_id
         )
-        allowed = decision.get("allowed", False) if isinstance(decision, dict) else getattr(decision, "allowed", False)
+        allowed = decision.get("allowed") if isinstance(decision, dict) else getattr(decision, "allowed", None)
+        if not isinstance(allowed, bool):
+            raise AuthenticationClientError("invalid authorization decision")
         if not allowed:
             raise AuthorizationDenied("request is not authorized")
 
