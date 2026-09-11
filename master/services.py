@@ -10,6 +10,7 @@ from .persistence.repositories import (
     DnsServiceRepository,
     DesiredStateRepository,
     DomainRepository,
+    MailDomainRepository,
     MailServiceRepository,
     ServiceAssignmentRepository,
     ServicePlanRepository,
@@ -85,6 +86,14 @@ class WebsiteResult:
     domain_id: str
     status: str
     document_root: str
+    created_at: Any
+
+
+@dataclass(frozen=True)
+class MailDomainResult:
+    id: str
+    domain_id: str
+    status: str
     created_at: Any
 
 
@@ -277,6 +286,41 @@ class MasterWebsiteService:
                     website.status,
                     website.document_root,
                     website.created_at,
+                )
+
+
+class MasterMailDomainService:
+    """Application boundary for mail domain lifecycle operations."""
+
+    def __init__(self, session_factory: Callable[[], Session]):
+        self.session_factory = session_factory
+
+    def get(self, mail_domain_id: str):
+        with self.session_factory() as session:
+            mail_domain = MailDomainRepository(session).get(mail_domain_id)
+            if mail_domain is None:
+                raise LookupError(f"MailDomain {mail_domain_id} not found")
+            return mail_domain
+
+    def create(
+        self,
+        subscription_id: str,
+        domain_id: str,
+        status: str = "PENDING",
+    ):
+        with self.session_factory() as session:
+            with session.begin():
+                domain = DomainRepository(session).get(domain_id)
+                if domain is None:
+                    raise LookupError(f"Domain {domain_id} not found")
+                if domain.subscription_id != str(subscription_id):
+                    raise LookupError(f"Domain {domain_id} not found for subscription {subscription_id}")
+                mail_domain = MailDomainRepository(session).create(domain_id, status)
+                return MailDomainResult(
+                    mail_domain.id,
+                    mail_domain.domain_id,
+                    mail_domain.status,
+                    mail_domain.created_at,
                 )
 
 

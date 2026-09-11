@@ -7,13 +7,14 @@ from sqlalchemy.orm import Session
 
 from master.api import MasterApi
 from master.auth import AuthenticationClient, AuthenticationServiceUnavailable
-from master.persistence.models import Base, DnsService, MailService, Service, WebService, WorkerNode
+from master.persistence.models import Base, DnsService, MailDomain, MailService, Service, WebService, WorkerNode
 from master.persistence.repositories import ServiceAssignmentRepository, DesiredStateRepository
 from master.services import (
     MasterNodeService,
     MasterReconciliationService,
     MasterDomainService,
     MasterDnsServiceService,
+    MasterMailDomainService,
     MasterMailServiceService,
     MasterServiceService,
     MasterServicePlanService,
@@ -57,6 +58,7 @@ class MasterApiTests(unittest.TestCase):
             web_service_service=MasterWebServiceService(lambda: Session(self.engine)),
             dns_service_service=MasterDnsServiceService(lambda: Session(self.engine)),
             mail_service_service=MasterMailServiceService(lambda: Session(self.engine)),
+            mail_domain_service=MasterMailDomainService(lambda: Session(self.engine)),
         )
         self.node_id = node_id
 
@@ -315,6 +317,61 @@ class MasterApiTests(unittest.TestCase):
         self.assertEqual(response.body["code"], "NOT_FOUND")
         with Session(self.engine) as session:
             self.assertEqual(session.query(MailService).count(), 0)
+
+    def test_mail_domain_lifecycle_commits_for_subscription_domain(self):
+        user = self.api.create_user({}, request_id="req-mail-domain-user")
+        plan = self.api.create_service_plan({"name": "mail-domain-plan"}, request_id="req-mail-domain-plan")
+        subscription = self.api.create_subscription(
+            {"user_id": user.body["id"], "plan_id": plan.body["id"]},
+            request_id="req-mail-domain-subscription",
+        )
+        domain = self.api.create_domain(
+            {"subscription_id": subscription.body["id"], "name": "mail-domain.test"},
+            request_id="req-mail-domain",
+        )
+
+        created = self.api.create_mail_domain(
+            {"subscription_id": subscription.body["id"], "domain_id": domain.body["id"]},
+            request_id="req-mail-domain-resource",
+        )
+
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.body["domain_id"], domain.body["id"])
+        self.assertEqual(created.body["status"], "PENDING")
+        loaded = self.api.get_mail_domain(created.body["id"], request_id="req-mail-domain-get")
+        self.assertEqual(loaded.status_code, 200)
+        self.assertEqual(loaded.body, created.body)
+
+    def test_mail_domain_requires_domain_from_subscription_and_rolls_back(self):
+        user = self.api.create_user({}, request_id="req-mail-domain-invalid-user")
+        plan = self.api.create_service_plan({"name": "mail-domain-invalid-plan"}, request_id="req-mail-domain-invalid-plan")
+        subscription = self.api.create_subscription(
+            {"user_id": user.body["id"], "plan_id": plan.body["id"]},
+            request_id="req-mail-domain-invalid-subscription",
+        )
+        other_user = self.api.create_user({}, request_id="req-mail-domain-other-user")
+        other_plan = self.api.create_service_plan({"name": "mail-domain-other-plan"}, request_id="req-mail-domain-other-plan")
+        other_subscription = self.api.create_subscription(
+            {"user_id": other_user.body["id"], "plan_id": other_plan.body["id"]},
+            request_id="req-mail-domain-other-subscription",
+        )
+        domain = self.api.create_domain(
+            {"subscription_id": other_subscription.body["id"], "name": "mail-domain-other.test"},
+            request_id="req-mail-domain-other",
+        )
+
+        response = self.api.create_mail_domain(
+            {
+                "subscription_id": subscription.body["id"],
+                "domain_id": domain.body["id"],
+            },
+            request_id="req-mail-domain-invalid",
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.body["code"], "NOT_FOUND")
+        with Session(self.engine) as session:
+            self.assertEqual(session.query(MailDomain).count(), 0)
 
     def test_service_creation_commits_resource_placement_and_desired_state(self):
         user = self.api.create_user({}, request_id="req-service-user")

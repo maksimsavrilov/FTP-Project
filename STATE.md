@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `33107e7ad89e3b09ffb0256a945c6bc5d3b55c71`
+- Last verified commit: `d118fca8a07b45b109b6bdae9c07a5aabb6c445e`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Master persistence slice implemented and verified
 
@@ -102,6 +102,7 @@ architecture review.
 - WebService typed configuration persistence, atomic creation on the common Service lifecycle, and API create/read boundary implemented and verified.
 - DnsService typed resource persistence, atomic creation on the common Service lifecycle, and API create/read boundary implemented and verified.
 - MailService typed resource persistence, atomic creation on the common Service lifecycle, and API create/read boundary implemented and verified.
+- MailDomain persistence model, repository, transactional lifecycle service, and API create/read boundary implemented and verified.
 
 ### Domain Model
 
@@ -124,17 +125,16 @@ None identified in the validated architecture scope.
 
 ## Current Task
 
-The MailService resource boundary is implemented on top of the common Service
-lifecycle. Domain validation, MailService persistence, node placement, and
-the first desired-state version are committed atomically. Mail-specific
-domains and accounts remain represented by the desired-state configuration
-until the MailDomain resource boundary is implemented.
+The MailDomain resource boundary is implemented for domains owned by a
+subscription. MailDomain persistence and API create/read operations validate
+the subscription-domain relationship and commit atomically. Mail accounts
+remain outside the resource boundary until the next step.
 
 ---
 
 ## Next Step
 
-Implement the MailDomain resource boundary for a subscription domain.
+Implement the MailAccount resource boundary for a MailDomain.
 
 ---
 
