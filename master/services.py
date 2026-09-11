@@ -14,6 +14,8 @@ from .persistence.repositories import (
     ServiceRepository,
     SubscriptionRepository,
     UserRepository,
+    WebsiteRepository,
+    WebServiceRepository,
     WorkerNodeRepository,
 )
 
@@ -76,6 +78,15 @@ class DomainResult:
 
 
 @dataclass(frozen=True)
+class WebsiteResult:
+    id: str
+    domain_id: str
+    status: str
+    document_root: str
+    created_at: Any
+
+
+@dataclass(frozen=True)
 class ServiceResult:
     id: str
     subscription_id: str
@@ -90,6 +101,15 @@ class ServiceResult:
     lifecycle_state: str
     configuration: dict[str, Any]
     desired_updated_at: Any
+
+
+@dataclass(frozen=True)
+class WebServiceResult:
+    service: ServiceResult
+    website_id: str
+    web_server: str
+    php_version: str
+    document_root: str
 
 
 class MasterUserService:
@@ -220,6 +240,34 @@ class MasterDomainService:
                 )
 
 
+class MasterWebsiteService:
+    """Application boundary for website lifecycle operations."""
+
+    def __init__(self, session_factory: Callable[[], Session]):
+        self.session_factory = session_factory
+
+    def get(self, website_id: str):
+        with self.session_factory() as session:
+            website = WebsiteRepository(session).get(website_id)
+            if website is None:
+                raise LookupError(f"Website {website_id} not found")
+            return website
+
+    def create(self, domain_id: str, document_root: str, status: str = "PENDING"):
+        with self.session_factory() as session:
+            with session.begin():
+                if DomainRepository(session).get(domain_id) is None:
+                    raise LookupError(f"Domain {domain_id} not found")
+                website = WebsiteRepository(session).create(domain_id, document_root, status)
+                return WebsiteResult(
+                    website.id,
+                    website.domain_id,
+                    website.status,
+                    website.document_root,
+                    website.created_at,
+                )
+
+
 class MasterServiceService:
     """Application boundary for service creation, placement, and reads."""
 
@@ -262,50 +310,123 @@ class MasterServiceService:
     ):
         with self.session_factory() as session:
             with session.begin():
-                if SubscriptionRepository(session).get(subscription_id) is None:
-                    raise LookupError(f"Subscription {subscription_id} not found")
-                if service_type not in self.SUPPORTED_TYPES:
-                    raise ValueError(f"Unsupported service type: {service_type}")
+                return self._create_in_session(
+                    session,
+                    subscription_id,
+                    service_type,
+                    allocation,
+                    lifecycle_state,
+                    configuration,
+                )
 
-                service = ServiceRepository(session).create(
-                    subscription_id, service_type, lifecycle_state
-                )
-                candidates = WorkerNodeRepository(session).list(
-                    status="ONLINE", capability=service_type.lower()
-                )
-                worker_node = None
-                for candidate in candidates:
-                    try:
-                        worker_node = WorkerNodeRepository(session).reserve_capacity(
-                            candidate.id, allocation
-                        )
-                        break
-                    except ValueError:
-                        continue
-                if worker_node is None:
-                    raise ValueError("No worker node available for service placement")
+    def _create_in_session(
+        self,
+        session: Session,
+        subscription_id: str,
+        service_type: str,
+        allocation: dict[str, Any],
+        lifecycle_state: str,
+        configuration: dict[str, Any],
+    ):
+        if SubscriptionRepository(session).get(subscription_id) is None:
+            raise LookupError(f"Subscription {subscription_id} not found")
+        if service_type not in self.SUPPORTED_TYPES:
+            raise ValueError(f"Unsupported service type: {service_type}")
 
-                assignment = ServiceAssignmentRepository(session).create_or_replace(
-                    service.id, worker_node.id, "ASSIGNED"
+        service = ServiceRepository(session).create(subscription_id, service_type, lifecycle_state)
+        candidates = WorkerNodeRepository(session).list(status="ONLINE", capability=service_type.lower())
+        worker_node = None
+        for candidate in candidates:
+            try:
+                worker_node = WorkerNodeRepository(session).reserve_capacity(candidate.id, allocation)
+                break
+            except ValueError:
+                continue
+        if worker_node is None:
+            raise ValueError("No worker node available for service placement")
+
+        assignment = ServiceAssignmentRepository(session).create_or_replace(
+            service.id, worker_node.id, "ASSIGNED"
+        )
+        DesiredStateRepository(session).put_next(service.id, lifecycle_state, configuration)
+        desired = DesiredStateRepository(session).get(service.id)
+        return ServiceResult(
+            service.id,
+            service.subscription_id,
+            service.type,
+            service.status,
+            service.created_at,
+            service.updated_at,
+            assignment.id,
+            assignment.worker_node_id,
+            assignment.status,
+            desired.version,
+            desired.lifecycle_state,
+            desired.configuration or {},
+            desired.updated_at,
+        )
+
+
+class MasterWebServiceService:
+    """Application boundary for WebService configuration and lifecycle."""
+
+    def __init__(self, session_factory: Callable[[], Session]):
+        self.session_factory = session_factory
+
+    def get(self, service_id: str):
+        with self.session_factory() as session:
+            web_service = WebServiceRepository(session).get(service_id)
+            if web_service is None:
+                raise LookupError(f"WebService {service_id} not found")
+            service = MasterServiceService(self.session_factory).get(service_id)
+            return WebServiceResult(
+                service,
+                web_service.website_id,
+                web_service.web_server,
+                web_service.php_version,
+                web_service.document_root,
+            )
+
+    def create(
+        self,
+        subscription_id: str,
+        website_id: str,
+        allocation: dict[str, Any],
+        lifecycle_state: str,
+        web_server: str,
+        php_version: str,
+        document_root: str,
+    ):
+        with self.session_factory() as session:
+            with session.begin():
+                if WebsiteRepository(session).get(website_id) is None:
+                    raise LookupError(f"Website {website_id} not found")
+                configuration = {
+                    "web_server": web_server,
+                    "php_version": php_version,
+                    "document_root": document_root,
+                }
+                service = MasterServiceService(self.session_factory)._create_in_session(
+                    session,
+                    subscription_id,
+                    "WEB",
+                    allocation,
+                    lifecycle_state,
+                    configuration,
                 )
-                DesiredStateRepository(session).put_next(
-                    service.id, lifecycle_state, configuration
-                )
-                desired = DesiredStateRepository(session).get(service.id)
-                return ServiceResult(
+                web_service = WebServiceRepository(session).create(
                     service.id,
-                    service.subscription_id,
-                    service.type,
-                    service.status,
-                    service.created_at,
-                    service.updated_at,
-                    assignment.id,
-                    assignment.worker_node_id,
-                    assignment.status,
-                    desired.version,
-                    desired.lifecycle_state,
-                    desired.configuration or {},
-                    desired.updated_at,
+                    website_id,
+                    web_server,
+                    php_version,
+                    document_root,
+                )
+                return WebServiceResult(
+                    service,
+                    web_service.website_id,
+                    web_service.web_server,
+                    web_service.php_version,
+                    web_service.document_root,
                 )
 
 

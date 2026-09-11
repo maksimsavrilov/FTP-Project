@@ -84,6 +84,40 @@ Required fields: `id`, `user_id`, `plan_id`, `status`, `created_at`.
 
 Required fields: `id`, `subscription_id`, `name`, `status`, `created_at`.
 
+### Website
+
+```json
+{
+  "id": "website-123",
+  "domain_id": "domain-123",
+  "status": "PENDING",
+  "document_root": "/srv/www/example",
+  "created_at": "2026-01-01T00:00:00Z"
+}
+```
+
+Required fields: `id`, `domain_id`, `status`, `document_root`, `created_at`.
+
+### WebService
+
+The WebService response contains the common service aggregate and its
+service-specific configuration:
+
+```json
+{
+  "id": "service-123",
+  "subscription_id": "subscription-123",
+  "type": "WEB",
+  "website_id": "website-123",
+  "web_server": "nginx",
+  "php_version": "8.3",
+  "document_root": "/srv/www/example"
+}
+```
+
+The common `assignment` and `desired_state` fields from the service aggregate
+are also returned.
+
 ### Service
 
 ```json
@@ -181,8 +215,12 @@ represented by the observation.
 | `POST` | `/v1/subscriptions` | subscription creation request | `Subscription` | create subscription |
 | `GET` | `/v1/domains/{domain_id}` | none | `Domain` | load domain |
 | `POST` | `/v1/domains` | domain creation request | `Domain` | create domain |
+| `GET` | `/v1/websites/{website_id}` | none | `Website` | load website |
+| `POST` | `/v1/websites` | website creation request | `Website` | create website |
 | `GET` | `/v1/services/{service_id}` | none | service aggregate view | load service |
 | `POST` | `/v1/services` | service creation request | service aggregate view | create and place service |
+| `GET` | `/v1/web-services/{service_id}` | none | `WebService` | load web service |
+| `POST` | `/v1/web-services` | WebService creation request | `WebService` | create, configure, and place web service |
 | `GET` | `/v1/nodes` | status/capability filters | `WorkerNode[]` | list nodes |
 | `GET` | `/v1/nodes/{node_id}` | none | `WorkerNode` | load node |
 | `GET` | `/v1/services/{service_id}/state` | none | desired/actual state view | load reconciliation state |

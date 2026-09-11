@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from master.api import MasterApi
 from master.auth import AuthenticationClient, AuthenticationServiceUnavailable
-from master.persistence.models import Base, Service, WorkerNode
+from master.persistence.models import Base, Service, WebService, WorkerNode
 from master.persistence.repositories import ServiceAssignmentRepository, DesiredStateRepository
 from master.services import (
     MasterNodeService,
@@ -17,6 +17,8 @@ from master.services import (
     MasterServicePlanService,
     MasterSubscriptionService,
     MasterUserService,
+    MasterWebsiteService,
+    MasterWebServiceService,
 )
 
 
@@ -48,7 +50,9 @@ class MasterApiTests(unittest.TestCase):
             service_plan_service=MasterServicePlanService(lambda: Session(self.engine)),
             subscription_service=MasterSubscriptionService(lambda: Session(self.engine)),
             domain_service=MasterDomainService(lambda: Session(self.engine)),
+            website_service=MasterWebsiteService(lambda: Session(self.engine)),
             service_service=MasterServiceService(lambda: Session(self.engine)),
+            web_service_service=MasterWebServiceService(lambda: Session(self.engine)),
         )
         self.node_id = node_id
 
@@ -150,6 +154,65 @@ class MasterApiTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.body["code"], "NOT_FOUND")
+
+    def test_web_service_lifecycle_commits_website_configuration_and_placement(self):
+        user = self.api.create_user({}, request_id="req-web-user")
+        plan = self.api.create_service_plan({"name": "web-plan"}, request_id="req-web-plan")
+        subscription = self.api.create_subscription(
+            {"user_id": user.body["id"], "plan_id": plan.body["id"]},
+            request_id="req-web-subscription",
+        )
+        domain = self.api.create_domain(
+            {"subscription_id": subscription.body["id"], "name": "web.test"},
+            request_id="req-web-domain",
+        )
+        website = self.api.create_website(
+            {"domain_id": domain.body["id"], "document_root": "/srv/web"},
+            request_id="req-website",
+        )
+
+        created = self.api.create_web_service(
+            {
+                "subscription_id": subscription.body["id"],
+                "website_id": website.body["id"],
+                "allocation": {"cpu": 2, "memory": 1024, "disk": 10000},
+                "lifecycle_state": "PROVISIONING",
+                "web_server": "nginx",
+                "php_version": "8.3",
+                "document_root": "/srv/web",
+            },
+            request_id="req-web-service",
+        )
+
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(created.body["type"], "WEB")
+        self.assertEqual(created.body["website_id"], website.body["id"])
+        self.assertEqual(created.body["php_version"], "8.3")
+        self.assertEqual(created.body["desired_state"]["configuration"]["web_server"], "nginx")
+
+        loaded = self.api.get_web_service(created.body["id"], request_id="req-web-service-get")
+
+        self.assertEqual(loaded.status_code, 200)
+        self.assertEqual(loaded.body, created.body)
+
+    def test_web_service_requires_existing_website_and_rolls_back(self):
+        response = self.api.create_web_service(
+            {
+                "subscription_id": str(uuid.uuid4()),
+                "website_id": str(uuid.uuid4()),
+                "allocation": {"cpu": 1, "memory": 512, "disk": 1000},
+                "lifecycle_state": "PROVISIONING",
+                "web_server": "nginx",
+                "php_version": "8.3",
+                "document_root": "/srv/web",
+            },
+            request_id="req-web-invalid",
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.body["code"], "NOT_FOUND")
+        with Session(self.engine) as session:
+            self.assertEqual(session.query(WebService).count(), 0)
 
     def test_service_creation_commits_resource_placement_and_desired_state(self):
         user = self.api.create_user({}, request_id="req-service-user")

@@ -78,6 +78,17 @@ class Domain(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, server_default=func.now())
 
 
+class Website(Base):
+    __tablename__ = "websites"
+    __table_args__ = (Index("ix_websites_domain_id", "domain_id"), Index("ix_websites_status", "status"))
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    domain_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    status: Mapped[str] = mapped_column(String, nullable=False)
+    document_root: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, server_default=func.now())
+
+
 class WorkerNode(Base):
     __tablename__ = "worker_nodes"
     __table_args__ = (
@@ -124,6 +135,16 @@ class DesiredState(Base):
     lifecycle_state: Mapped[str] = mapped_column(String, nullable=False)
     configuration: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow, server_default=func.now())
+
+
+class WebService(Base):
+    __tablename__ = "web_services"
+
+    service_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    website_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    web_server: Mapped[str] = mapped_column(String, nullable=False)
+    php_version: Mapped[str] = mapped_column(String, nullable=False)
+    document_root: Mapped[str] = mapped_column(String, nullable=False)
 
 
 class ActualState(Base):

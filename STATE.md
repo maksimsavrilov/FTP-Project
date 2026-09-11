@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `41189174bb46fd1d404ed5a07dea7b6f73e6962f`
+- Last verified commit: `a4a68c9e54699ab5fb673465701b0a79b56a638f`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Master persistence slice implemented and verified
 
@@ -98,6 +98,8 @@ architecture review.
 - Subscription persistence, transactional lifecycle service, and API create/read boundary implemented with owner validation, request validation, and response serialization.
 - Domain persistence, transactional lifecycle service, and API create/read boundary implemented with subscription validation, request validation, and response serialization.
 - Service persistence, transactional creation with node placement and desired state, and API aggregate create/read boundary implemented and verified.
+- Website persistence, transactional lifecycle service, and API create/read boundary implemented with domain validation.
+- WebService typed configuration persistence, atomic creation on the common Service lifecycle, and API create/read boundary implemented and verified.
 
 ### Domain Model
 
@@ -120,17 +122,16 @@ None identified in the validated architecture scope.
 
 ## Current Task
 
-The first Master business resource boundaries are implemented for User,
-ServicePlan, Subscription, Domain, and Service. Service creation validates its
-Subscription owner, selects an online capable node, reserves capacity, and
-creates the ServiceAssignment and first DesiredState version atomically. The
-API returns the committed service aggregate with placement and desired state.
+The WebService resource boundary is implemented on top of the common Service
+lifecycle. Website validation, WebService configuration persistence, node
+placement, and the first desired-state version are committed atomically. The
+API returns the common service aggregate together with typed web configuration.
 
 ---
 
 ## Next Step
 
-Implement the WebService-specific resource and configuration boundary on top
+Implement the DnsService-specific resource and configuration boundary on top
 of the common Service lifecycle.
 
 ---

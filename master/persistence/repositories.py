@@ -8,7 +8,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .models import ActualState, DesiredState, Domain, Service, ServiceAssignment, ServicePlan, Subscription, User, WorkerNode
+from .models import ActualState, DesiredState, Domain, Service, ServiceAssignment, ServicePlan, Subscription, User, Website, WebService, WorkerNode
 
 
 def _normalize_id(value: uuid.UUID | str | None) -> str | None:
@@ -131,6 +131,51 @@ class DomainRepository:
         self.session.add(domain)
         self.session.flush()
         return domain
+
+
+class WebsiteRepository:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def get(self, website_id):
+        return self.session.get(Website, _normalize_id(website_id))
+
+    def create(self, domain_id: str, document_root: str, status: str = "PENDING"):
+        website = Website(
+            domain_id=_normalize_id(domain_id),
+            document_root=document_root,
+            status=status,
+        )
+        self.session.add(website)
+        self.session.flush()
+        return website
+
+
+class WebServiceRepository:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def get(self, service_id):
+        return self.session.get(WebService, _normalize_id(service_id))
+
+    def create(
+        self,
+        service_id: str,
+        website_id: str,
+        web_server: str,
+        php_version: str,
+        document_root: str,
+    ):
+        web_service = WebService(
+            service_id=_normalize_id(service_id),
+            website_id=_normalize_id(website_id),
+            web_server=web_server,
+            php_version=php_version,
+            document_root=document_root,
+        )
+        self.session.add(web_service)
+        self.session.flush()
+        return web_service
 
 
 class WorkerNodeRepository:

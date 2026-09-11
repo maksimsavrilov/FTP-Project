@@ -15,6 +15,8 @@ from .services import (
     MasterServicePlanService,
     MasterSubscriptionService,
     MasterUserService,
+    MasterWebsiteService,
+    MasterWebServiceService,
 )
 
 
@@ -194,6 +196,16 @@ def _domain_body(domain: Any) -> dict[str, Any]:
     }
 
 
+def _website_body(website: Any) -> dict[str, Any]:
+    return {
+        "id": str(website.id),
+        "domain_id": str(website.domain_id),
+        "status": website.status,
+        "document_root": website.document_root,
+        "created_at": _timestamp(website.created_at),
+    }
+
+
 def _service_body(result: Any) -> dict[str, Any]:
     return {
         "id": str(result.id),
@@ -214,6 +226,19 @@ def _service_body(result: Any) -> dict[str, Any]:
             "updated_at": _timestamp(result.desired_updated_at),
         },
     }
+
+
+def _web_service_body(result: Any) -> dict[str, Any]:
+    body = _service_body(result.service)
+    body.update(
+        {
+            "website_id": str(result.website_id),
+            "web_server": result.web_server,
+            "php_version": result.php_version,
+            "document_root": result.document_root,
+        }
+    )
+    return body
 
 
 def _state_body(state: Any) -> dict[str, Any]:
@@ -263,7 +288,9 @@ class MasterApi:
     service_plan_service: MasterServicePlanService | None = None
     subscription_service: MasterSubscriptionService | None = None
     domain_service: MasterDomainService | None = None
+    website_service: MasterWebsiteService | None = None
     service_service: MasterServiceService | None = None
+    web_service_service: MasterWebServiceService | None = None
     _request_id_factory: Callable[[], str] = field(default=lambda: str(uuid4()), repr=False)
 
     def _request_id(self, request_id: str | None) -> str:
@@ -438,6 +465,28 @@ class MasterApi:
             return ApiResponse(201, response.body, response.headers)
         return response
 
+    def get_website(self, website_id: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+        return self._call(request_id, lambda: (self._authorize(credential, f"website:{website_id}", "read", request_id), _website_body(self.website_service.get(website_id)))[1])
+
+    def create_website(self, body: dict[str, Any], credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+
+        def operation() -> dict[str, Any]:
+            self._authorize(credential, "website:*", "write", request_id)
+            _require_object(body)
+            domain_id = _required_string(body, "domain_id")
+            document_root = _required_string(body, "document_root")
+            status = body.get("status", "PENDING")
+            if not isinstance(status, str) or not status:
+                raise RequestValidationError("status must be a non-empty string")
+            return _website_body(self.website_service.create(domain_id, document_root, status))
+
+        response = self._call(request_id, operation)
+        if response.status_code == 200:
+            return ApiResponse(201, response.body, response.headers)
+        return response
+
     def get_service(self, service_id: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
         request_id = self._request_id(request_id)
         return self._call(request_id, lambda: (self._authorize(credential, f"service:{service_id}", "read", request_id), _service_body(self.service_service.get(service_id)))[1])
@@ -460,6 +509,40 @@ class MasterApi:
                     allocation,
                     lifecycle_state,
                     configuration,
+                )
+            )
+
+        response = self._call(request_id, operation)
+        if response.status_code == 200:
+            return ApiResponse(201, response.body, response.headers)
+        return response
+
+    def get_web_service(self, service_id: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+        return self._call(request_id, lambda: (self._authorize(credential, f"web-service:{service_id}", "read", request_id), _web_service_body(self.web_service_service.get(service_id)))[1])
+
+    def create_web_service(self, body: dict[str, Any], credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+
+        def operation() -> dict[str, Any]:
+            self._authorize(credential, "web-service:*", "write", request_id)
+            _require_object(body)
+            subscription_id = _required_string(body, "subscription_id")
+            website_id = _required_string(body, "website_id")
+            allocation = _required_object(body, "allocation")
+            lifecycle_state = _required_string(body, "lifecycle_state")
+            web_server = _required_string(body, "web_server")
+            php_version = _required_string(body, "php_version")
+            document_root = _required_string(body, "document_root")
+            return _web_service_body(
+                self.web_service_service.create(
+                    subscription_id,
+                    website_id,
+                    allocation,
+                    lifecycle_state,
+                    web_server,
+                    php_version,
+                    document_root,
                 )
             )
 
