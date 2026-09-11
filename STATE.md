@@ -5,9 +5,9 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `1a65b03750ca3b4f7aed4e1324cf5c77628ef4c4`
+- Last verified commit: `260f128a5ee5010a87be8388e56faa58c0e2c89a`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
-- Status: Master compose integration implemented; application tests verified
+- Status: Master and Authentication Service compose integration implemented; application tests verified
 
 ---
 
@@ -123,6 +123,9 @@ architecture review.
 - Master production ASGI entrypoint and container Dockerfile added; runtime
   configuration invokes the composition root through `DATABASE_URL` and
   `AUTH_SERVICE_URL`.
+- Authentication Service `/v1/authorize` implemented as a separate FastAPI
+  container backed by ZITADEL token introspection, with request correlation,
+  scope authorization, and contract-aligned error responses.
 - Master service added to `docker-compose.yml` with production build settings,
   port exposure, and required database and authentication service URLs.
 - PostgreSQL and ZITADEL services added to `docker-compose.yml`; Master now
@@ -155,17 +158,18 @@ None identified in the validated architecture scope.
 The Master API adapter, composition root, production container runtime, and
 compose service definitions are available in `docker-compose.yml` and
 `docker-compose.prod.yml`. The default development configuration includes DSL
-and Plesk; the production configuration includes only Master, PostgreSQL and
-ZITADEL. The container starts Uvicorn through `master.entrypoint:app`, while
-production wiring creates the SQLAlchemy session factory and Authentication
-Client without changing their HTTP or application-service contracts.
+and Plesk; the production configuration includes Master, Authentication
+Service, PostgreSQL and ZITADEL. The container starts Uvicorn through
+`master.entrypoint:app`, while the Authentication Service starts Uvicorn
+through `auth.entrypoint:app` and validates bearer credentials through the
+configured ZITADEL introspection endpoint.
 
 ---
 
 ## Next Step
 
-Implement the Authentication Service `/v1/authorize` endpoint that the Master
-Authentication Client calls, backed by the configured ZITADEL instance.
+Configure ZITADEL client credentials and validate the Master → Authentication
+Service → ZITADEL authorization flow through the production compose stack.
 
 ---
 
