@@ -2,6 +2,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from ftp_project.master import MasterApiError, MasterClient
 from ftp_project.session import AuthenticationClient, LoginError, SessionStore, UserSession
@@ -30,6 +31,25 @@ class Response:
 
 
 class CliSessionTests(unittest.TestCase):
+    def test_user_create_command_uses_saved_session(self):
+        import ftp_project
+
+        session = UserSession("access-1")
+        with tempfile.TemporaryDirectory() as directory:
+            store = SessionStore(Path(directory) / "session.json")
+            store.save(session)
+            with patch("ftp_project.SessionStore", return_value=store), patch(
+                "ftp_project.MasterClient"
+            ) as client_type:
+                client_type.return_value.create.return_value = {"id": "user-1"}
+
+                self.assertEqual(ftp_project.main(["user", "create"]), 0)
+
+                client_type.assert_called_once_with(session, base_url="http://localhost:8000")
+                client_type.return_value.create.assert_called_once_with(
+                    "/v1/users", {"status": "ACTIVE"}
+                )
+
     def test_master_client_sends_session_and_request_id(self):
         request_data = {}
 

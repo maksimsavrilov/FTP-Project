@@ -1,3 +1,8 @@
+import argparse
+import json
+import os
+import sys
+
 from .master import MasterApiError, MasterClient, MasterClientError
 from .session import AuthenticationClient, LoginError, SessionStore, UserSession
 
@@ -12,5 +17,30 @@ __all__ = [
 ]
 
 
-def main() -> None:
-    print("Hello from ftp-project!")
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(prog="ftp-project")
+    commands = parser.add_subparsers(dest="command", required=True)
+    user = commands.add_parser("user")
+    user_commands = user.add_subparsers(dest="user_command", required=True)
+    create = user_commands.add_parser("create")
+    create.add_argument("--status", default="ACTIVE")
+
+    args = parser.parse_args(argv)
+    if args.command == "user" and args.user_command == "create":
+        session = SessionStore().load()
+        if session is None:
+            print("No authenticated session. Log in before creating a user.", file=sys.stderr)
+            return 1
+        try:
+            result = MasterClient(
+                session,
+                base_url=os.environ.get("FTP_PROJECT_MASTER_URL", "http://localhost:8000"),
+            ).create("/v1/users", {"status": args.status})
+        except MasterClientError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        print(json.dumps(result, sort_keys=True))
+        return 0
+
+    parser.error("unsupported command")
+    return 2

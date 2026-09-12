@@ -5,7 +5,7 @@
 - Phase: Implementation
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `8556f9f`
+- Last verified commit: `f7e9cd9ba3f043c09e63756f5c2d779641297aa3`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Production Compose stack is running and the user-facing authentication foundation is implemented, including access-token validation, introspection, and CLI user sessions
 
@@ -137,6 +137,8 @@ architecture review.
 - Authenticated CLI-to-Master HTTP client boundary implemented for JSON business
   resource reads and creates, including Bearer propagation, request IDs, and
   structured API/transport errors.
+- First CLI business command implemented: `user create` loads the persisted user
+  session and creates a Master user through `MasterClient`.
 - Master service added to `docker-compose.yml` with production build settings,
   port exposure, and required database and authentication service URLs.
 - PostgreSQL and ZITADEL services added to `docker-compose.yml`; Master now
@@ -167,18 +169,19 @@ architecture review.
 
 ## Current Task
 
-The CLI now has a reusable authenticated HTTP boundary for calling the Master
-business-resource API with a persisted user session. The Master API adapter,
-composition root, production container runtime, and compose service definitions
-remain available in `docker-compose.yml` and `docker-compose.prod.yml`.
+The CLI has its first user-facing Master business command, `user create`, using
+the persisted session and authenticated `MasterClient` boundary. The Master API
+adapter, composition root, production container runtime, and compose service
+definitions remain available in `docker-compose.yml` and
+`docker-compose.prod.yml`.
 
 ---
 
 ## Next Step
 
-Define the first CLI business command that uses `MasterClient` for a user-facing
-Master resource operation. Do not expand Master authorization or token
-validation.
+Define the CLI login command that starts and completes the existing
+Authentication Service login flow and persists the resulting user session. Do
+not expand Master authorization or token validation.
 
 ---
 
