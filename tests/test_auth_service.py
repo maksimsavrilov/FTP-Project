@@ -5,7 +5,7 @@ import unittest
 from starlette.requests import Request
 
 from auth.fastapi import create_app
-from auth.service import IntrospectionResult
+from auth.service import IntrospectionResult, ZitadelClient
 
 
 class FakeClient:
@@ -22,6 +22,39 @@ class FakeClient:
 
 
 class AuthenticationServiceTests(unittest.TestCase):
+    def test_introspection_validates_user_access_token_response(self):
+        captured = {}
+
+        class Response:
+            def getcode(self):
+                return 200
+
+            def read(self):
+                return json.dumps({
+                    "active": True,
+                    "sub": "user-1",
+                    "username": "user@example.com",
+                    "scope": "service:read",
+                    "exp": 123,
+                    "token_type": "Bearer",
+                }).encode()
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+        def opener(request, timeout):
+            captured["body"] = request.data.decode()
+            return Response()
+
+        result = ZitadelClient("https://zitadel.example", "client", "secret", opener=opener).introspect("access-1")
+
+        self.assertEqual(result.subject_type, "USER")
+        self.assertEqual(result.expires_at, "123")
+        self.assertIn("token_type_hint=access_token", captured["body"])
+
     def test_login_redirects_to_zitadel_and_callback_returns_access_token(self):
         client = FakeClient()
         app = create_app(client, issuer="https://zitadel.example", client_id="client-1", redirect_uri="http://auth/callback")

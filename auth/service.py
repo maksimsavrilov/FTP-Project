@@ -86,7 +86,7 @@ class ZitadelClient:
         ).decode("ascii")
         request = Request(
             self.introspection_url,
-            data=urlencode({"token": credential}).encode("ascii"),
+            data=urlencode({"token": credential, "token_type_hint": "access_token"}).encode("ascii"),
             headers={
                 "Accept": "application/json",
                 "Content-Type": "application/x-www-form-urlencoded",
@@ -104,7 +104,11 @@ class ZitadelClient:
             raise AuthenticationBackendUnavailable("ZITADEL introspection failed")
         if status != 200 or not isinstance(body, dict):
             return None
-        if body.get("active") is not True or not isinstance(body.get("sub"), str):
+        if (
+            body.get("active") is not True
+            or not isinstance(body.get("sub"), str)
+            or body.get("token_type", "Bearer") != "Bearer"
+        ):
             return None
         scopes = body.get("scope", "")
         if isinstance(scopes, str):
@@ -115,9 +119,9 @@ class ZitadelClient:
             scope_list = []
         return IntrospectionResult(
             subject_id=body["sub"],
-            subject_type="SERVICE" if body.get("client_id") else "USER",
+            subject_type="USER" if isinstance(body.get("username"), str) else "SERVICE",
             scopes=scope_list,
-            expires_at=body.get("exp") if isinstance(body.get("exp"), str) else None,
+            expires_at=str(body["exp"]) if isinstance(body.get("exp"), (int, float)) else body.get("exp") if isinstance(body.get("exp"), str) else None,
         )
 
 

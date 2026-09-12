@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `edf6841de76d06d33a382d63cdb9b6817dc91fb2`
+- Last verified commit: `3b85544c71999f1278584ef30a06b9e7e822ec07`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Production Compose stack is running, but the user-facing authentication foundation is incomplete: access-token validation, introspection, and CLI user sessions are not implemented
 
@@ -116,6 +116,9 @@ architecture review.
 - Master API authorization and error mapping reviewed against the shared
   contracts and existing tests; correlation mismatches and malformed
   authorization decisions now map to dependency errors.
+- Authentication Service now validates login-issued user access tokens through
+  ZITADEL introspection before evaluating Master authorization scopes; standard
+  Bearer token type, user identity and numeric expiry are handled.
 - Minimal FastAPI adapter for the reviewed Master API boundaries implemented
   and verified, including request correlation, bearer credential propagation,
   JSON validation, response mapping, and documented resource routes.
@@ -159,9 +162,6 @@ architecture review.
 
 ## Known Issues
 
-- User access-token validation is not implemented.
-- Authentication-token introspection is not implemented as a usable
-  application flow.
 - CLI user sessions are not implemented.
 
 ---
@@ -172,17 +172,16 @@ The Master API adapter, composition root, production container runtime, and
 compose service definitions are available in `docker-compose.yml` and
 `docker-compose.prod.yml`. The default development configuration includes DSL
 and Plesk; the production configuration includes Master, Authentication
-Service, PostgreSQL and ZITADEL. The next architectural gap is validation of
-the user access token issued by the login boundary.
+Service, PostgreSQL and ZITADEL. User access-token validation now runs through
+ZITADEL introspection; the remaining authentication gap is the CLI session
+flow.
 
 ---
 
 ## Next Step
 
-Implement Authentication Service validation of the user access token issued by
-the login flow, keeping the existing Master authorization boundary and
-defining only the validation contract needed by it. Do not begin CLI session
-work.
+Implement the CLI user session flow on top of the existing login callback and
+access-token contract. Do not expand Master authorization or token validation.
 
 ---
 

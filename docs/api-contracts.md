@@ -108,8 +108,10 @@ codes are `400 INVALID_REQUEST`; token endpoint failures are
 `POST /v1/authorize`
 
 The Master sends the end-user credential in the standard `Authorization` header
-and asks the Authentication Service to evaluate one action. The credential is
-not copied into the JSON body or persisted by Master.
+and asks the Authentication Service to evaluate one action. The Authentication
+Service validates the access token with ZITADEL introspection before evaluating
+its scopes. The credential is not copied into the JSON body or persisted by
+Master.
 
 Request headers:
 
