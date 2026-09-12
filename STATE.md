@@ -159,32 +159,49 @@ architecture review.
 ### Domain Model
 
 - Business domain model separated from C4 model.
-- User → Subscription → ServicePlan model defined.
+- Administrator → Reseller → Customer ownership hierarchy defined.
+- ZITADEL identity references separated from Master business accounts.
+- ServicePlan, effective resource limits, quota inheritance and reservations defined.
+- User/Customer → Subscription → Domain → hosting service model defined.
 - Domain → Website / DNS / Mail model defined.
 - Service hierarchy defined.
 - WebService, DnsService, MailService and DatabaseService defined.
 - ServiceAssignment defined as explicit placement entity.
 - WorkerNode defined with capacity and health information.
 - DesiredState and ActualState defined as separate entities.
+- Plesk reference dump classified without adopting its persistence schema.
+- Domain-to-Master/Agent ownership and runtime-state mapping documented in
+  `docs/domain-model.md`.
 
 ---
 
 ## Current Task
 
-The CLI now supports login through the existing Authentication Service flow and
-persists the resulting user session. It also has the `user create` Master
-business command using the authenticated `MasterClient` boundary. The Master API
-adapter, composition root, production container runtime, and compose service
-definitions remain available in `docker-compose.yml` and
-`docker-compose.prod.yml`.
+The canonical hosting domain model has been reviewed against the Plesk
+reference dump and aligned with the existing Master/Agent architecture. The
+model is documented independently from C4 and persistence implementation.
 
 ---
 
+## Roadmap
+
+1. Introduce Master domain types and repositories for `Account` roles,
+   `ResourceLimitSet`, effective subscription limits and quota reservations.
+2. Extend the existing business API from User semantics to explicit
+   Administrator/Reseller/Customer ownership checks.
+3. Add plan revision and subscription plan-change rules without rewriting
+   historical usage.
+4. Add domain/service-family creation rules and quota validation before
+   placement.
+5. Keep placement, desired/actual versioning and Agent reconciliation on the
+   existing `ServiceAssignment` boundary; implement one vertical Agent flow
+   before adding the remaining service families.
+
 ## Next Step
 
-Define the first CLI read command for a Master business resource, using the
-persisted session and `MasterClient`. Do not expand Master authorization or
-token validation.
+Define the first Master domain types and persistence slice for `Account` roles,
+identity references and effective subscription limits; do not change ZITADEL
+token validation or the C4 model.
 
 ---
 
