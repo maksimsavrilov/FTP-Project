@@ -19,7 +19,7 @@
 - pydantic
 
 ## Development Rules
-- Use "dsl" service from docker-compose.yml to work with *.dsl files. Check if service is already running at first with `docker compose ps dsl` without suppressing stderr or forcing success. If Docker/Podman reports an environment or permissions error, report that the service status could not be verified; do not interpret empty output as stopped. Do not restart running "dsl" service. Do not stop the "dsl" service. The scheme URI is "http://localhost:8080/workspace/1" No auth required.
+- Use "dsl" service from docker-compose.yml to work with *.dsl files. Check if service is already running at first with `docker compose ps dsl` without suppressing stderr or forcing success. If Docker/Podman reports an environment or permissions error, report that the service status could not be verified; do not interpret empty output as stopped. Do not restart running "dsl" service. Do not stop the "dsl" service. The scheme URI is "http://localhost:8089/workspace/1" No auth required.
 - Use "plesk" service from docker-compose.yml to check references to Plesk Panel functions, files, CLI utilities and other entities.
     - CLI utilities located at /usr/local/psa/bin and /usr/local/psa/admin/sbin
 - Use python enterpreuter from .venv directory if available, install there all required modules using "uv" virtual environment manager if required

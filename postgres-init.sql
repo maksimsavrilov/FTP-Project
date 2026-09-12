@@ -1,1 +1,1 @@
-CREATE DATABASE zitadel OWNER master;
+CREATE DATABASE zitadel OWNER postgres;
