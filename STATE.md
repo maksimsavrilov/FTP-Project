@@ -5,9 +5,9 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `ab96088106479a0565e57b1d17f3758c084bdc7c`
+- Last verified commit: `d832fd96facf431834adf6ffd5f98cc724f5f65f`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
-- Status: Master and Authentication Service compose integration implemented; application tests verified
+- Status: Production Compose stack was recreated successfully; the new API client is injected into Auth, but ZITADEL still rejects the client-credentials request with `invalid_client`
 
 ---
 
@@ -137,6 +137,9 @@ architecture review.
   `ZITADEL_CLIENT_ID` and `ZITADEL_CLIENT_SECRET`; `.env.example` and the
   production authorization setup instructions were added, and Compose
   rendering with non-empty credentials was verified.
+- Production Compose stack started successfully with PostgreSQL, ZITADEL,
+  Authentication Service and Master; live endpoints and the ZITADEL
+  Management API were checked.
 
 ### Domain Model
 
@@ -153,7 +156,10 @@ architecture review.
 
 ## Known Issues
 
-None identified in the validated architecture scope.
+- The configured `ZITADEL_CLIENT_ID` exists as the `test` API application and
+  is present in the Auth container, but both Basic and form client
+  authentication at the ZITADEL OAuth token endpoint return `invalid_client` /
+  `client not found`; the live authorization flow is still unavailable.
 
 ---
 
@@ -163,16 +169,17 @@ The Master API adapter, composition root, production container runtime, and
 compose service definitions are available in `docker-compose.yml` and
 `docker-compose.prod.yml`. The default development configuration includes DSL
 and Plesk; the production configuration includes Master, Authentication
-Service, PostgreSQL and ZITADEL. The Authentication Service now requires
-explicit ZITADEL OAuth client credentials and validates bearer credentials
-through the configured ZITADEL introspection endpoint.
+Service, PostgreSQL and ZITADEL. The production stack was recreated and its
+services are running, but live OAuth authorization cannot complete because
+ZITADEL rejects the configured API client at the token endpoint.
 
 ---
 
 ## Next Step
 
-Run the production compose stack with a real ZITADEL OAuth client and validate
-the live Master → Authentication Service → ZITADEL authorization flow.
+Verify or regenerate the secret for the `test` API application in ZITADEL,
+then repeat the client-credentials token request and the live Master →
+Authentication Service → ZITADEL authorization validation.
 
 ---
 
