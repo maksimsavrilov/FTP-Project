@@ -5,9 +5,9 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `d832fd96facf431834adf6ffd5f98cc724f5f65f`
+- Last verified commit: `ba48ebf906fb88abf6db7a976fd3934c7cbd3fc5`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
-- Status: Production Compose stack was recreated successfully; the new API client is injected into Auth, but ZITADEL still rejects the client-credentials request with `invalid_client`
+- Status: Production Compose stack is running, but the user-facing authentication foundation is incomplete: user login, access-token validation, introspection, and CLI user sessions are not implemented
 
 ---
 
@@ -156,10 +156,11 @@ architecture review.
 
 ## Known Issues
 
-- The configured `ZITADEL_CLIENT_ID` exists as the `test` API application and
-  is present in the Auth container, but both Basic and form client
-  authentication at the ZITADEL OAuth token endpoint return `invalid_client` /
-  `client not found`; the live authorization flow is still unavailable.
+- User login is not implemented.
+- User access-token validation is not implemented.
+- Authentication-token introspection is not implemented as a usable
+  application flow.
+- CLI user sessions are not implemented.
 
 ---
 
@@ -169,17 +170,18 @@ The Master API adapter, composition root, production container runtime, and
 compose service definitions are available in `docker-compose.yml` and
 `docker-compose.prod.yml`. The default development configuration includes DSL
 and Plesk; the production configuration includes Master, Authentication
-Service, PostgreSQL and ZITADEL. The production stack was recreated and its
-services are running, but live OAuth authorization cannot complete because
-ZITADEL rejects the configured API client at the token endpoint.
+Service, PostgreSQL and ZITADEL. The next architectural gap is the
+user-facing authentication flow that will provide the credential used by
+Master authorization and the CLI session.
 
 ---
 
 ## Next Step
 
-Verify or regenerate the secret for the `test` API application in ZITADEL,
-then repeat the client-credentials token request and the live Master →
-Authentication Service → ZITADEL authorization validation.
+Implement the Authentication Service user-login flow against ZITADEL,
+including the redirect/callback contract and issuance of a user access token
+for the CLI; do not begin token validation, introspection, or CLI session
+work until this login boundary is defined and verified.
 
 ---
 
