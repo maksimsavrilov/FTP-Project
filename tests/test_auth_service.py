@@ -13,8 +13,31 @@ class FakeClient:
         self.credential = credential
         return IntrospectionResult("user-1", "USER", ["service:read"], None)
 
+    def authorization_url(self, issuer, client_id, redirect_uri, state):
+        return f"{issuer}/authorize?client_id={client_id}&state={state}"
+
+    def exchange_code(self, issuer, code, redirect_uri):
+        self.exchange = (issuer, code, redirect_uri)
+        return {"access_token": "access-1", "token_type": "Bearer"}
+
 
 class AuthenticationServiceTests(unittest.TestCase):
+    def test_login_redirects_to_zitadel_and_callback_returns_access_token(self):
+        client = FakeClient()
+        app = create_app(client, issuer="https://zitadel.example", client_id="client-1", redirect_uri="http://auth/callback")
+        login = next(route.endpoint for route in app.routes if route.path == "/v1/login")
+        callback = next(route.endpoint for route in app.routes if route.path == "/v1/login/callback")
+
+        login_request = Request({"type": "http", "method": "GET", "path": "/v1/login", "query_string": b"state=cli-state", "headers": []})
+        login_response = asyncio.run(login(login_request))
+        self.assertEqual(login_response.status_code, 302)
+        self.assertEqual(login_response.headers["location"], "https://zitadel.example/authorize?client_id=client-1&state=cli-state")
+
+        callback_request = Request({"type": "http", "method": "GET", "path": "/v1/login/callback", "query_string": b"code=code-1&state=cli-state", "headers": [(b"x-request-id", b"req-login")]})
+        callback_response = asyncio.run(callback(callback_request))
+        self.assertEqual(callback_response.status_code, 200)
+        self.assertEqual(json.loads(callback_response.body), {"access_token": "access-1", "token_type": "Bearer", "request_id": "req-login", "state": "cli-state"})
+
     def test_authorize_returns_principal_for_allowed_scope(self):
         sent = False
 

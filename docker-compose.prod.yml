@@ -22,6 +22,8 @@ services:
       dockerfile: auth/Dockerfile
     environment:
       ZITADEL_URL: ${ZITADEL_URL:-http://zitadel-api:8080}
+      ZITADEL_ISSUER: ${ZITADEL_ISSUER:-http://localhost:8080}
+      AUTH_LOGIN_REDIRECT_URI: ${AUTH_LOGIN_REDIRECT_URI:-http://localhost:8001/v1/login/callback}
       ZITADEL_CLIENT_ID: ${ZITADEL_CLIENT_ID:?Set ZITADEL_CLIENT_ID to the ZITADEL OAuth client ID}
       ZITADEL_CLIENT_SECRET: ${ZITADEL_CLIENT_SECRET:?Set ZITADEL_CLIENT_SECRET to the ZITADEL OAuth client secret}
     ports:

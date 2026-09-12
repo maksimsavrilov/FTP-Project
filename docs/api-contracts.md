@@ -78,6 +78,31 @@ or expired credential is an authentication failure and is returned as HTTP
 
 ## Authentication Service endpoint
 
+### Start user login
+
+`GET /v1/login`
+
+The CLI opens this endpoint in a user agent. The service responds with HTTP
+`302` to ZITADEL's `/oauth/v2/authorize` endpoint using the configured client,
+callback URI, `response_type=code`, and `openid profile email` scopes. A caller
+may provide an opaque `state`; otherwise the service generates one. The state
+is returned unchanged by the callback and must be checked by the CLI.
+
+The callback URI is configured as `AUTH_LOGIN_REDIRECT_URI` and defaults to
+`http://localhost:8001/v1/login/callback` for the local Compose stack.
+
+### Complete user login
+
+`GET /v1/login/callback?code=<authorization-code>&state=<state>`
+
+The service exchanges the one-time code at ZITADEL's token endpoint and
+returns HTTP `200` with the token response, including `access_token`,
+`token_type`, and any `refresh_token` or `expires_in` supplied by ZITADEL. The
+response also includes `state` when it was supplied and `request_id` for
+correlation. OAuth errors are returned as `401 AUTHENTICATION_FAILED`; missing
+codes are `400 INVALID_REQUEST`; token endpoint failures are
+`503 AUTH_SERVICE_UNAVAILABLE`.
+
 ### Authorize a Master request
 
 `POST /v1/authorize`

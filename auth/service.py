@@ -11,7 +11,7 @@ from urllib.request import Request, urlopen
 
 
 class AuthenticationBackendUnavailable(RuntimeError):
-    """ZITADEL could not answer an introspection request."""
+    """ZITADEL could not answer an authentication request."""
 
 
 @dataclass(frozen=True)
@@ -36,6 +36,47 @@ class ZitadelClient:
         self.client_secret = client_secret
         self.timeout = timeout
         self.opener = opener
+
+    def authorization_url(self, issuer: str, client_id: str, redirect_uri: str, state: str) -> str:
+        return f"{issuer.rstrip('/')}/oauth/v2/authorize?{urlencode({
+            'client_id': client_id,
+            'redirect_uri': redirect_uri,
+            'response_type': 'code',
+            'scope': 'openid profile email',
+            'state': state,
+        })}"
+
+    def exchange_code(self, issuer: str, code: str, redirect_uri: str) -> dict[str, Any]:
+        if not self.client_id or not self.client_secret:
+            raise AuthenticationBackendUnavailable("ZITADEL client credentials are not configured")
+        basic = base64.b64encode(
+            f"{self.client_id}:{self.client_secret}".encode("utf-8")
+        ).decode("ascii")
+        request = Request(
+            f"{issuer.rstrip('/')}/oauth/v2/token",
+            data=urlencode({
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": redirect_uri,
+            }).encode("ascii"),
+            headers={
+                "Accept": "application/json",
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Authorization": f"Basic {basic}",
+            },
+            method="POST",
+        )
+        try:
+            with self.opener(request, timeout=self.timeout) as response:
+                status = response.getcode()
+                body = json.loads(response.read().decode("utf-8"))
+        except (HTTPError, URLError, TimeoutError, OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise AuthenticationBackendUnavailable("ZITADEL token exchange failed") from exc
+        if status >= 500:
+            raise AuthenticationBackendUnavailable("ZITADEL token exchange failed")
+        if status != 200 or not isinstance(body, dict) or not isinstance(body.get("access_token"), str):
+            raise AuthenticationBackendUnavailable("ZITADEL token exchange failed")
+        return body
 
     def introspect(self, credential: str) -> IntrospectionResult | None:
         if not self.client_id or not self.client_secret:

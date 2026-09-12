@@ -5,9 +5,9 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `ba48ebf906fb88abf6db7a976fd3934c7cbd3fc5`
+- Last verified commit: `48b24eb35edddd22853ebd1021e8bb805e8bb202`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
-- Status: Production Compose stack is running, but the user-facing authentication foundation is incomplete: user login, access-token validation, introspection, and CLI user sessions are not implemented
+- Status: Production Compose stack is running, but the user-facing authentication foundation is incomplete: access-token validation, introspection, and CLI user sessions are not implemented
 
 ---
 
@@ -126,6 +126,9 @@ architecture review.
 - Authentication Service `/v1/authorize` implemented as a separate FastAPI
   container backed by ZITADEL token introspection, with request correlation,
   scope authorization, and contract-aligned error responses.
+- Authentication Service user login flow implemented with ZITADEL authorization
+  redirect, callback code exchange, state propagation, and CLI access-token
+  response contract.
 - Master service added to `docker-compose.yml` with production build settings,
   port exposure, and required database and authentication service URLs.
 - PostgreSQL and ZITADEL services added to `docker-compose.yml`; Master now
@@ -156,7 +159,6 @@ architecture review.
 
 ## Known Issues
 
-- User login is not implemented.
 - User access-token validation is not implemented.
 - Authentication-token introspection is not implemented as a usable
   application flow.
@@ -170,18 +172,17 @@ The Master API adapter, composition root, production container runtime, and
 compose service definitions are available in `docker-compose.yml` and
 `docker-compose.prod.yml`. The default development configuration includes DSL
 and Plesk; the production configuration includes Master, Authentication
-Service, PostgreSQL and ZITADEL. The next architectural gap is the
-user-facing authentication flow that will provide the credential used by
-Master authorization and the CLI session.
+Service, PostgreSQL and ZITADEL. The next architectural gap is validation of
+the user access token issued by the login boundary.
 
 ---
 
 ## Next Step
 
-Implement the Authentication Service user-login flow against ZITADEL,
-including the redirect/callback contract and issuance of a user access token
-for the CLI; do not begin token validation, introspection, or CLI session
-work until this login boundary is defined and verified.
+Implement Authentication Service validation of the user access token issued by
+the login flow, keeping the existing Master authorization boundary and
+defining only the validation contract needed by it. Do not begin CLI session
+work.
 
 ---
 
