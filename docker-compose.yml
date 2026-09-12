@@ -5,28 +5,12 @@ services:
       dockerfile: master/Dockerfile
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://master:master@postgres:5432/master}
-      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://auth:8001}
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://zitadel:8080}
     ports:
       - "8000:8000"
     depends_on:
       postgres:
         condition: service_healthy
-      zitadel:
-        condition: service_started
-      auth:
-        condition: service_started
-
-  auth:
-    build:
-      context: .
-      dockerfile: auth/Dockerfile
-    environment:
-      ZITADEL_URL: ${ZITADEL_URL:-http://zitadel:8080}
-      ZITADEL_CLIENT_ID: ${ZITADEL_CLIENT_ID:-}
-      ZITADEL_CLIENT_SECRET: ${ZITADEL_CLIENT_SECRET:-}
-    ports:
-      - "8001:8001"
-    depends_on:
       zitadel:
         condition: service_started
 
@@ -44,6 +28,8 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./postgres-init.sql:/docker-entrypoint-initdb.d/10-databases.sql:ro
+    networks:
+        - zitadel
 
   zitadel:
     image: ghcr.io/zitadel/zitadel:latest

@@ -5,9 +5,9 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `ab96088106479a0565e57b1d17f3758c084bdc7c`
+- Last verified commit: `ec5871d01cc7faacc93f0f3ba3c42b2ed5de5d93`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
-- Status: Master and Authentication Service compose integration implemented; application tests verified
+- Status: Production Compose stack is running and the Master → Authentication Service → ZITADEL path is reachable; successful authorization is blocked because the configured client is not registered in the local ZITADEL instance
 
 ---
 
@@ -137,6 +137,12 @@ architecture review.
   `ZITADEL_CLIENT_ID` and `ZITADEL_CLIENT_SECRET`; `.env.example` and the
   production authorization setup instructions were added, and Compose
   rendering with non-empty credentials was verified.
+- Production Compose stack started and verified with PostgreSQL, ZITADEL,
+  Authentication Service and Master containers running.
+- Master production image fixed to include the package source and README
+  required by `uv` packaging; PostgreSQL runtime dependency added and locked.
+- Live unauthenticated and invalid-token requests verified across the Master →
+  Authentication Service → ZITADEL boundary.
 
 ### Domain Model
 
@@ -153,7 +159,9 @@ architecture review.
 
 ## Known Issues
 
-None identified in the validated architecture scope.
+- The configured OAuth client is not registered in the local ZITADEL instance;
+  token issuance returns `invalid_client` and valid authorization remains
+  unverified.
 
 ---
 
@@ -163,16 +171,19 @@ The Master API adapter, composition root, production container runtime, and
 compose service definitions are available in `docker-compose.yml` and
 `docker-compose.prod.yml`. The default development configuration includes DSL
 and Plesk; the production configuration includes Master, Authentication
-Service, PostgreSQL and ZITADEL. The Authentication Service now requires
-explicit ZITADEL OAuth client credentials and validates bearer credentials
-through the configured ZITADEL introspection endpoint.
+Service, PostgreSQL and ZITADEL. The Authentication Service requires explicit
+ZITADEL OAuth client credentials and validates bearer credentials through the
+configured ZITADEL introspection endpoint. The production stack is running,
+but the configured OAuth client is not registered in the local ZITADEL
+instance.
 
 ---
 
 ## Next Step
 
-Run the production compose stack with a real ZITADEL OAuth client and validate
-the live Master → Authentication Service → ZITADEL authorization flow.
+Register the configured OAuth client in the local ZITADEL instance (or point
+`ZITADEL_URL` to the instance where it exists), then obtain a valid bearer
+token and verify successful authorization through Master.
 
 ---
 

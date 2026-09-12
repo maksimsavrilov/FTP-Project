@@ -3,10 +3,12 @@ FROM python:3.12-slim
 WORKDIR /app
 
 COPY pyproject.toml uv.lock ./
+COPY README.md ./
 RUN pip install --no-cache-dir uv \
     && uv sync --frozen --no-dev --no-install-project
 
 COPY master ./master
+COPY src ./src
 
 EXPOSE 8000
 
