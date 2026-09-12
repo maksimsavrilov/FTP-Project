@@ -5,7 +5,7 @@
 - Phase: Implementation
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `eb12304bfb231ef62dc4d9e2e83f952576316fa4`
+- Last verified commit: `78a80cf6efe48cb4a74e48ec13c87822b2f5b8cc`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Production Compose stack is running and the user-facing authentication foundation is implemented, including access-token validation, introspection, and CLI user sessions
 
@@ -166,6 +166,11 @@ architecture review.
 - ServiceAssignment defined as explicit placement entity.
 - WorkerNode defined with capacity and health information.
 - DesiredState and ActualState defined as separate entities.
+- Canonical domain model expanded with Administrator, Reseller, Customer,
+  identity references, resource entitlement inheritance, lifecycle separation,
+  Master/Agent ownership, and Plesk reference classification.
+- Domain model roadmap aligned with the current implementation state and kept
+  separate from the canonical Structurizr C4 model.
 
 ---
 
