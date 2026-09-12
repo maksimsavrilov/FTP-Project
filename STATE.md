@@ -2,12 +2,12 @@
 
 ## Current State
 
-- Phase: Implementation design
+- Phase: Implementation
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `f1123ed`
+- Last verified commit: `8556f9f`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
-- Status: Production Compose stack is running, but the user-facing authentication foundation is incomplete: access-token validation, introspection, and CLI user sessions are not implemented
+- Status: Production Compose stack is running and the user-facing authentication foundation is implemented, including access-token validation, introspection, and CLI user sessions
 
 ---
 
@@ -132,6 +132,8 @@ architecture review.
 - Authentication Service user login flow implemented with ZITADEL authorization
   redirect, callback code exchange, state propagation, and CLI access-token
   response contract.
+- CLI user session flow implemented with login-state validation, Bearer token
+  validation, and local session persistence.
 - Master service added to `docker-compose.yml` with production build settings,
   port exposure, and required database and authentication service URLs.
 - PostgreSQL and ZITADEL services added to `docker-compose.yml`; Master now
@@ -160,12 +162,6 @@ architecture review.
 
 ---
 
-## Known Issues
-
-- CLI user sessions are not implemented.
-
----
-
 ## Current Task
 
 The Master API adapter, composition root, production container runtime, and
@@ -173,15 +169,14 @@ compose service definitions are available in `docker-compose.yml` and
 `docker-compose.prod.yml`. The default development configuration includes DSL
 and Plesk; the production configuration includes Master, Authentication
 Service, PostgreSQL and ZITADEL. User access-token validation now runs through
-ZITADEL introspection; the remaining authentication gap is the CLI session
-flow.
+ZITADEL introspection, and the CLI can complete and persist user sessions.
 
 ---
 
 ## Next Step
 
-Implement the CLI user session flow on top of the existing login callback and
-access-token contract. Do not expand Master authorization or token validation.
+Define the authenticated CLI-to-Master HTTP client boundary for business
+resource operations. Do not expand Master authorization or token validation.
 
 ---
 
