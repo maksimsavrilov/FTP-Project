@@ -169,7 +169,7 @@ architecture review.
 - ServiceAssignment defined as explicit placement entity.
 - WorkerNode defined with capacity and health information.
 - DesiredState and ActualState defined as separate entities.
-- Plesk reference dump classified without adopting its persistence schema.
+- Reference dump classified without adopting its persistence schema.
 - Domain-to-Master/Agent ownership and runtime-state mapping documented in
   `docs/domain-model.md`.
 
@@ -177,7 +177,7 @@ architecture review.
 
 ## Current Task
 
-The canonical hosting domain model has been reviewed against the Plesk
+The canonical hosting domain model has been reviewed against the
 reference dump and aligned with the existing Master/Agent architecture. The
 model is documented independently from C4 and persistence implementation.
 

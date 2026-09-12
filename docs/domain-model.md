@@ -2,7 +2,7 @@
 
 This document is the canonical business-domain model for the hosting
 platform. It is deliberately separate from the Structurizr/C4 model and from
-the PostgreSQL persistence schema. The Plesk dump in `docs/temp_db.sql` is
+the PostgreSQL persistence schema. The SQL dump in `docs/temp_db.sql` is
 reference material only; its table names and identifiers are not our domain
 model.
 
@@ -165,7 +165,7 @@ Agents never call each other and never access PostgreSQL. The physical
 location of Web, DNS, Mail and DB services may differ without changing any
 relationship above.
 
-## Plesk dump classification
+## Reference dump classification
 
 The following classification uses `docs/temp_db.sql` only to validate concepts,
 not as a migration plan.
