@@ -5,7 +5,7 @@
 - Phase: Implementation design
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `48b24eb35edddd22853ebd1021e8bb805e8bb202`
+- Last verified commit: `edf6841de76d06d33a382d63cdb9b6817dc91fb2`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Production Compose stack is running, but the user-facing authentication foundation is incomplete: access-token validation, introspection, and CLI user sessions are not implemented
 
