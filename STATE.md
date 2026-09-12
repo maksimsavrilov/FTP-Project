@@ -5,7 +5,7 @@
 - Phase: Implementation
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `f7e9cd9ba3f043c09e63756f5c2d779641297aa3`
+- Last verified commit: `eb12304bfb231ef62dc4d9e2e83f952576316fa4`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Production Compose stack is running and the user-facing authentication foundation is implemented, including access-token validation, introspection, and CLI user sessions
 
@@ -139,6 +139,8 @@ architecture review.
   structured API/transport errors.
 - First CLI business command implemented: `user create` loads the persisted user
   session and creates a Master user through `MasterClient`.
+- CLI login command implemented: it starts the existing Authentication Service
+  flow, completes the callback, and persists the resulting user session.
 - Master service added to `docker-compose.yml` with production build settings,
   port exposure, and required database and authentication service URLs.
 - PostgreSQL and ZITADEL services added to `docker-compose.yml`; Master now
@@ -169,8 +171,9 @@ architecture review.
 
 ## Current Task
 
-The CLI has its first user-facing Master business command, `user create`, using
-the persisted session and authenticated `MasterClient` boundary. The Master API
+The CLI now supports login through the existing Authentication Service flow and
+persists the resulting user session. It also has the `user create` Master
+business command using the authenticated `MasterClient` boundary. The Master API
 adapter, composition root, production container runtime, and compose service
 definitions remain available in `docker-compose.yml` and
 `docker-compose.prod.yml`.
@@ -179,9 +182,9 @@ definitions remain available in `docker-compose.yml` and
 
 ## Next Step
 
-Define the CLI login command that starts and completes the existing
-Authentication Service login flow and persists the resulting user session. Do
-not expand Master authorization or token validation.
+Define the first CLI read command for a Master business resource, using the
+persisted session and `MasterClient`. Do not expand Master authorization or
+token validation.
 
 ---
 

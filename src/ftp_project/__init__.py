@@ -20,12 +20,30 @@ __all__ = [
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="ftp-project")
     commands = parser.add_subparsers(dest="command", required=True)
+    login = commands.add_parser("login")
+    login.add_argument("--callback-url")
+    login.add_argument("--no-browser", action="store_true")
     user = commands.add_parser("user")
     user_commands = user.add_subparsers(dest="user_command", required=True)
     create = user_commands.add_parser("create")
     create.add_argument("--status", default="ACTIVE")
 
     args = parser.parse_args(argv)
+    if args.command == "login":
+        client = AuthenticationClient(
+            base_url=os.environ.get("FTP_PROJECT_AUTH_URL", "http://localhost:8001")
+        )
+        try:
+            location, state = client.start_login(open_browser=not args.no_browser)
+            print(f"Open this URL to log in: {location}")
+            callback_url = args.callback_url or input("Paste the callback URL: ").strip()
+            client.complete_login(callback_url, state, SessionStore())
+        except LoginError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        print("Login successful.")
+        return 0
+
     if args.command == "user" and args.user_command == "create":
         session = SessionStore().load()
         if session is None:

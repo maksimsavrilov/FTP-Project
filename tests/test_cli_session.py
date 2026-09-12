@@ -31,6 +31,34 @@ class Response:
 
 
 class CliSessionTests(unittest.TestCase):
+    def test_login_command_completes_and_stores_session(self):
+        import ftp_project
+
+        with tempfile.TemporaryDirectory() as directory:
+            store = SessionStore(Path(directory) / "session.json")
+            session = UserSession("access-1")
+            with patch("ftp_project.AuthenticationClient") as client_type, patch(
+                "ftp_project.SessionStore", return_value=store
+            ):
+                client_type.return_value.start_login.return_value = (
+                    "https://zitadel.example/login",
+                    "state-1",
+                )
+                client_type.return_value.complete_login.return_value = session
+
+                self.assertEqual(
+                    ftp_project.main(
+                        ["login", "--no-browser", "--callback-url", "http://localhost/callback"]
+                    ),
+                    0,
+                )
+
+                client_type.assert_called_once_with(base_url="http://localhost:8001")
+                client_type.return_value.start_login.assert_called_once_with(open_browser=False)
+                client_type.return_value.complete_login.assert_called_once_with(
+                    "http://localhost/callback", "state-1", store
+                )
+
     def test_user_create_command_uses_saved_session(self):
         import ftp_project
 
