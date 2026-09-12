@@ -183,3 +183,16 @@ The client must:
 No hosting state is changed by this call. Master remains responsible for
 applying business rules and persisting the resulting desired state after the
 authorization check succeeds.
+
+## CLI Master HTTP client contract
+
+The CLI uses an authenticated `MasterClient` for business-resource operations.
+The client accepts a persisted `UserSession`, sends its credential only as
+`Authorization: Bearer <access_token>`, and propagates or generates an
+`X-Request-ID` for every request. `GET` reads a resource and `POST` creates a
+resource using the JSON body returned by the Master API.
+
+HTTP responses with an `ApiError` body are raised as a structured client error
+with the status, stable error code, message, and request ID. Transport failures
+and malformed JSON are raised as unavailable/invalid-response client errors.
+The client does not persist credentials, retry requests, or call Worker Agents.

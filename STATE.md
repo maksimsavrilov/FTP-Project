@@ -134,6 +134,9 @@ architecture review.
   response contract.
 - CLI user session flow implemented with login-state validation, Bearer token
   validation, and local session persistence.
+- Authenticated CLI-to-Master HTTP client boundary implemented for JSON business
+  resource reads and creates, including Bearer propagation, request IDs, and
+  structured API/transport errors.
 - Master service added to `docker-compose.yml` with production build settings,
   port exposure, and required database and authentication service URLs.
 - PostgreSQL and ZITADEL services added to `docker-compose.yml`; Master now
@@ -164,19 +167,18 @@ architecture review.
 
 ## Current Task
 
-The Master API adapter, composition root, production container runtime, and
-compose service definitions are available in `docker-compose.yml` and
-`docker-compose.prod.yml`. The default development configuration includes DSL
-and Plesk; the production configuration includes Master, Authentication
-Service, PostgreSQL and ZITADEL. User access-token validation now runs through
-ZITADEL introspection, and the CLI can complete and persist user sessions.
+The CLI now has a reusable authenticated HTTP boundary for calling the Master
+business-resource API with a persisted user session. The Master API adapter,
+composition root, production container runtime, and compose service definitions
+remain available in `docker-compose.yml` and `docker-compose.prod.yml`.
 
 ---
 
 ## Next Step
 
-Define the authenticated CLI-to-Master HTTP client boundary for business
-resource operations. Do not expand Master authorization or token validation.
+Define the first CLI business command that uses `MasterClient` for a user-facing
+Master resource operation. Do not expand Master authorization or token
+validation.
 
 ---
 
