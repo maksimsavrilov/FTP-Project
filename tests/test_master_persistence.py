@@ -6,10 +6,13 @@ from sqlalchemy.orm import Session
 
 from master.persistence.models import Base, WorkerNode, ServiceAssignment, DesiredState, ActualState
 from master.persistence.repositories import (
+    AccountRepository,
     WorkerNodeRepository,
     ServiceAssignmentRepository,
     DesiredStateRepository,
     ActualStateRepository,
+    IdentityReferenceRepository,
+    ResourceEntitlementRepository,
 )
 from master.services import MasterNodeService, MasterPlacementService, MasterReconciliationService
 
@@ -86,6 +89,28 @@ class MasterPersistenceTests(unittest.TestCase):
         actual = self.actual_repo.get("service-123")
         self.assertEqual(actual.status, "RUNNING")
         self.assertEqual(actual.version, 1)
+
+    def test_account_identity_and_subscription_entitlement_flow(self):
+        identity = IdentityReferenceRepository(self.session).create("zitadel", "user-123")
+        account = AccountRepository(self.session).create(
+            role="CUSTOMER",
+            identity_reference_id=identity.id,
+        )
+        entitlement = ResourceEntitlementRepository(self.session).create(
+            subscription_id="subscription-123",
+            resource_name="disk",
+            limit=100,
+            usage=20,
+            reservation=10,
+            source="SERVICE_PLAN",
+        )
+        self.session.commit()
+
+        self.assertEqual(IdentityReferenceRepository(self.session).get_by_subject("zitadel", "user-123").id, identity.id)
+        self.assertEqual(AccountRepository(self.session).get(account.id).role, "CUSTOMER")
+        loaded = ResourceEntitlementRepository(self.session).get("subscription-123", "disk")
+        self.assertEqual(loaded.limit, 100)
+        self.assertEqual(loaded.usage + loaded.reservation, 30)
 
     def test_placement_service_replaces_assignment_and_increments_desired_state(self):
         node_id = str(uuid.uuid4())

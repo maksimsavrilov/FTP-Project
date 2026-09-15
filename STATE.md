@@ -5,7 +5,7 @@
 - Phase: Implementation
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `78a80cf6efe48cb4a74e48ec13c87822b2f5b8cc`
+- Last verified commit: `47c5d767fb4e40d32d651f66952b3c941566359b`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Production Compose stack is running and the user-facing authentication foundation is implemented, including access-token validation, introspection, and CLI user sessions
 
@@ -116,6 +116,8 @@ architecture review.
 - Master API authorization and error mapping reviewed against the shared
   contracts and existing tests; correlation mismatches and malformed
   authorization decisions now map to dependency errors.
+- Master persistence slice for Account roles, external identity references,
+  and effective subscription resource entitlements implemented and verified.
 - Authentication Service now validates login-issued user access tokens through
   ZITADEL introspection before evaluating Master authorization scopes; standard
   Bearer token type, user identity and numeric expiry are handled.
@@ -141,6 +143,8 @@ architecture review.
   session and creates a Master user through `MasterClient`.
 - CLI login command implemented: it starts the existing Authentication Service
   flow, completes the callback, and persists the resulting user session.
+- First CLI read command implemented: `user get` loads the persisted session
+  and reads a Master user through `MasterClient`.
 - Master service added to `docker-compose.prod.yml` with production build settings,
   port exposure, and required database and authentication service URLs.
 - PostgreSQL and ZITADEL services added to `docker-compose.prod.yml`; Master now
@@ -176,23 +180,21 @@ architecture review.
 
 ## Current Task
 
-The CLI now supports login through the existing Authentication Service flow and
-persists the resulting user session. It also has the `user create` Master
-business command using the authenticated `MasterClient` boundary. The Master API
-adapter, composition root, production container runtime, and compose service
-definitions remain available in `docker-compose.dev.yml` and
+The CLI now supports login through the existing Authentication Service flow,
+persists the resulting user session, and has authenticated `user create` and
+`user get` Master commands. Master persistence now also has the first Account,
+identity-reference, and effective subscription-entitlement slice. The Master
+API adapter, composition root, production container runtime, and compose
+service definitions remain available in `docker-compose.dev.yml` and
 `docker-compose.prod.yml`.
 
 ---
 
 ## Next Step
 
-1. Define the first Master domain types and persistence slice for `Account` roles,
-identity references and effective subscription limits; do not change ZITADEL
+1. Define the Master application/API boundary for Account roles, identity
+references, and effective subscription entitlements; do not change ZITADEL
 token validation or the C4 model.
-2. Define the first CLI read command for a Master business resource, using the
-persisted session and `MasterClient`. Do not expand Master authorization or
-token validation.
 
 ---
 

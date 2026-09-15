@@ -8,7 +8,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .models import ActualState, DatabaseService, DatabaseUser, DesiredState, DnsService, Domain, MailAccount, MailDomain, MailService, Service, ServiceAssignment, ServicePlan, Subscription, User, Website, WebService, WorkerNode
+from .models import Account, ActualState, DatabaseService, DatabaseUser, DesiredState, DnsService, Domain, IdentityReference, MailAccount, MailDomain, MailService, ResourceEntitlement, Service, ServiceAssignment, ServicePlan, Subscription, User, Website, WebService, WorkerNode
 
 
 def _normalize_id(value: uuid.UUID | str | None) -> str | None:
@@ -45,6 +45,53 @@ class UserRepository:
         self.session.add(user)
         self.session.flush()
         return user
+
+
+class IdentityReferenceRepository:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def get(self, identity_reference_id):
+        return self.session.get(IdentityReference, _normalize_id(identity_reference_id))
+
+    def get_by_subject(self, provider: str, subject_id: str):
+        return self.session.execute(
+            select(IdentityReference).where(
+                IdentityReference.provider == provider,
+                IdentityReference.subject_id == subject_id,
+            )
+        ).scalar_one_or_none()
+
+    def create(self, provider: str, subject_id: str):
+        identity_reference = IdentityReference(provider=provider, subject_id=subject_id)
+        self.session.add(identity_reference)
+        self.session.flush()
+        return identity_reference
+
+
+class AccountRepository:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def get(self, account_id):
+        return self.session.get(Account, _normalize_id(account_id))
+
+    def create(
+        self,
+        role: str,
+        identity_reference_id: str | None = None,
+        parent_account_id: str | None = None,
+        status: str = "ACTIVE",
+    ):
+        account = Account(
+            role=role,
+            status=status,
+            identity_reference_id=_normalize_id(identity_reference_id),
+            parent_account_id=_normalize_id(parent_account_id),
+        )
+        self.session.add(account)
+        self.session.flush()
+        return account
 
 
 class ServicePlanRepository:
@@ -95,6 +142,47 @@ class SubscriptionRepository:
         self.session.add(subscription)
         self.session.flush()
         return subscription
+
+
+class ResourceEntitlementRepository:
+    def __init__(self, session: Session):
+        self.session = session
+
+    def get(self, subscription_id, resource_name: str):
+        return self.session.execute(
+            select(ResourceEntitlement).where(
+                ResourceEntitlement.subscription_id == _normalize_id(subscription_id),
+                ResourceEntitlement.resource_name == resource_name,
+            )
+        ).scalar_one_or_none()
+
+    def list_for_subscription(self, subscription_id):
+        return self.session.execute(
+            select(ResourceEntitlement)
+            .where(ResourceEntitlement.subscription_id == _normalize_id(subscription_id))
+            .order_by(ResourceEntitlement.resource_name)
+        ).scalars().all()
+
+    def create(
+        self,
+        subscription_id: str,
+        resource_name: str,
+        limit: Decimal | int | float,
+        source: str,
+        usage: Decimal | int | float = 0,
+        reservation: Decimal | int | float = 0,
+    ):
+        entitlement = ResourceEntitlement(
+            subscription_id=_normalize_id(subscription_id),
+            resource_name=resource_name,
+            limit=Decimal(str(limit)),
+            usage=Decimal(str(usage)),
+            reservation=Decimal(str(reservation)),
+            source=source,
+        )
+        self.session.add(entitlement)
+        self.session.flush()
+        return entitlement
 
 
 class ServiceRepository:

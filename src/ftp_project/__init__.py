@@ -27,6 +27,8 @@ def main(argv: list[str] | None = None) -> int:
     user_commands = user.add_subparsers(dest="user_command", required=True)
     create = user_commands.add_parser("create")
     create.add_argument("--status", default="ACTIVE")
+    get = user_commands.add_parser("get")
+    get.add_argument("user_id")
 
     args = parser.parse_args(argv)
     if args.command == "login":
@@ -54,6 +56,22 @@ def main(argv: list[str] | None = None) -> int:
                 session,
                 base_url=os.environ.get("FTP_PROJECT_MASTER_URL", "http://localhost:8000"),
             ).create("/v1/users", {"status": args.status})
+        except MasterClientError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        print(json.dumps(result, sort_keys=True))
+        return 0
+
+    if args.command == "user" and args.user_command == "get":
+        session = SessionStore().load()
+        if session is None:
+            print("No authenticated session. Log in before reading a user.", file=sys.stderr)
+            return 1
+        try:
+            result = MasterClient(
+                session,
+                base_url=os.environ.get("FTP_PROJECT_MASTER_URL", "http://localhost:8000"),
+            ).get(f"/v1/users/{args.user_id}")
         except MasterClientError as exc:
             print(str(exc), file=sys.stderr)
             return 1

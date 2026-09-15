@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
+from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import BigInteger, DateTime, Index, JSON, Numeric, String, func
+from sqlalchemy import BigInteger, DateTime, Index, JSON, Numeric, String, UniqueConstraint, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -22,6 +23,32 @@ class User(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     status: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow, server_default=func.now())
+
+
+class IdentityReference(Base):
+    __tablename__ = "identity_references"
+    __table_args__ = (UniqueConstraint("provider", "subject_id", name="uq_identity_references_provider_subject"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    provider: Mapped[str] = mapped_column(String, nullable=False)
+    subject_id: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class Account(Base):
+    __tablename__ = "accounts"
+    __table_args__ = (
+        Index("ix_accounts_role", "role"),
+        Index("ix_accounts_status", "status"),
+        Index("ix_accounts_parent_account_id", "parent_account_id"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    role: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[str] = mapped_column(String, nullable=False)
+    identity_reference_id: Mapped[str | None] = mapped_column(String(36), nullable=True, unique=True)
+    parent_account_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, onupdate=_utcnow, server_default=func.now())
 
@@ -49,6 +76,22 @@ class Subscription(Base):
     status: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utcnow, server_default=func.now())
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class ResourceEntitlement(Base):
+    __tablename__ = "resource_entitlements"
+    __table_args__ = (
+        UniqueConstraint("subscription_id", "resource_name", name="uq_resource_entitlements_subscription_resource"),
+        Index("ix_resource_entitlements_subscription_id", "subscription_id"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    subscription_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    resource_name: Mapped[str] = mapped_column(String, nullable=False)
+    limit: Mapped[Decimal] = mapped_column(Numeric(precision=20, scale=4), nullable=False)
+    usage: Mapped[Decimal] = mapped_column(Numeric(precision=20, scale=4), nullable=False, default=0)
+    reservation: Mapped[Decimal] = mapped_column(Numeric(precision=20, scale=4), nullable=False, default=0)
+    source: Mapped[str] = mapped_column(String, nullable=False)
 
 
 class Service(Base):
