@@ -5,7 +5,7 @@
 - Phase: Implementation
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `eb12304bfb231ef62dc4d9e2e83f952576316fa4`
+- Last verified commit: `78a80cf6efe48cb4a74e48ec13c87822b2f5b8cc`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Production Compose stack is running and the user-facing authentication foundation is implemented, including access-token validation, introspection, and CLI user sessions
 
@@ -141,9 +141,9 @@ architecture review.
   session and creates a Master user through `MasterClient`.
 - CLI login command implemented: it starts the existing Authentication Service
   flow, completes the callback, and persists the resulting user session.
-- Master service added to `docker-compose.yml` with production build settings,
+- Master service added to `docker-compose.prod.yml` with production build settings,
   port exposure, and required database and authentication service URLs.
-- PostgreSQL and ZITADEL services added to `docker-compose.yml`; Master now
+- PostgreSQL and ZITADEL services added to `docker-compose.prod.yml`; Master now
   connects to the PostgreSQL and ZITADEL containers, with separate Master and
   ZITADEL databases initialized in PostgreSQL.
 - Development and production compose configurations separated; production
@@ -166,6 +166,11 @@ architecture review.
 - ServiceAssignment defined as explicit placement entity.
 - WorkerNode defined with capacity and health information.
 - DesiredState and ActualState defined as separate entities.
+- Canonical domain model expanded with Administrator, Reseller, Customer,
+  identity references, resource entitlement inheritance, lifecycle separation,
+  Master/Agent ownership, and Plesk reference classification.
+- Domain model roadmap aligned with the current implementation state and kept
+  separate from the canonical Structurizr C4 model.
 
 ---
 
@@ -175,14 +180,17 @@ The CLI now supports login through the existing Authentication Service flow and
 persists the resulting user session. It also has the `user create` Master
 business command using the authenticated `MasterClient` boundary. The Master API
 adapter, composition root, production container runtime, and compose service
-definitions remain available in `docker-compose.yml` and
+definitions remain available in `docker-compose.dev.yml` and
 `docker-compose.prod.yml`.
 
 ---
 
 ## Next Step
 
-Define the first CLI read command for a Master business resource, using the
+1. Define the first Master domain types and persistence slice for `Account` roles,
+identity references and effective subscription limits; do not change ZITADEL
+token validation or the C4 model.
+2. Define the first CLI read command for a Master business resource, using the
 persisted session and `MasterClient`. Do not expand Master authorization or
 token validation.
 
