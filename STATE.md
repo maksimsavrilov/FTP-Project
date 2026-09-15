@@ -141,9 +141,9 @@ architecture review.
   session and creates a Master user through `MasterClient`.
 - CLI login command implemented: it starts the existing Authentication Service
   flow, completes the callback, and persists the resulting user session.
-- Master service added to `docker-compose.yml` with production build settings,
+- Master service added to `docker-compose.prod.yml` with production build settings,
   port exposure, and required database and authentication service URLs.
-- PostgreSQL and ZITADEL services added to `docker-compose.yml`; Master now
+- PostgreSQL and ZITADEL services added to `docker-compose.prod.yml`; Master now
   connects to the PostgreSQL and ZITADEL containers, with separate Master and
   ZITADEL databases initialized in PostgreSQL.
 - Development and production compose configurations separated; production
@@ -180,14 +180,17 @@ The CLI now supports login through the existing Authentication Service flow and
 persists the resulting user session. It also has the `user create` Master
 business command using the authenticated `MasterClient` boundary. The Master API
 adapter, composition root, production container runtime, and compose service
-definitions remain available in `docker-compose.yml` and
+definitions remain available in `docker-compose.dev.yml` and
 `docker-compose.prod.yml`.
 
 ---
 
 ## Next Step
 
-Define the first CLI read command for a Master business resource, using the
+1. Define the first Master domain types and persistence slice for `Account` roles,
+identity references and effective subscription limits; do not change ZITADEL
+token validation or the C4 model.
+2. Define the first CLI read command for a Master business resource, using the
 persisted session and `MasterClient`. Do not expand Master authorization or
 token validation.
 
