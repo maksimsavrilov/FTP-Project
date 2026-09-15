@@ -31,6 +31,9 @@ class MasterCompositionTests(unittest.TestCase):
             "database_user_service",
             "mail_domain_service",
             "mail_account_service",
+            "identity_reference_service",
+            "account_service",
+            "resource_entitlement_service",
         ):
             self.assertIsNotNone(getattr(api, service_name))
 

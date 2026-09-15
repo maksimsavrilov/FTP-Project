@@ -17,6 +17,9 @@ from .services import (
     MasterMailAccountService,
     MasterMailDomainService,
     MasterMailServiceService,
+    MasterAccountService,
+    MasterIdentityReferenceService,
+    MasterResourceEntitlementService,
     MasterServiceService,
     MasterServicePlanService,
     MasterSubscriptionService,
@@ -192,6 +195,34 @@ def _subscription_body(subscription: Any) -> dict[str, Any]:
     }
 
 
+def _identity_reference_body(identity: Any) -> dict[str, Any]:
+    return {"id": str(identity.id), "provider": identity.provider, "subject_id": identity.subject_id}
+
+
+def _account_body(account: Any) -> dict[str, Any]:
+    return {
+        "id": str(account.id),
+        "role": account.role,
+        "status": account.status,
+        "identity_reference_id": account.identity_reference_id,
+        "parent_account_id": account.parent_account_id,
+        "created_at": _timestamp(account.created_at),
+        "updated_at": _timestamp(account.updated_at),
+    }
+
+
+def _entitlement_body(entitlement: Any) -> dict[str, Any]:
+    return {
+        "id": str(entitlement.id),
+        "subscription_id": str(entitlement.subscription_id),
+        "resource_name": entitlement.resource_name,
+        "limit": _json_value(entitlement.limit),
+        "usage": _json_value(entitlement.usage),
+        "reservation": _json_value(entitlement.reservation),
+        "source": entitlement.source,
+    }
+
+
 def _domain_body(domain: Any) -> dict[str, Any]:
     return {
         "id": str(domain.id),
@@ -351,6 +382,9 @@ class MasterApi:
     database_user_service: MasterDatabaseUserService | None = None
     mail_domain_service: MasterMailDomainService | None = None
     mail_account_service: MasterMailAccountService | None = None
+    identity_reference_service: MasterIdentityReferenceService | None = None
+    account_service: MasterAccountService | None = None
+    resource_entitlement_service: MasterResourceEntitlementService | None = None
     _request_id_factory: Callable[[], str] = field(default=lambda: str(uuid4()), repr=False)
 
     def _request_id(self, request_id: str | None) -> str:
@@ -504,6 +538,64 @@ class MasterApi:
         if response.status_code == 200:
             return ApiResponse(201, response.body, response.headers)
         return response
+
+    def get_identity_reference(self, identity_reference_id: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+        return self._call(request_id, lambda: (self._authorize(credential, f"identity-reference:{identity_reference_id}", "read", request_id), _identity_reference_body(self.identity_reference_service.get(identity_reference_id)))[1])
+
+    def create_identity_reference(self, body: dict[str, Any], credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+        def operation() -> dict[str, Any]:
+            self._authorize(credential, "identity-reference:*", "write", request_id)
+            _require_object(body)
+            return _identity_reference_body(self.identity_reference_service.create(_required_string(body, "provider"), _required_string(body, "subject_id")))
+        response = self._call(request_id, operation)
+        return ApiResponse(201, response.body, response.headers) if response.status_code == 200 else response
+
+    def get_account(self, account_id: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+        return self._call(request_id, lambda: (self._authorize(credential, f"account:{account_id}", "read", request_id), _account_body(self.account_service.get(account_id)))[1])
+
+    def create_account(self, body: dict[str, Any], credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+        def operation() -> dict[str, Any]:
+            self._authorize(credential, "account:*", "write", request_id)
+            _require_object(body)
+            role = _required_string(body, "role")
+            status = body.get("status", "ACTIVE")
+            if not isinstance(status, str) or not status:
+                raise RequestValidationError("status must be a non-empty string")
+            identity_reference_id = body.get("identity_reference_id")
+            parent_account_id = body.get("parent_account_id")
+            for name, value in (("identity_reference_id", identity_reference_id), ("parent_account_id", parent_account_id)):
+                if value is not None and (not isinstance(value, str) or not value):
+                    raise RequestValidationError(f"{name} must be a non-empty string or null")
+            return _account_body(self.account_service.create(role, status, identity_reference_id, parent_account_id))
+        response = self._call(request_id, operation)
+        return ApiResponse(201, response.body, response.headers) if response.status_code == 200 else response
+
+    def list_entitlements(self, subscription_id: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+        return self._call(request_id, lambda: (self._authorize(credential, f"subscription:{subscription_id}", "read", request_id), {"items": [_entitlement_body(item) for item in self.resource_entitlement_service.list(subscription_id)]})[1])
+
+    def get_entitlement(self, subscription_id: str, resource_name: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+        return self._call(request_id, lambda: (self._authorize(credential, f"subscription:{subscription_id}", "read", request_id), _entitlement_body(self.resource_entitlement_service.get(subscription_id, resource_name)))[1])
+
+    def create_entitlement(self, subscription_id: str, body: dict[str, Any], credential: str | None = None, request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+        def operation() -> dict[str, Any]:
+            self._authorize(credential, f"subscription:{subscription_id}", "write", request_id)
+            _require_object(body)
+            resource_name = _required_string(body, "resource_name")
+            source = _required_string(body, "source")
+            values = {name: body.get(name, 0) for name in ("limit", "usage", "reservation")}
+            for name, value in values.items():
+                if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+                    raise RequestValidationError(f"{name} must be numeric")
+            return _entitlement_body(self.resource_entitlement_service.create(subscription_id, resource_name, values["limit"], source, values["usage"], values["reservation"]))
+        response = self._call(request_id, operation)
+        return ApiResponse(201, response.body, response.headers) if response.status_code == 200 else response
 
     def get_domain(self, domain_id: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
         request_id = self._request_id(request_id)

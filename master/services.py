@@ -23,6 +23,9 @@ from .persistence.repositories import (
     WebsiteRepository,
     WebServiceRepository,
     WorkerNodeRepository,
+    AccountRepository,
+    IdentityReferenceRepository,
+    ResourceEntitlementRepository,
 )
 
 
@@ -72,6 +75,137 @@ class SubscriptionResult:
     status: str
     created_at: Any
     expires_at: Any
+
+
+@dataclass(frozen=True)
+class IdentityReferenceResult:
+    id: str
+    provider: str
+    subject_id: str
+
+
+@dataclass(frozen=True)
+class AccountResult:
+    id: str
+    role: str
+    status: str
+    identity_reference_id: str | None
+    parent_account_id: str | None
+    created_at: Any
+    updated_at: Any
+
+
+@dataclass(frozen=True)
+class ResourceEntitlementResult:
+    id: str
+    subscription_id: str
+    resource_name: str
+    limit: Any
+    usage: Any
+    reservation: Any
+    source: str
+
+
+class MasterIdentityReferenceService:
+    """Application boundary for external identity references."""
+
+    def __init__(self, session_factory: Callable[[], Session]):
+        self.session_factory = session_factory
+
+    def get(self, identity_reference_id: str):
+        with self.session_factory() as session:
+            identity = IdentityReferenceRepository(session).get(identity_reference_id)
+            if identity is None:
+                raise LookupError(f"IdentityReference {identity_reference_id} not found")
+            return identity
+
+    def create(self, provider: str, subject_id: str):
+        with self.session_factory() as session, session.begin():
+            repository = IdentityReferenceRepository(session)
+            if repository.get_by_subject(provider, subject_id) is not None:
+                raise ValueError("identity reference already exists")
+            identity = repository.create(provider, subject_id)
+            return IdentityReferenceResult(identity.id, identity.provider, identity.subject_id)
+
+
+class MasterAccountService:
+    """Application boundary for Master account roles and hierarchy."""
+
+    def __init__(self, session_factory: Callable[[], Session]):
+        self.session_factory = session_factory
+
+    def get(self, account_id: str):
+        with self.session_factory() as session:
+            account = AccountRepository(session).get(account_id)
+            if account is None:
+                raise LookupError(f"Account {account_id} not found")
+            return account
+
+    def create(
+        self,
+        role: str,
+        status: str = "ACTIVE",
+        identity_reference_id: str | None = None,
+        parent_account_id: str | None = None,
+    ):
+        with self.session_factory() as session, session.begin():
+            if identity_reference_id and IdentityReferenceRepository(session).get(identity_reference_id) is None:
+                raise LookupError(f"IdentityReference {identity_reference_id} not found")
+            if parent_account_id and AccountRepository(session).get(parent_account_id) is None:
+                raise LookupError(f"Parent Account {parent_account_id} not found")
+            account = AccountRepository(session).create(
+                role, identity_reference_id, parent_account_id, status
+            )
+            return AccountResult(
+                account.id, account.role, account.status,
+                account.identity_reference_id, account.parent_account_id,
+                account.created_at, account.updated_at,
+            )
+
+
+class MasterResourceEntitlementService:
+    """Application boundary for effective subscription entitlements."""
+
+    def __init__(self, session_factory: Callable[[], Session]):
+        self.session_factory = session_factory
+
+    def get(self, subscription_id: str, resource_name: str):
+        with self.session_factory() as session:
+            entitlement = ResourceEntitlementRepository(session).get(subscription_id, resource_name)
+            if entitlement is None:
+                raise LookupError(f"ResourceEntitlement {resource_name} not found for subscription {subscription_id}")
+            return entitlement
+
+    def list(self, subscription_id: str):
+        with self.session_factory() as session:
+            if SubscriptionRepository(session).get(subscription_id) is None:
+                raise LookupError(f"Subscription {subscription_id} not found")
+            return ResourceEntitlementRepository(session).list_for_subscription(subscription_id)
+
+    def create(
+        self,
+        subscription_id: str,
+        resource_name: str,
+        limit: Any,
+        source: str,
+        usage: Any = 0,
+        reservation: Any = 0,
+    ):
+        with self.session_factory() as session, session.begin():
+            if SubscriptionRepository(session).get(subscription_id) is None:
+                raise LookupError(f"Subscription {subscription_id} not found")
+            entitlement = ResourceEntitlementRepository(session).create(
+                subscription_id, resource_name, limit, source, usage, reservation
+            )
+            return ResourceEntitlementResult(
+                entitlement.id,
+                entitlement.subscription_id,
+                entitlement.resource_name,
+                entitlement.limit,
+                entitlement.usage,
+                entitlement.reservation,
+                entitlement.source,
+            )
 
 
 @dataclass(frozen=True)

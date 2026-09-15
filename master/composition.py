@@ -19,6 +19,9 @@ from .services import (
     MasterMailAccountService,
     MasterMailDomainService,
     MasterMailServiceService,
+    MasterAccountService,
+    MasterIdentityReferenceService,
+    MasterResourceEntitlementService,
     MasterNodeService,
     MasterReconciliationService,
     MasterServicePlanService,
@@ -56,6 +59,9 @@ def build_master_api(
         database_user_service=MasterDatabaseUserService(session_factory),
         mail_domain_service=MasterMailDomainService(session_factory),
         mail_account_service=MasterMailAccountService(session_factory),
+        identity_reference_service=MasterIdentityReferenceService(session_factory),
+        account_service=MasterAccountService(session_factory),
+        resource_entitlement_service=MasterResourceEntitlementService(session_factory),
     )
 
 

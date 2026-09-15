@@ -119,4 +119,21 @@ def create_app(api: MasterApi) -> FastAPI:
         register_resource(f"/v1/{path}", f"get_{name}", get_method)
         register_resource(f"/v1/{path}", f"create_{name}", create_method, create=True)
 
+    register_resource("/v1/identity-references", "identity_reference", "get_identity_reference")
+    register_resource("/v1/identity-references", "identity_reference", "create_identity_reference", create=True)
+    register_resource("/v1/accounts", "account", "get_account")
+    register_resource("/v1/accounts", "account", "create_account", create=True)
+
+    @app.get("/v1/subscriptions/{subscription_id}/entitlements")
+    async def list_entitlements(subscription_id: str, request: Request):
+        return await invoke(request, api.list_entitlements, subscription_id)
+
+    @app.get("/v1/subscriptions/{subscription_id}/entitlements/{resource_name}")
+    async def get_entitlement(subscription_id: str, resource_name: str, request: Request):
+        return await invoke(request, api.get_entitlement, subscription_id, resource_name)
+
+    @app.post("/v1/subscriptions/{subscription_id}/entitlements")
+    async def create_entitlement(subscription_id: str, request: Request):
+        return await invoke(request, api.create_entitlement, subscription_id, with_body=True)
+
     return app

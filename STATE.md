@@ -5,7 +5,7 @@
 - Phase: Implementation
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `47c5d767fb4e40d32d651f66952b3c941566359b`
+- Last verified commit: `6bb3f3ffeaf2086ec38270806a7b4fa0e2ef3579`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Production Compose stack is running and the user-facing authentication foundation is implemented, including access-token validation, introspection, and CLI user sessions
 
@@ -118,6 +118,9 @@ architecture review.
   authorization decisions now map to dependency errors.
 - Master persistence slice for Account roles, external identity references,
   and effective subscription resource entitlements implemented and verified.
+- Master application and API boundaries for Account roles, identity references,
+  and effective subscription entitlements implemented and verified; routes,
+  authorization mapping, composition, and API documentation are aligned.
 - Authentication Service now validates login-issued user access tokens through
   ZITADEL introspection before evaluating Master authorization scopes; standard
   Bearer token type, user identity and numeric expiry are handled.
@@ -180,21 +183,19 @@ architecture review.
 
 ## Current Task
 
-The CLI now supports login through the existing Authentication Service flow,
-persists the resulting user session, and has authenticated `user create` and
-`user get` Master commands. Master persistence now also has the first Account,
-identity-reference, and effective subscription-entitlement slice. The Master
-API adapter, composition root, production container runtime, and compose
-service definitions remain available in `docker-compose.dev.yml` and
-`docker-compose.prod.yml`.
+The Master now exposes application and HTTP boundaries for Account roles,
+external identity references, and effective subscription entitlements. The
+CLI login/session flow, existing user commands, Master API adapter, composition
+root, production container runtime, and compose service definitions remain
+available in `docker-compose.dev.yml` and `docker-compose.prod.yml`.
 
 ---
 
 ## Next Step
 
-1. Define the Master application/API boundary for Account roles, identity
-references, and effective subscription entitlements; do not change ZITADEL
-token validation or the C4 model.
+1. Add authenticated CLI commands for reading and creating Account and
+subscription entitlement resources; do not change ZITADEL token validation or
+the C4 model.
 
 ---
 

@@ -70,6 +70,42 @@ Required fields: `id`, `name`, `status`, `resource_limits`, `object_limits`,
 Required fields: `id`, `user_id`, `plan_id`, `status`, `created_at`.
 `expires_at` is optional.
 
+### IdentityReference
+
+```json
+{"id": "identity-123", "provider": "zitadel", "subject_id": "user-123"}
+```
+
+Identity references are immutable Master records for external subjects. The
+`provider` and `subject_id` pair is unique.
+
+### Account
+
+```json
+{
+  "id": "account-123", "role": "CUSTOMER", "status": "ACTIVE",
+  "identity_reference_id": "identity-123", "parent_account_id": null,
+  "created_at": "2026-01-01T00:00:00Z",
+  "updated_at": "2026-01-01T00:00:00Z"
+}
+```
+
+An Account owns a Master role and optional hierarchy links. Identity and parent
+references must exist before the account is created.
+
+### ResourceEntitlement
+
+```json
+{
+  "id": "entitlement-123", "subscription_id": "subscription-123",
+  "resource_name": "disk", "limit": 100, "usage": 0,
+  "reservation": 0, "source": "PLAN"
+}
+```
+
+Resource entitlements are effective subscription limits calculated and stored
+by Master. `subscription_id` and `resource_name` are unique together.
+
 ### Domain
 
 ```json
@@ -336,6 +372,13 @@ must be JSON objects. Successful resource creation returns `201`.
 | `POST` | `/v1/service-plans` | plan creation request | `ServicePlan` | create plan |
 | `GET` | `/v1/subscriptions/{subscription_id}` | none | `Subscription` | load subscription |
 | `POST` | `/v1/subscriptions` | subscription creation request | `Subscription` | create subscription |
+| `GET` | `/v1/identity-references/{identity_reference_id}` | none | `IdentityReference` | load identity reference |
+| `POST` | `/v1/identity-references` | identity reference creation request | `IdentityReference` | create identity reference |
+| `GET` | `/v1/accounts/{account_id}` | none | `Account` | load account |
+| `POST` | `/v1/accounts` | account creation request | `Account` | create account |
+| `GET` | `/v1/subscriptions/{subscription_id}/entitlements` | none | list of `ResourceEntitlement` | list effective entitlements |
+| `GET` | `/v1/subscriptions/{subscription_id}/entitlements/{resource_name}` | none | `ResourceEntitlement` | load one entitlement |
+| `POST` | `/v1/subscriptions/{subscription_id}/entitlements` | entitlement creation request | `ResourceEntitlement` | create effective entitlement |
 | `GET` | `/v1/domains/{domain_id}` | none | `Domain` | load domain |
 | `POST` | `/v1/domains` | domain creation request | `Domain` | create domain |
 | `GET` | `/v1/websites/{website_id}` | none | `Website` | load website |

@@ -16,6 +16,9 @@ from master.services import (
     MasterDatabaseUserService,
     MasterDomainService,
     MasterMailAccountService,
+    MasterAccountService,
+    MasterIdentityReferenceService,
+    MasterResourceEntitlementService,
     MasterDnsServiceService,
     MasterMailDomainService,
     MasterMailServiceService,
@@ -65,6 +68,9 @@ class MasterApiTests(unittest.TestCase):
             database_user_service=MasterDatabaseUserService(lambda: Session(self.engine)),
             mail_domain_service=MasterMailDomainService(lambda: Session(self.engine)),
             mail_account_service=MasterMailAccountService(lambda: Session(self.engine)),
+            identity_reference_service=MasterIdentityReferenceService(lambda: Session(self.engine)),
+            account_service=MasterAccountService(lambda: Session(self.engine)),
+            resource_entitlement_service=MasterResourceEntitlementService(lambda: Session(self.engine)),
         )
         self.node_id = node_id
 
@@ -79,6 +85,31 @@ class MasterApiTests(unittest.TestCase):
 
         self.assertEqual(loaded.status_code, 200)
         self.assertEqual(loaded.body, created.body)
+
+    def test_account_identity_and_entitlement_boundaries(self):
+        identity = self.api.create_identity_reference(
+            {"provider": "zitadel", "subject_id": "user-123"}, request_id="req-identity"
+        )
+        account = self.api.create_account(
+            {"role": "CUSTOMER", "identity_reference_id": identity.body["id"]},
+            request_id="req-account",
+        )
+        user = self.api.create_user({}, request_id="req-ent-user")
+        plan = self.api.create_service_plan({"name": "entitlement-plan"}, request_id="req-ent-plan")
+        subscription = self.api.create_subscription(
+            {"user_id": user.body["id"], "plan_id": plan.body["id"]}, request_id="req-ent-sub"
+        )
+        created = self.api.create_entitlement(
+            subscription.body["id"],
+            {"resource_name": "disk", "limit": 100, "source": "PLAN"},
+            request_id="req-entitlement",
+        )
+
+        self.assertEqual(identity.status_code, 201)
+        self.assertEqual(account.status_code, 201)
+        self.assertEqual(created.status_code, 201)
+        loaded = self.api.list_entitlements(subscription.body["id"], request_id="req-ent-list")
+        self.assertEqual(loaded.body["items"][0]["limit"], 100.0)
 
     def test_service_plan_lifecycle_commits_and_returns_resource(self):
         created = self.api.create_service_plan(
