@@ -193,7 +193,7 @@ available in `docker-compose.dev.yml` and `docker-compose.prod.yml`.
 
 ## Next Step
 
-1. Add authenticated CLI commands for reading and creating Account and
+Add authenticated CLI commands for reading and creating Account and
 subscription entitlement resources; do not change ZITADEL token validation or
 the C4 model.
 

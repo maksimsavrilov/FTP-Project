@@ -56,7 +56,7 @@ The very initial state is built of following files:
     - /home/maksim/FTP Project/AGENTS.md
     - /home/maksim/FTP Project/STATE.md
     - /home/maksim/FTP Project/structurizr/workspace.dsl
-    - /home/maksim/FTP Project/roadmap.md
+    - /home/maksim/FTP Project/docs/roadmap.md
     - /home/maksim/FTP Project/docs/temp_db.sql
 
 The LLM is gpt-5.6-luna on high reasoning for architect and medium-low for coding and testing
