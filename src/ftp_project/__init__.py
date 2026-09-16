@@ -130,6 +130,8 @@ def main(argv: list[str] | None = None) -> int:
     dns_service_create.add_argument("--allocation", type=json.loads, required=True)
     dns_service_create.add_argument("--lifecycle-state", required=True)
     dns_service_create.add_argument("--configuration", type=json.loads, required=True)
+    dns_service_get = dns_service_commands.add_parser("get")
+    dns_service_get.add_argument("dns_service_id")
     service_plan = commands.add_parser("service-plan")
     service_plan_commands = service_plan.add_subparsers(dest="service_plan_command", required=True)
     service_plan_create = service_plan_commands.add_parser("create")
@@ -146,6 +148,8 @@ def main(argv: list[str] | None = None) -> int:
     subscription_create.add_argument("--plan-id", required=True)
     subscription_create.add_argument("--status", default="ACTIVE")
     subscription_create.add_argument("--expires-at")
+    subscription_get = subscription_commands.add_parser("get")
+    subscription_get.add_argument("subscription_id")
     entitlement = subscription_commands.add_parser("entitlement")
     entitlement_commands = entitlement.add_subparsers(dest="entitlement_command", required=True)
     entitlement_list = entitlement_commands.add_parser("list")
@@ -633,6 +637,22 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(result, sort_keys=True))
         return 0
 
+    if args.command == "dns-service" and args.dns_service_command == "get":
+        session = SessionStore().load()
+        if session is None:
+            print("No authenticated session. Log in before reading a DNS service.", file=sys.stderr)
+            return 1
+        try:
+            result = MasterClient(
+                session,
+                base_url=os.environ.get("FTP_PROJECT_MASTER_URL", "http://localhost:8000"),
+            ).get(f"/v1/dns-services/{args.dns_service_id}")
+        except MasterClientError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        print(json.dumps(result, sort_keys=True))
+        return 0
+
     if args.command == "subscription" and args.subscription_command == "create":
         session = SessionStore().load()
         if session is None:
@@ -651,6 +671,22 @@ def main(argv: list[str] | None = None) -> int:
                     "expires_at": args.expires_at,
                 },
             )
+        except MasterClientError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        print(json.dumps(result, sort_keys=True))
+        return 0
+
+    if args.command == "subscription" and args.subscription_command == "get":
+        session = SessionStore().load()
+        if session is None:
+            print("No authenticated session. Log in before reading a subscription.", file=sys.stderr)
+            return 1
+        try:
+            result = MasterClient(
+                session,
+                base_url=os.environ.get("FTP_PROJECT_MASTER_URL", "http://localhost:8000"),
+            ).get(f"/v1/subscriptions/{args.subscription_id}")
         except MasterClientError as exc:
             print(str(exc), file=sys.stderr)
             return 1
