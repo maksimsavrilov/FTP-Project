@@ -162,6 +162,8 @@ architecture review.
   status, resource limits, and object limits.
 - Authenticated CLI ServicePlan read command implemented:
   `service-plan get` uses the persisted session and Master API.
+- Authenticated CLI Domain creation command implemented:
+  `domain create` uses the persisted session and Master API.
 - Authenticated CLI Subscription create command implemented:
   `subscription create` uses the persisted session and Master API.
 - Master service added to `docker-compose.prod.yml` with production build settings,
@@ -201,16 +203,17 @@ architecture review.
 
 The Master and CLI now expose authenticated application, HTTP, and command
 boundaries for Account roles, identity references, subscription entitlements,
-ServicePlan creation and reads, and Subscription creation. The CLI
-login/session flow, existing user commands, Master API adapter, composition
-root, production container runtime, and compose service definitions remain
-available in `docker-compose.dev.yml` and `docker-compose.prod.yml`.
+ServicePlan creation and reads, Domain creation, and Subscription creation.
+The CLI login/session flow, existing user commands, Master API adapter,
+composition root, production container runtime, and compose service
+definitions remain available in `docker-compose.dev.yml` and
+`docker-compose.prod.yml`.
 
 ---
 
 ## Next Step
 
-Add the first authenticated CLI command for creating Domain resources; do not
+Add the first authenticated CLI command for creating Website resources; do not
 change ZITADEL token validation or the C4 model.
 
 ---
