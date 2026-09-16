@@ -5,7 +5,7 @@
 - Phase: Implementation
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `be4353c`
+- Last verified commit: `16a2d88`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Production Compose stack is running and the user-facing authentication foundation is implemented, including access-token validation, introspection, and CLI user sessions
 
@@ -148,6 +148,8 @@ architecture review.
   flow, completes the callback, and persists the resulting user session.
 - Authenticated CLI MailAccount creation command implemented:
   `mail-account create` uses the persisted session and Master API.
+- Authenticated CLI MailAccount read command implemented:
+  `mail-account get` uses the persisted session and Master API.
 - First CLI read command implemented: `user get` loads the persisted session
   and reads a Master user through `MasterClient`.
 - Authenticated CLI Account commands implemented: `account get` and
@@ -214,7 +216,7 @@ architecture review.
 The Master and CLI now expose authenticated application, HTTP, and command
 boundaries for Account roles, identity references, subscription entitlements,
 ServicePlan creation and reads, Domain creation, Website creation and reads,
-MailDomain creation and reads, MailAccount creation, and Subscription creation. The CLI
+MailDomain creation and reads, MailAccount creation and reads, and Subscription creation. The CLI
 login/session flow, existing user commands, Master API adapter, composition
 root, production container runtime, and compose service definitions remain
 available in `docker-compose.dev.yml` and `docker-compose.prod.yml`.
@@ -223,8 +225,8 @@ available in `docker-compose.dev.yml` and `docker-compose.prod.yml`.
 
 ## Next Step
 
-Add an authenticated CLI command for reading MailAccount resources; do not
-change ZITADEL token validation or the C4 model.
+Add the first authenticated CLI command for creating MailService resources; do
+not change ZITADEL token validation or the C4 model.
 
 ---
 
