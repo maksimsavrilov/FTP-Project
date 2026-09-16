@@ -75,6 +75,8 @@ def main(argv: list[str] | None = None) -> int:
     mail_account_create.add_argument("--mail-domain-id", required=True)
     mail_account_create.add_argument("--address", required=True)
     mail_account_create.add_argument("--status", default="PENDING")
+    mail_account_get = mail_account_commands.add_parser("get")
+    mail_account_get.add_argument("mail_account_id")
     service_plan = commands.add_parser("service-plan")
     service_plan_commands = service_plan.add_subparsers(dest="service_plan_command", required=True)
     service_plan_create = service_plan_commands.add_parser("create")
@@ -366,6 +368,22 @@ def main(argv: list[str] | None = None) -> int:
                     "status": args.status,
                 },
             )
+        except MasterClientError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        print(json.dumps(result, sort_keys=True))
+        return 0
+
+    if args.command == "mail-account" and args.mail_account_command == "get":
+        session = SessionStore().load()
+        if session is None:
+            print("No authenticated session. Log in before reading a mail account.", file=sys.stderr)
+            return 1
+        try:
+            result = MasterClient(
+                session,
+                base_url=os.environ.get("FTP_PROJECT_MASTER_URL", "http://localhost:8000"),
+            ).get(f"/v1/mail-accounts/{args.mail_account_id}")
         except MasterClientError as exc:
             print(str(exc), file=sys.stderr)
             return 1
