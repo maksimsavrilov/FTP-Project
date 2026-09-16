@@ -5,7 +5,7 @@
 - Phase: Implementation
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `221593f`
+- Last verified commit: `4bbc5f7`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Production Compose stack is running and the user-facing authentication foundation is implemented, including access-token validation, introspection, and CLI user sessions
 
@@ -166,6 +166,8 @@ architecture review.
   `web-service create` uses the persisted session and Master API.
 - Authenticated CLI WebService read command implemented:
   `web-service get` uses the persisted session and Master API.
+- Authenticated CLI DnsService creation command implemented:
+  `dns-service create` uses the persisted session and Master API.
 - First CLI read command implemented: `user get` loads the persisted session
   and reads a Master user through `MasterClient`.
 - Authenticated CLI Account commands implemented: `account get` and
@@ -234,7 +236,8 @@ boundaries for Account roles, identity references, subscription entitlements,
 ServicePlan creation and reads, Domain creation, Website creation and reads,
 MailDomain creation and reads, MailAccount creation and reads, MailService
 creation and reads, DatabaseService creation and reads, DatabaseUser creation
-and reads, WebService creation and reads, and Subscription creation. The CLI
+and reads, WebService creation and reads, DnsService creation, and Subscription
+creation. The CLI
 login/session flow, existing user commands, Master API adapter, composition
 root, production container runtime, and compose service definitions remain
 available in `docker-compose.dev.yml` and `docker-compose.prod.yml`.
@@ -243,8 +246,8 @@ available in `docker-compose.dev.yml` and `docker-compose.prod.yml`.
 
 ## Next Step
 
-Add the first authenticated CLI command for creating DnsService resources; do
-not change ZITADEL token validation or the C4 model.
+Add an authenticated CLI command for reading DnsService resources; do not
+change ZITADEL token validation or the C4 model.
 
 ---
 
