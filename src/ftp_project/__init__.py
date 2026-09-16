@@ -49,6 +49,11 @@ def main(argv: list[str] | None = None) -> int:
     identity_reference_get.add_argument("identity_reference_id")
     subscription = commands.add_parser("subscription")
     subscription_commands = subscription.add_subparsers(dest="subscription_command", required=True)
+    subscription_create = subscription_commands.add_parser("create")
+    subscription_create.add_argument("--user-id", required=True)
+    subscription_create.add_argument("--plan-id", required=True)
+    subscription_create.add_argument("--status", default="ACTIVE")
+    subscription_create.add_argument("--expires-at")
     entitlement = subscription_commands.add_parser("entitlement")
     entitlement_commands = entitlement.add_subparsers(dest="entitlement_command", required=True)
     entitlement_list = entitlement_commands.add_parser("list")
@@ -160,6 +165,30 @@ def main(argv: list[str] | None = None) -> int:
                     "/v1/identity-references",
                     {"provider": args.provider, "subject_id": args.subject_id},
                 )
+        except MasterClientError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        print(json.dumps(result, sort_keys=True))
+        return 0
+
+    if args.command == "subscription" and args.subscription_command == "create":
+        session = SessionStore().load()
+        if session is None:
+            print("No authenticated session. Log in before creating a subscription.", file=sys.stderr)
+            return 1
+        try:
+            result = MasterClient(
+                session,
+                base_url=os.environ.get("FTP_PROJECT_MASTER_URL", "http://localhost:8000"),
+            ).create(
+                "/v1/subscriptions",
+                {
+                    "user_id": args.user_id,
+                    "plan_id": args.plan_id,
+                    "status": args.status,
+                    "expires_at": args.expires_at,
+                },
+            )
         except MasterClientError as exc:
             print(str(exc), file=sys.stderr)
             return 1

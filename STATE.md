@@ -157,6 +157,8 @@ architecture review.
   `identity-reference get` uses the persisted session and Master API.
 - Authenticated CLI IdentityReference create command implemented:
   `identity-reference create` uses the persisted session and Master API.
+- Authenticated CLI Subscription create command implemented:
+  `subscription create` uses the persisted session and Master API.
 - Master service added to `docker-compose.prod.yml` with production build settings,
   port exposure, and required database and authentication service URLs.
 - PostgreSQL and ZITADEL services added to `docker-compose.prod.yml`; Master now
@@ -193,18 +195,18 @@ architecture review.
 ## Current Task
 
 The Master and CLI now expose authenticated application, HTTP, and command
-boundaries for Account roles, identity references, and effective subscription
-entitlements, including IdentityReference creation. The CLI login/session flow,
-existing user commands, Master API adapter, composition root, production
-container runtime, and compose service definitions remain available in
-`docker-compose.dev.yml` and `docker-compose.prod.yml`.
+boundaries for Account roles, identity references, subscription entitlements,
+and Subscription creation. The CLI login/session flow, existing user commands,
+Master API adapter, composition root, production container runtime, and compose
+service definitions remain available in `docker-compose.dev.yml` and
+`docker-compose.prod.yml`.
 
 ---
 
 ## Next Step
 
-Add the first authenticated CLI command for creating Subscription resources;
-do not change ZITADEL token validation or the C4 model.
+Add the first authenticated CLI command for creating ServicePlan resources; do
+not change ZITADEL token validation or the C4 model.
 
 ---
 
