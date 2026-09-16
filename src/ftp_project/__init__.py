@@ -110,6 +110,16 @@ def main(argv: list[str] | None = None) -> int:
     database_user_create.add_argument("--privileges", type=json.loads, default={})
     database_user_get = database_user_commands.add_parser("get")
     database_user_get.add_argument("database_user_id")
+    web_service = commands.add_parser("web-service")
+    web_service_commands = web_service.add_subparsers(dest="web_service_command", required=True)
+    web_service_create = web_service_commands.add_parser("create")
+    web_service_create.add_argument("--subscription-id", required=True)
+    web_service_create.add_argument("--website-id", required=True)
+    web_service_create.add_argument("--allocation", type=json.loads, required=True)
+    web_service_create.add_argument("--lifecycle-state", required=True)
+    web_service_create.add_argument("--web-server", required=True)
+    web_service_create.add_argument("--php-version", required=True)
+    web_service_create.add_argument("--document-root", required=True)
     service_plan = commands.add_parser("service-plan")
     service_plan_commands = service_plan.add_subparsers(dest="service_plan_command", required=True)
     service_plan_create = service_plan_commands.add_parser("create")
@@ -539,6 +549,33 @@ def main(argv: list[str] | None = None) -> int:
                 session,
                 base_url=os.environ.get("FTP_PROJECT_MASTER_URL", "http://localhost:8000"),
             ).get(f"/v1/database-users/{args.database_user_id}")
+        except MasterClientError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        print(json.dumps(result, sort_keys=True))
+        return 0
+
+    if args.command == "web-service" and args.web_service_command == "create":
+        session = SessionStore().load()
+        if session is None:
+            print("No authenticated session. Log in before creating a web service.", file=sys.stderr)
+            return 1
+        try:
+            result = MasterClient(
+                session,
+                base_url=os.environ.get("FTP_PROJECT_MASTER_URL", "http://localhost:8000"),
+            ).create(
+                "/v1/web-services",
+                {
+                    "subscription_id": args.subscription_id,
+                    "website_id": args.website_id,
+                    "allocation": args.allocation,
+                    "lifecycle_state": args.lifecycle_state,
+                    "web_server": args.web_server,
+                    "php_version": args.php_version,
+                    "document_root": args.document_root,
+                },
+            )
         except MasterClientError as exc:
             print(str(exc), file=sys.stderr)
             return 1
