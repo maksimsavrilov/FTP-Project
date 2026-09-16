@@ -38,6 +38,12 @@ def main(argv: list[str] | None = None) -> int:
     account_create.add_argument("--parent-account-id")
     account_get = account_commands.add_parser("get")
     account_get.add_argument("account_id")
+    identity_reference = commands.add_parser("identity-reference")
+    identity_reference_commands = identity_reference.add_subparsers(
+        dest="identity_reference_command", required=True
+    )
+    identity_reference_get = identity_reference_commands.add_parser("get")
+    identity_reference_get.add_argument("identity_reference_id")
     subscription = commands.add_parser("subscription")
     subscription_commands = subscription.add_subparsers(dest="subscription_command", required=True)
     entitlement = subscription_commands.add_parser("entitlement")
@@ -125,6 +131,25 @@ def main(argv: list[str] | None = None) -> int:
                         "parent_account_id": args.parent_account_id,
                     },
                 )
+        except MasterClientError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        print(json.dumps(result, sort_keys=True))
+        return 0
+
+    if args.command == "identity-reference" and args.identity_reference_command == "get":
+        session = SessionStore().load()
+        if session is None:
+            print(
+                "No authenticated session. Log in before reading an identity reference.",
+                file=sys.stderr,
+            )
+            return 1
+        try:
+            result = MasterClient(
+                session,
+                base_url=os.environ.get("FTP_PROJECT_MASTER_URL", "http://localhost:8000"),
+            ).get(f"/v1/identity-references/{args.identity_reference_id}")
         except MasterClientError as exc:
             print(str(exc), file=sys.stderr)
             return 1
