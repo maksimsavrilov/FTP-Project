@@ -54,6 +54,8 @@ def main(argv: list[str] | None = None) -> int:
     service_plan_create.add_argument("--status", default="ACTIVE")
     service_plan_create.add_argument("--resource-limits", type=json.loads, default={})
     service_plan_create.add_argument("--object-limits", type=json.loads, default={})
+    service_plan_get = service_plan_commands.add_parser("get")
+    service_plan_get.add_argument("plan_id")
     subscription = commands.add_parser("subscription")
     subscription_commands = subscription.add_subparsers(dest="subscription_command", required=True)
     subscription_create = subscription_commands.add_parser("create")
@@ -196,6 +198,22 @@ def main(argv: list[str] | None = None) -> int:
                     "object_limits": args.object_limits,
                 },
             )
+        except MasterClientError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        print(json.dumps(result, sort_keys=True))
+        return 0
+
+    if args.command == "service-plan" and args.service_plan_command == "get":
+        session = SessionStore().load()
+        if session is None:
+            print("No authenticated session. Log in before reading a service plan.", file=sys.stderr)
+            return 1
+        try:
+            result = MasterClient(
+                session,
+                base_url=os.environ.get("FTP_PROJECT_MASTER_URL", "http://localhost:8000"),
+            ).get(f"/v1/service-plans/{args.plan_id}")
         except MasterClientError as exc:
             print(str(exc), file=sys.stderr)
             return 1
