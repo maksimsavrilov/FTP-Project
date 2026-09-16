@@ -42,6 +42,9 @@ def main(argv: list[str] | None = None) -> int:
     identity_reference_commands = identity_reference.add_subparsers(
         dest="identity_reference_command", required=True
     )
+    identity_reference_create = identity_reference_commands.add_parser("create")
+    identity_reference_create.add_argument("--provider", required=True)
+    identity_reference_create.add_argument("--subject-id", required=True)
     identity_reference_get = identity_reference_commands.add_parser("get")
     identity_reference_get.add_argument("identity_reference_id")
     subscription = commands.add_parser("subscription")
@@ -137,19 +140,26 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(result, sort_keys=True))
         return 0
 
-    if args.command == "identity-reference" and args.identity_reference_command == "get":
+    if args.command == "identity-reference":
         session = SessionStore().load()
         if session is None:
             print(
-                "No authenticated session. Log in before reading an identity reference.",
+                "No authenticated session. Log in before accessing an identity reference.",
                 file=sys.stderr,
             )
             return 1
+        client = MasterClient(
+            session,
+            base_url=os.environ.get("FTP_PROJECT_MASTER_URL", "http://localhost:8000"),
+        )
         try:
-            result = MasterClient(
-                session,
-                base_url=os.environ.get("FTP_PROJECT_MASTER_URL", "http://localhost:8000"),
-            ).get(f"/v1/identity-references/{args.identity_reference_id}")
+            if args.identity_reference_command == "get":
+                result = client.get(f"/v1/identity-references/{args.identity_reference_id}")
+            else:
+                result = client.create(
+                    "/v1/identity-references",
+                    {"provider": args.provider, "subject_id": args.subject_id},
+                )
         except MasterClientError as exc:
             print(str(exc), file=sys.stderr)
             return 1
