@@ -5,7 +5,7 @@
 - Phase: Implementation
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `665153a2f7e540f8af4555ff973def35777d4ef6`
+- Last verified commit: `2b725247abe7e3a79233dee0f5d1ee8e7b443a1d`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Production Compose stack is running and the user-facing authentication foundation is implemented, including access-token validation, introspection, and CLI user sessions
 
@@ -148,6 +148,11 @@ architecture review.
   flow, completes the callback, and persists the resulting user session.
 - First CLI read command implemented: `user get` loads the persisted session
   and reads a Master user through `MasterClient`.
+- Authenticated CLI Account commands implemented: `account get` and
+  `account create` use the persisted session and Master API.
+- Authenticated CLI subscription entitlement commands implemented:
+  `subscription entitlement list`, `get`, and `create` use the persisted
+  session and Master API.
 - Master service added to `docker-compose.prod.yml` with production build settings,
   port exposure, and required database and authentication service URLs.
 - PostgreSQL and ZITADEL services added to `docker-compose.prod.yml`; Master now
@@ -183,8 +188,8 @@ architecture review.
 
 ## Current Task
 
-The Master now exposes application and HTTP boundaries for Account roles,
-external identity references, and effective subscription entitlements. The
+The Master and CLI now expose authenticated application, HTTP, and command
+boundaries for Account roles and effective subscription entitlements. The
 CLI login/session flow, existing user commands, Master API adapter, composition
 root, production container runtime, and compose service definitions remain
 available in `docker-compose.dev.yml` and `docker-compose.prod.yml`.
@@ -193,9 +198,8 @@ available in `docker-compose.dev.yml` and `docker-compose.prod.yml`.
 
 ## Next Step
 
-Add authenticated CLI commands for reading and creating Account and
-subscription entitlement resources; do not change ZITADEL token validation or
-the C4 model.
+Add the first authenticated CLI command for reading IdentityReference
+resources; do not change ZITADEL token validation or the C4 model.
 
 ---
 
