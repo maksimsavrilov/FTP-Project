@@ -120,6 +120,8 @@ def main(argv: list[str] | None = None) -> int:
     web_service_create.add_argument("--web-server", required=True)
     web_service_create.add_argument("--php-version", required=True)
     web_service_create.add_argument("--document-root", required=True)
+    web_service_get = web_service_commands.add_parser("get")
+    web_service_get.add_argument("web_service_id")
     service_plan = commands.add_parser("service-plan")
     service_plan_commands = service_plan.add_subparsers(dest="service_plan_command", required=True)
     service_plan_create = service_plan_commands.add_parser("create")
@@ -576,6 +578,22 @@ def main(argv: list[str] | None = None) -> int:
                     "document_root": args.document_root,
                 },
             )
+        except MasterClientError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        print(json.dumps(result, sort_keys=True))
+        return 0
+
+    if args.command == "web-service" and args.web_service_command == "get":
+        session = SessionStore().load()
+        if session is None:
+            print("No authenticated session. Log in before reading a web service.", file=sys.stderr)
+            return 1
+        try:
+            result = MasterClient(
+                session,
+                base_url=os.environ.get("FTP_PROJECT_MASTER_URL", "http://localhost:8000"),
+            ).get(f"/v1/web-services/{args.web_service_id}")
         except MasterClientError as exc:
             print(str(exc), file=sys.stderr)
             return 1
