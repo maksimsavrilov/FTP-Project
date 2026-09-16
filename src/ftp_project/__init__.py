@@ -53,6 +53,12 @@ def main(argv: list[str] | None = None) -> int:
     domain_create.add_argument("--subscription-id", required=True)
     domain_create.add_argument("--name", required=True)
     domain_create.add_argument("--status", default="PENDING")
+    website = commands.add_parser("website")
+    website_commands = website.add_subparsers(dest="website_command", required=True)
+    website_create = website_commands.add_parser("create")
+    website_create.add_argument("--domain-id", required=True)
+    website_create.add_argument("--document-root", required=True)
+    website_create.add_argument("--status", default="PENDING")
     service_plan = commands.add_parser("service-plan")
     service_plan_commands = service_plan.add_subparsers(dest="service_plan_command", required=True)
     service_plan_create = service_plan_commands.add_parser("create")
@@ -240,6 +246,29 @@ def main(argv: list[str] | None = None) -> int:
                 {
                     "subscription_id": args.subscription_id,
                     "name": args.name,
+                    "status": args.status,
+                },
+            )
+        except MasterClientError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        print(json.dumps(result, sort_keys=True))
+        return 0
+
+    if args.command == "website" and args.website_command == "create":
+        session = SessionStore().load()
+        if session is None:
+            print("No authenticated session. Log in before creating a website.", file=sys.stderr)
+            return 1
+        try:
+            result = MasterClient(
+                session,
+                base_url=os.environ.get("FTP_PROJECT_MASTER_URL", "http://localhost:8000"),
+            ).create(
+                "/v1/websites",
+                {
+                    "domain_id": args.domain_id,
+                    "document_root": args.document_root,
                     "status": args.status,
                 },
             )
