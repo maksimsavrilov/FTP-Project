@@ -658,6 +658,45 @@ class CliSessionTests(unittest.TestCase):
                     "/v1/database-services/database-service-1"
                 )
 
+    def test_database_user_create_command_uses_saved_session(self):
+        import ftp_project
+
+        session = UserSession("access-1")
+        with tempfile.TemporaryDirectory() as directory:
+            store = SessionStore(Path(directory) / "session.json")
+            store.save(session)
+            with patch("ftp_project.SessionStore", return_value=store), patch(
+                "ftp_project.MasterClient"
+            ) as client_type:
+                client_type.return_value.create.return_value = {"id": "database-user-1"}
+
+                self.assertEqual(
+                    ftp_project.main(
+                        [
+                            "database-user",
+                            "create",
+                            "--database-service-id",
+                            "database-service-1",
+                            "--username",
+                            "app_user",
+                            "--privileges",
+                            '{"read": true, "write": true}',
+                        ]
+                    ),
+                    0,
+                )
+
+                client_type.assert_called_once_with(session, base_url="http://localhost:8000")
+                client_type.return_value.create.assert_called_once_with(
+                    "/v1/database-users",
+                    {
+                        "database_service_id": "database-service-1",
+                        "username": "app_user",
+                        "status": "PENDING",
+                        "privileges": {"read": True, "write": True},
+                    },
+                )
+
     def test_master_client_sends_session_and_request_id(self):
         request_data = {}
 
