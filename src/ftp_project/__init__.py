@@ -122,6 +122,14 @@ def main(argv: list[str] | None = None) -> int:
     web_service_create.add_argument("--document-root", required=True)
     web_service_get = web_service_commands.add_parser("get")
     web_service_get.add_argument("web_service_id")
+    dns_service = commands.add_parser("dns-service")
+    dns_service_commands = dns_service.add_subparsers(dest="dns_service_command", required=True)
+    dns_service_create = dns_service_commands.add_parser("create")
+    dns_service_create.add_argument("--subscription-id", required=True)
+    dns_service_create.add_argument("--domain-id", required=True)
+    dns_service_create.add_argument("--allocation", type=json.loads, required=True)
+    dns_service_create.add_argument("--lifecycle-state", required=True)
+    dns_service_create.add_argument("--configuration", type=json.loads, required=True)
     service_plan = commands.add_parser("service-plan")
     service_plan_commands = service_plan.add_subparsers(dest="service_plan_command", required=True)
     service_plan_create = service_plan_commands.add_parser("create")
@@ -594,6 +602,31 @@ def main(argv: list[str] | None = None) -> int:
                 session,
                 base_url=os.environ.get("FTP_PROJECT_MASTER_URL", "http://localhost:8000"),
             ).get(f"/v1/web-services/{args.web_service_id}")
+        except MasterClientError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        print(json.dumps(result, sort_keys=True))
+        return 0
+
+    if args.command == "dns-service" and args.dns_service_command == "create":
+        session = SessionStore().load()
+        if session is None:
+            print("No authenticated session. Log in before creating a DNS service.", file=sys.stderr)
+            return 1
+        try:
+            result = MasterClient(
+                session,
+                base_url=os.environ.get("FTP_PROJECT_MASTER_URL", "http://localhost:8000"),
+            ).create(
+                "/v1/dns-services",
+                {
+                    "subscription_id": args.subscription_id,
+                    "domain_id": args.domain_id,
+                    "allocation": args.allocation,
+                    "lifecycle_state": args.lifecycle_state,
+                    "configuration": args.configuration,
+                },
+            )
         except MasterClientError as exc:
             print(str(exc), file=sys.stderr)
             return 1
