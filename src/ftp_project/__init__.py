@@ -97,6 +97,8 @@ def main(argv: list[str] | None = None) -> int:
     database_service_create.add_argument("--lifecycle-state", required=True)
     database_service_create.add_argument("--database-type", required=True)
     database_service_create.add_argument("--database-name", required=True)
+    database_service_get = database_service_commands.add_parser("get")
+    database_service_get.add_argument("database_service_id")
     service_plan = commands.add_parser("service-plan")
     service_plan_commands = service_plan.add_subparsers(dest="service_plan_command", required=True)
     service_plan_create = service_plan_commands.add_parser("create")
@@ -470,6 +472,22 @@ def main(argv: list[str] | None = None) -> int:
                     "database_name": args.database_name,
                 },
             )
+        except MasterClientError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        print(json.dumps(result, sort_keys=True))
+        return 0
+
+    if args.command == "database-service" and args.database_service_command == "get":
+        session = SessionStore().load()
+        if session is None:
+            print("No authenticated session. Log in before reading a database service.", file=sys.stderr)
+            return 1
+        try:
+            result = MasterClient(
+                session,
+                base_url=os.environ.get("FTP_PROJECT_MASTER_URL", "http://localhost:8000"),
+            ).get(f"/v1/database-services/{args.database_service_id}")
         except MasterClientError as exc:
             print(str(exc), file=sys.stderr)
             return 1
