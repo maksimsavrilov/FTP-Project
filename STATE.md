@@ -5,7 +5,7 @@
 - Phase: Implementation
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `a85f7f4`
+- Last verified commit: `4e52f96`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Production Compose stack is running and the user-facing authentication foundation is implemented, including access-token validation, introspection, and CLI user sessions
 
@@ -155,6 +155,8 @@ architecture review.
   session and Master API.
 - Authenticated CLI IdentityReference read command implemented:
   `identity-reference get` uses the persisted session and Master API.
+- Authenticated CLI IdentityReference create command implemented:
+  `identity-reference create` uses the persisted session and Master API.
 - Master service added to `docker-compose.prod.yml` with production build settings,
   port exposure, and required database and authentication service URLs.
 - PostgreSQL and ZITADEL services added to `docker-compose.prod.yml`; Master now
@@ -192,17 +194,17 @@ architecture review.
 
 The Master and CLI now expose authenticated application, HTTP, and command
 boundaries for Account roles, identity references, and effective subscription
-entitlements. The CLI login/session flow, existing user commands, Master API
-adapter, composition root, production container runtime, and compose service
-definitions remain available in `docker-compose.dev.yml` and
-`docker-compose.prod.yml`.
+entitlements, including IdentityReference creation. The CLI login/session flow,
+existing user commands, Master API adapter, composition root, production
+container runtime, and compose service definitions remain available in
+`docker-compose.dev.yml` and `docker-compose.prod.yml`.
 
 ---
 
 ## Next Step
 
-Add the first authenticated CLI command for creating IdentityReference
-resources; do not change ZITADEL token validation or the C4 model.
+Add the first authenticated CLI command for creating Subscription resources;
+do not change ZITADEL token validation or the C4 model.
 
 ---
 
