@@ -1,20 +1,17 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from decimal import Decimal
 from typing import Any
 
 from sqlalchemy import BigInteger, DateTime, Index, JSON, Numeric, String, UniqueConstraint, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column
+
+from .base import Base, utcnow
 
 
-class Base(DeclarativeBase):
-    pass
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+_utcnow = utcnow
 
 
 class User(Base):

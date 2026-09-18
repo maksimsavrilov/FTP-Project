@@ -5,7 +5,7 @@ from typing import Any, Callable
 
 from sqlalchemy.orm import Session
 
-from .persistence.repositories import (
+from ..persistence.repositories import (
     ActualStateRepository,
     DatabaseServiceRepository,
     DatabaseUserRepository,
