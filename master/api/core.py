@@ -6,8 +6,8 @@ from decimal import Decimal
 from typing import Any, Callable, Protocol
 from uuid import uuid4
 
-from .auth import AuthenticationClientError, AuthenticationServiceUnavailable
-from .services import (
+from ..auth import AuthenticationClientError, AuthenticationServiceUnavailable
+from ..services import (
     MasterDatabaseServiceService,
     MasterDatabaseUserService,
     MasterNodeService,

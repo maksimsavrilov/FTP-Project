@@ -1,36 +1,20 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from decimal import Decimal
 from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .models import Account, ActualState, DatabaseService, DatabaseUser, DesiredState, DnsService, Domain, IdentityReference, MailAccount, MailDomain, MailService, ResourceEntitlement, Service, ServiceAssignment, ServicePlan, Subscription, User, Website, WebService, WorkerNode
+from ..models import Account, ActualState, DatabaseService, DatabaseUser, DesiredState, DnsService, Domain, IdentityReference, MailAccount, MailDomain, MailService, ResourceEntitlement, Service, ServiceAssignment, ServicePlan, Subscription, User, Website, WebService, WorkerNode
+from .utils import normalize_id, parse_datetime, utcnow
 
 
-def _normalize_id(value: uuid.UUID | str | None) -> str | None:
-    if value is None:
-        return None
-    if isinstance(value, uuid.UUID):
-        return str(value)
-    return str(value)
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
-def _parse_datetime(value: datetime | str | None) -> datetime | None:
-    if value is None:
-        return None
-    if isinstance(value, datetime):
-        return value.astimezone(timezone.utc) if value.tzinfo else value.replace(tzinfo=timezone.utc)
-    if value.endswith("Z"):
-        value = value[:-1] + "+00:00"
-    return datetime.fromisoformat(value).astimezone(timezone.utc)
+_normalize_id = normalize_id
+_parse_datetime = parse_datetime
+_utcnow = utcnow
 
 
 class UserRepository:
