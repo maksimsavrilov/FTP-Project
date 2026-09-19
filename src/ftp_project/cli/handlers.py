@@ -98,6 +98,19 @@ def service_plan_create(args, context):
     )
 
 
+def service_create(args, context):
+    return run_authenticated(
+        context,
+        "No authenticated session. Log in before creating a service.",
+        lambda client: client.create(
+            "/v1/services",
+            {"subscription_id": args.subscription_id, "type": args.type,
+             "allocation": args.allocation, "lifecycle_state": args.lifecycle_state,
+             "configuration": args.configuration},
+        ),
+    )
+
+
 def service_get(args, context):
     return run_authenticated(
         context,

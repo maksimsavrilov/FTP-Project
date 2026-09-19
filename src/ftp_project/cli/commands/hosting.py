@@ -12,9 +12,11 @@ def _create_get(registry, name, create, get, create_args, identifier):
 
 
 def register(registry) -> None:
-    registry.register(
-        "service", "get", handler=handlers.service_get, arguments=((('service_id',), {}),)
-    )
+    _create_get(registry, "service", handlers.service_create, handlers.service_get,
+                (("--subscription-id", {"required": True}), ("--type", {"required": True}),
+                 ("--allocation", {"type": json.loads, "required": True}),
+                 ("--lifecycle-state", {"required": True}),
+                 ("--configuration", {"type": json.loads, "required": True})), "service_id")
     _create_get(registry, "service-plan", handlers.service_plan_create, handlers.service_plan_get,
                 (("--name", {"required": True}), ("--status", {"default": "ACTIVE"}),
                  ("--resource-limits", {"type": json.loads, "default": {}}),
