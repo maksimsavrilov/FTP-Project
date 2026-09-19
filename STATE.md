@@ -5,7 +5,7 @@
 - Phase: Implementation
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `9ce8c54`
+- Last verified commit: `939492c`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Production Compose stack is running and the user-facing authentication foundation is implemented, including access-token validation, introspection, and CLI user sessions
 
@@ -186,6 +186,8 @@ architecture review.
   status, resource limits, and object limits.
 - Authenticated CLI ServicePlan read command implemented:
   `service-plan get` uses the persisted session and Master API.
+- Authenticated CLI Service read command implemented:
+  `service get` uses the persisted session and Master API.
 - Authenticated CLI Domain creation command implemented:
   `domain create` uses the persisted session and Master API.
 - Authenticated CLI Website creation command implemented:
@@ -242,6 +244,7 @@ creation, Website creation and reads,
 MailDomain creation and reads, MailAccount creation and reads, MailService
 creation and reads, DatabaseService creation and reads, DatabaseUser creation
 and reads, WebService creation and reads, DnsService creation and reads. The CLI
+Service read command now also covers the common Service aggregate. The CLI
 login/session flow, existing user commands, Master API adapter, composition
 root, production container runtime, and compose service definitions remain
 available in `docker-compose.dev.yml` and `docker-compose.prod.yml`.
@@ -250,7 +253,7 @@ available in `docker-compose.dev.yml` and `docker-compose.prod.yml`.
 
 ## Next Step
 
-Add an authenticated CLI command for reading Service resources; do not
+Add an authenticated CLI command for creating common Service resources; do not
 change ZITADEL token validation or the C4 model.
 
 ---
