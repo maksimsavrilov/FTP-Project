@@ -19,6 +19,10 @@
 - pydantic
 
 ## Development Rules
+- When modifying existing code, reuse the established local patterns and
+  helper functions for the affected area. Do not introduce a parallel style
+  or duplicate registration/dispatch logic when an existing pattern can be
+  extended to cover the change.
 - Use "dsl" service from docker-compose.dev.yml to work with *.dsl files. Check if service is already running at first with `docker compose -f docker-compose.dev.yml ps` without suppressing stderr or forcing success. If Docker/Podman reports an environment or permissions error, report that the service status could not be verified; do not interpret empty output as stopped. Do not restart running "dsl" service. Do not stop the "dsl" service. The scheme URI is "http://localhost:8089/workspace/1" No auth required.
 - Use "plesk" service from docker-compose.dev.yml to check references to Plesk Panel functions, files, CLI utilities and other entities.
     - CLI utilities located at /usr/local/psa/bin and /usr/local/psa/admin/sbin

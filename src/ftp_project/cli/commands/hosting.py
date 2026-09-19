@@ -5,10 +5,14 @@ import json
 from .. import handlers
 
 
+def _get(registry, path, get, identifier):
+    registry.register(*path, handler=get, arguments=(((identifier,), {}),))
+
+
 def _create_get(registry, name, create, get, create_args, identifier):
     arguments = tuple(((flag,), kwargs) for flag, kwargs in create_args)
     registry.register(name, "create", handler=create, arguments=arguments)
-    registry.register(name, "get", handler=get, arguments=(((identifier,), {}),))
+    _get(registry, (name, "get"), get, identifier)
 
 
 def register(registry) -> None:
@@ -17,8 +21,7 @@ def register(registry) -> None:
                  ("--allocation", {"type": json.loads, "required": True}),
                  ("--lifecycle-state", {"required": True}),
                  ("--configuration", {"type": json.loads, "required": True})), "service_id")
-    registry.register("service", "state", "get", handler=handlers.service_state_get,
-                      arguments=((('service_id',), {}),))
+    _get(registry, ("service", "state", "get"), handlers.service_state_get, "service_id")
     _create_get(registry, "service-plan", handlers.service_plan_create, handlers.service_plan_get,
                 (("--name", {"required": True}), ("--status", {"default": "ACTIVE"}),
                  ("--resource-limits", {"type": json.loads, "default": {}}),
