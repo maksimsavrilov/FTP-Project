@@ -17,6 +17,8 @@ def register(registry) -> None:
                  ("--allocation", {"type": json.loads, "required": True}),
                  ("--lifecycle-state", {"required": True}),
                  ("--configuration", {"type": json.loads, "required": True})), "service_id")
+    registry.register("service", "state", "get", handler=handlers.service_state_get,
+                      arguments=((('service_id',), {}),))
     _create_get(registry, "service-plan", handlers.service_plan_create, handlers.service_plan_get,
                 (("--name", {"required": True}), ("--status", {"default": "ACTIVE"}),
                  ("--resource-limits", {"type": json.loads, "default": {}}),
