@@ -5,7 +5,7 @@
 - Phase: Implementation
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `d4abaae`
+- Last verified commit: `af7ff016a101a8bc189ec1e60e937c82a9b59303`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Production Compose stack is running and the user-facing authentication foundation is implemented, including access-token validation, introspection, and CLI user sessions
 
@@ -283,11 +283,19 @@ service definitions remain available in `docker-compose.dev.yml` and
 
 ---
 
+## Current Step
+
+Completed: the minimal Web Agent reconciliation handler for an accepted desired
+WebService version is implemented and verified in the Web Agent boundary. It
+accepts authenticated desired-state updates, stores the accepted version per
+service, and exposes a readback of the accepted state without introducing any
+provider-specific management or C4 changes.
+
 ## Next Step
 
-Implement the minimal Web Agent reconciliation handler for an accepted desired
-WebService version; do not add provider-specific service management, change
-ZITADEL token validation, or modify the C4 model.
+Defer the next task: add the first end-to-end Worker Agent / CLI follow-through
+for reporting actual state after a WebService desired-state acceptance, while
+keeping the existing token validation and architecture boundaries unchanged.
 
 ---
 

@@ -44,6 +44,40 @@ class WebAgentTests(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.json()["code"], "AUTHENTICATION_FAILED")
 
+    def test_returns_current_reconciliation_state_for_accepted_desired_version(self):
+        payload = {
+            "service_type": "WEB",
+            "assignment_id": "assignment-1",
+            "version": 3,
+            "lifecycle_state": "RUNNING",
+            "configuration": {"web_server": "nginx", "php_version": "8.3"},
+        }
+
+        accepted = self.client.post(
+            "/v1/services/service-2/desired-state",
+            json=payload,
+            headers=self.headers,
+        )
+        reconciliation = self.client.get(
+            "/v1/services/service-2/reconciliation",
+            headers=self.headers,
+        )
+
+        self.assertEqual(accepted.status_code, 202)
+        self.assertEqual(reconciliation.status_code, 200)
+        self.assertEqual(
+            reconciliation.json(),
+            {
+                "service_id": "service-2",
+                "service_type": "WEB",
+                "assignment_id": "assignment-1",
+                "version": 3,
+                "lifecycle_state": "RUNNING",
+                "configuration": {"web_server": "nginx", "php_version": "8.3"},
+                "status": "ACCEPTED",
+            },
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

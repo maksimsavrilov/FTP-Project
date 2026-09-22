@@ -25,6 +25,9 @@ class WebAgentDesiredStateStore:
     def __init__(self) -> None:
         self._states: dict[str, DesiredWebServiceState] = {}
 
+    def get(self, service_id: str) -> DesiredWebServiceState | None:
+        return self._states.get(service_id)
+
     def accept(self, service_id: str, state: DesiredWebServiceState) -> tuple[bool, str | None]:
         current = self._states.get(service_id)
         if current is not None and state.version < current.version:
@@ -86,6 +89,31 @@ def create_app(
         return JSONResponse(
             status_code=202,
             content={"accepted": True, "service_id": service_id, "version": state.version},
+            headers={"X-Request-ID": request_id(request)},
+        )
+
+    @app.get("/v1/services/{service_id}/reconciliation")
+    async def get_reconciliation(service_id: str, request: Request) -> JSONResponse:
+        if not authenticated(request):
+            return error(request, 401, "AUTHENTICATION_FAILED", "authentication required")
+        if not service_id:
+            return error(request, 400, "INVALID_REQUEST", "service_id is required")
+
+        state = desired_states.get(service_id)
+        if state is None:
+            return error(request, 404, "NOT_FOUND", "desired state was not accepted")
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "service_id": service_id,
+                "service_type": state.service_type,
+                "assignment_id": state.assignment_id,
+                "version": state.version,
+                "lifecycle_state": state.lifecycle_state,
+                "configuration": state.configuration,
+                "status": "ACCEPTED",
+            },
             headers={"X-Request-ID": request_id(request)},
         )
 
