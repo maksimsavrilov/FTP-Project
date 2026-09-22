@@ -5,7 +5,7 @@
 - Phase: Implementation
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `040063ffa34fd919dfdb8c3c90715251deb63a6c`
+- Last verified commit: `3ee57c787837922445a3a77ee8619fd1e85fa755`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Production Compose stack is running and the user-facing authentication foundation is implemented, including access-token validation, introspection, and CLI user sessions
 
@@ -284,21 +284,29 @@ compose service definitions remain available in `docker-compose.dev.yml` and
 
 ## Current Step
 
-Completed: the verified Web Agent reconciliation handler for an accepted desired
-WebService version remains in place and has been validated in the Web Agent
-boundary. It accepts authenticated desired-state updates, stores the accepted
-version per service, and exposes a readback of the accepted state without
-introducing any provider-specific management or C4 changes. The Worker Agent /
-CLI follow-through for actual-state reporting remains intentionally deferred in
-order to keep the existing token validation and architecture boundaries
-unchanged.
+Completed: the exact actual-state reporting contract for the first Worker Agent /
+CLI follow-through has been defined and validated without implementing the
+follow-through. The accepted payload is:
+
+- `assignment_id`: current assignment identifier
+- `version`: non-negative integer, stale versions rejected
+- `status`: required service status string
+- `configuration`: required object
+- `health`: required object
+- `observed_at`: required timestamp string
+
+This contract is enforced by `ActualStateRequest.from_dict`, accepted only when
+`MasterReconciliationService.report_actual_state` sees the current assignment and
+newer version, and transmitted by the authenticated `WorkerAgentMasterClient`
+for `POST /v1/services/{service_id}/actual-state`. The end-to-end Worker Agent /
+CLI follow-through remains intentionally deferred to keep the existing token
+validation and architecture boundaries unchanged.
 
 ## Next Step
 
-Define the exact actual-state reporting contract and acceptance criteria for the
-first Worker Agent / CLI follow-through, then validate the contract without
-implementing the follow-through in this step. Then add the first end-to-end Worker Agent / CLI follow-through for reporting actual state after a WebService desired-state acceptance, while
-keeping the existing token validation and architecture boundaries unchanged.
+Implement the first end-to-end Worker Agent / CLI follow-through for reporting
+actual state after a WebService desired-state acceptance, while keeping the
+existing token validation and architecture boundaries unchanged.
 
 ---
 
