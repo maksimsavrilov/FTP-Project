@@ -60,6 +60,21 @@ def node_list(args, context):
     )
 
 
+def node_heartbeat(args, context):
+    return run_authenticated(
+        context,
+        "No authenticated session. Log in before updating worker node heartbeat.",
+        lambda client: client.create(
+            f"/v1/nodes/{args.node_id}/heartbeat",
+            {
+                "status": args.status,
+                "usage": args.usage,
+                "last_heartbeat_at": args.last_heartbeat_at,
+            },
+        ),
+    )
+
+
 def account_create(args, context):
     return run_authenticated(
         context,

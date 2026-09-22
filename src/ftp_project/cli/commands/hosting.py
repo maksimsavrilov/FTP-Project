@@ -20,6 +20,15 @@ def register(registry) -> None:
         "node", "list", handler=handlers.node_list,
         arguments=(( ("--status",), {}), (("--capability",), {})),
     )
+    registry.register(
+        "node", "heartbeat", handler=handlers.node_heartbeat,
+        arguments=(
+            (("node_id",), {}),
+            (("--status",), {"required": True}),
+            (("--usage",), {"type": json.loads, "required": True}),
+            (("--last-heartbeat-at",), {"required": True}),
+        ),
+    )
     _get(registry, ("node", "get"), handlers.node_get, "node_id")
     _create_get(registry, "service", handlers.service_create, handlers.service_get,
                 (("--subscription-id", {"required": True}), ("--type", {"required": True}),

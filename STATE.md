@@ -213,6 +213,8 @@ architecture review.
 - Authenticated CLI Worker Node listing command implemented:
   `node list` uses the persisted session and Master API with status and
   capability filters.
+- Authenticated CLI Worker Node heartbeat command implemented:
+  `node heartbeat` uses the persisted session and Master API.
 - Master service added to `docker-compose.prod.yml` with production build settings,
   port exposure, and required database and authentication service URLs.
 - PostgreSQL and ZITADEL services added to `docker-compose.prod.yml`; Master now
@@ -261,6 +263,7 @@ Master desired/actual state endpoint, and hosting command registration reuses
 one read helper for standalone and nested commands. The CLI
 login/session flow, existing user commands, authenticated Worker Node reads,
 authenticated Worker Node listing,
+authenticated Worker Node heartbeat updates,
 Master API adapter, composition root, production container runtime, and compose
 service definitions remain available in `docker-compose.dev.yml` and
 `docker-compose.prod.yml`.
@@ -269,7 +272,7 @@ service definitions remain available in `docker-compose.dev.yml` and
 
 ## Next Step
 
-Add an authenticated CLI command for Worker Node heartbeat updates; do not
+Add an authenticated CLI command for reporting service actual state; do not
 change ZITADEL token validation or the C4 model.
 
 ---

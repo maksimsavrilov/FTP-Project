@@ -141,6 +141,48 @@ class CliSessionTests(unittest.TestCase):
                     "/v1/nodes?status=ONLINE&capability=web"
                 )
 
+    def test_node_heartbeat_command_uses_saved_session(self):
+        import ftp_project
+
+        session = UserSession("access-1")
+        with tempfile.TemporaryDirectory() as directory:
+            store = SessionStore(Path(directory) / "session.json")
+            store.save(session)
+            with patch("ftp_project.SessionStore", return_value=store), patch(
+                "ftp_project.MasterClient"
+            ) as client_type:
+                client_type.return_value.create.return_value = {
+                    "id": "node-1",
+                    "status": "DEGRADED",
+                }
+
+                self.assertEqual(
+                    ftp_project.main(
+                        [
+                            "node",
+                            "heartbeat",
+                            "node-1",
+                            "--status",
+                            "DEGRADED",
+                            "--usage",
+                            '{"cpu": 2, "memory": 3500, "disk": 5000}',
+                            "--last-heartbeat-at",
+                            "2026-01-01T00:10:00Z",
+                        ]
+                    ),
+                    0,
+                )
+
+                client_type.assert_called_once_with(session, base_url="http://localhost:8000")
+                client_type.return_value.create.assert_called_once_with(
+                    "/v1/nodes/node-1/heartbeat",
+                    {
+                        "status": "DEGRADED",
+                        "usage": {"cpu": 2, "memory": 3500, "disk": 5000},
+                        "last_heartbeat_at": "2026-01-01T00:10:00Z",
+                    },
+                )
+
     def test_service_get_command_uses_saved_session(self):
         import ftp_project
 
