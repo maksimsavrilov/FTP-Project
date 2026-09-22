@@ -26,7 +26,8 @@ entities.
 | --- | --- | --- | --- |
 | `id` | UUID | yes | Primary key |
 | `hostname` | text | yes | Node identity; not necessarily a resolvable DNS name |
-| `status` | text | yes | `PROVISIONING`, `ONLINE`, `DEGRADED`, `OFFLINE`, or `DECOMMISSIONED` |
+| `lifecycle` | text | yes | `ACTIVE`, `SUSPENDED`, `STOPPED`, or `DELETED` |
+| `reconciliation_condition` | text | yes | `PENDING`, `RECONCILING`, `READY`, `DEGRADED`, `ERROR`, or `UNKNOWN` |
 | `capabilities` | JSONB | yes | Supported service families and provider capabilities; default `{}` |
 | `cpu_capacity` | numeric | yes | Schedulable capacity; non-negative |
 | `memory_capacity` | bigint | yes | Schedulable bytes; non-negative |
@@ -91,11 +92,30 @@ service, not globally to the database.
 | --- | --- | --- | --- |
 | `service_id` | UUID | yes | Primary key and foreign key to `services.id` |
 | `version` | bigint | yes | Desired-state version represented by this observation |
-| `status` | text | yes | Agent-reported actual lifecycle/reconciliation status |
+| `lifecycle_state` | text | yes | Agent-reported actual lifecycle state |
+| `reconciliation_condition` | text | yes | Agent-reported actual reconciliation status |
 | `configuration` | JSONB | yes | Latest observed provider configuration; default `{}` |
 | `health` | JSONB | yes | Latest observed health and diagnostics; default `{}` |
 | `observed_at` | timestamptz | yes | Observation time supplied by the Agent |
 | `updated_at` | timestamptz | yes | Time the observation was accepted by Master |
+
+An actual-state report is accepted only when it belongs to the current
+assignment and is not older than the stored observation for that service.
+Reports for an older desired version cannot overwrite a newer version. The
+repository must perform this check atomically with the upsert.
+
+### `reconciliation_attempts`
+
+| Column | Type | Required | Constraints / meaning |
+| --- | --- | --- | --- |
+| `service_id` | UUID | yes | Primary key and foreign key to `services.id` |
+| `assignment_id` | UUID | yes | Unique ID for to use for identify the attempt |
+| `desired_version` | bigint | yes | Desired-state version represented by this observation |
+| `status` | text | yes | Agent-reported reconciliation attempt status |
+| `error_code` | bigint | yes | Agent-reported error code; default 0 |
+| `error_message` | text | yes | Agent-reported error message; default `` |
+| `started_at` | timestamptz | yes | Reconciliation attempt start time |
+| `finished_at` | timestamptz | yes | Reconciliation attempt finish time |
 
 An actual-state report is accepted only when it belongs to the current
 assignment and is not older than the stored observation for that service.

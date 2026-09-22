@@ -271,60 +271,11 @@ Completed: the first end-to-end Worker Agent / CLI follow-through for reporting 
 - `health`: required object
 - `observed_at`: required timestamp string
 
-This contract is enforced by `ActualStateRequest.from_dict`, accepted only when `MasterReconciliationService.report_actual_state` sees the current assignment and newer version, and transmitted by the authenticated `WorkerAgentMasterClient` for `POST /v1/services/{service_id}/actual-state`.
-
-## Next Step
-
-Review the same accepted-desired-state to actual-state flow for the next service type only when that service-specific requirement is introduced; keep the current token-validation and architecture boundaries unchanged.
-
-## Verification Rules
-
-Before changing architecture:
-
-- Verify the current repository state.
-- Treat this file as project execution state, not as historical documentation.
-- Treat Structurizr as the canonical C4 architecture model.
-- Treat `docs/domain-model.md` as the canonical business-domain model.
-- Do not infer architecture from obsolete README diagrams when they conflict with the canonical models.
-- Validate Structurizr identifiers and dynamic-view scopes.
-- Check every included DSL file.
-- Keep Agent-to-Agent communication prohibited.
-- Keep scheduling and placement in Master.
-- Keep reconciliation between desired and actual state explicit.
-- If required libraries are missing from the environment, stop and ask the user to install them; continue only after the user confirms installation.
-
----
-
-## Change Policy
-
-After completing a task:
-
-1. Update `Completed`.
-2. Remove resolved items from `Known Issues`.
-3. Update `Current Task`.
-4. Define exactly one `Next Step`.
-5. Update `Last verified commit`.
-6. Commit the state together with the corresponding project changes.
-
-Do not use this file as a changelog.
-
-Historical information belongs in Git history.
-
-follow-through. The accepted payload is:
-
-- `assignment_id`: current assignment identifier
-- `version`: non-negative integer, stale versions rejected
-- `status`: required service status string
-- `configuration`: required object
-- `health`: required object
-- `observed_at`: required timestamp string
-
-This contract is enforced by `ActualStateRequest.from_dict`, accepted only when
-`MasterReconciliationService.report_actual_state` sees the current assignment and
-newer version, and transmitted by the authenticated `WorkerAgentMasterClient`
-for `POST /v1/services/{service_id}/actual-state`. The end-to-end Worker Agent /
+This contract is enforced by `ActualStateRequest.from_dict`, accepted only when `MasterReconciliationService.report_actual_state` sees the current assignment and newer version, and transmitted by the authenticated `WorkerAgentMasterClient` for `POST /v1/services/{service_id}/actual-state`. The end-to-end Worker Agent /
 CLI follow-through remains intentionally deferred to keep the existing token
 validation and architecture boundaries unchanged.
+
+---
 
 ## Next Step
 

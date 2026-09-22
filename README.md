@@ -287,18 +287,25 @@ Master is the control plane and desired state source. Worker Nodes are the execu
 Worker Node
   │
   ├── Web Agent
-  │   ├── nginx
-  │   └── Apache
+  │   WebProvider interface
+  │     │
+  │     ├── NginxProvider
+  │     └── ApacheProvider
   │
   ├── DNS Agent
-  │   └── BIND
+  │   └── DnsProvider
+  │       └── BindProvider
   │
   ├── Mail Agent
-  │   └── SMTP / IMAP / POP
+  │    └── MailProvider
+  │       ├── PostfixProvider
+  │       └── DovecotProvider
   │
   └── DB Agent
-      ├── MySQL
-      └── PostgreSQL
+      └── DatabaseProvider
+          ├── PostgreSQLProvider
+          └── MySQLProvider
+      
 ```
 
 ## Master <-> Agents communication
@@ -458,11 +465,11 @@ Site User ─┘      │
 ```text
 User
  └── Subscription
-  └── Service
-    ├── WebService
-    ├── DnsService
-    ├── MailService
-    └── DatabaseService
+      └── Service
+          ├── WebService
+          ├── DnsService
+          ├── MailService
+          └── DatabaseService
 ```
 
 ### service model
@@ -471,7 +478,7 @@ User
 Subscription
 │
 └── Service
-  └── ServiceAssignment ──► Worker Node
+      └── ServiceAssignment ──► Worker Node
 ```
 
 ### Services are independent and each service agent receives service-specific desired state
@@ -576,24 +583,19 @@ Hosting Control System
 ## Node state list (lifecycle with each to each links)
 
 ```text
-PROVISIONING
-ONLINE
-DEGRADED
-OFFLINE
-DECOMMISSIONED
+ACTIVE
+SUSPENDED
+STOPPED
+DELETED
 ```
 
 
 ## Service lifecycle
 
 ```text
-PENDING
+ACTIVE
    ↓
-PROVISIONING
-   ↓
-RUNNING
-   ↓
-DEGRADED
+SUSPENDED
    ↓
 STOPPED
    ↓
@@ -601,7 +603,32 @@ DELETED
 
 e.g.
 Web Service
-  status = DEGRADED
+  desired.lifecycle = RUNNING
+  actual.lifecycle = RUNNING
+  reason = created by user 'admin' using CLI command 
+```
+
+
+## Reconciliation condition
+
+```text
+PENDING
+   ↓
+RECONCILING
+   ↓
+READY
+   ↓
+DEGRADED
+   ↓
+ERROR
+   ↓
+UNKNOWN
+
+e.g.
+Web Service
+  desired.lifecycle = RUNNING
+  actual.lifecycle = RUNNING
+  condition = DEGRADED
   reason = nginx configuration failed
 ```
 
