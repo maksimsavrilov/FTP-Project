@@ -36,6 +36,18 @@ def register(registry) -> None:
                  ("--lifecycle-state", {"required": True}),
                  ("--configuration", {"type": json.loads, "required": True})), "service_id")
     _get(registry, ("service", "state", "get"), handlers.service_state_get, "service_id")
+    registry.register(
+        "service", "state", "report", handler=handlers.service_state_report,
+        arguments=(
+            (("service_id",), {}),
+            (("--assignment-id",), {"required": True}),
+            (("--version",), {"type": int, "required": True}),
+            (("--status",), {"required": True}),
+            (("--configuration",), {"type": json.loads, "required": True}),
+            (("--health",), {"type": json.loads, "required": True}),
+            (("--observed-at",), {"required": True}),
+        ),
+    )
     _create_get(registry, "service-plan", handlers.service_plan_create, handlers.service_plan_get,
                 (("--name", {"required": True}), ("--status", {"default": "ACTIVE"}),
                  ("--resource-limits", {"type": json.loads, "default": {}}),

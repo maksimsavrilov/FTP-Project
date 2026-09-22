@@ -192,6 +192,8 @@ architecture review.
   `service create` uses the persisted session and Master API.
 - Authenticated CLI Service reconciliation-state read command implemented:
   `service state get` uses the persisted session and Master API.
+- Authenticated CLI service actual-state report command implemented:
+  `service state report` uses the persisted session and Master API.
 - Hosting CLI command registration now reuses one helper for standalone and
   nested resource reads.
 - Authenticated CLI Domain creation command implemented:
@@ -258,6 +260,8 @@ MailDomain creation and reads, MailAccount creation and reads, MailService
 creation and reads, DatabaseService creation and reads, DatabaseUser creation
 and reads, WebService creation and reads, DnsService creation and reads. The CLI
 Service creation and read commands now also cover the common Service aggregate.
+The CLI also reports service actual state through the existing authenticated
+Master endpoint.
 The CLI Service reconciliation-state read command now also covers the existing
 Master desired/actual state endpoint, and hosting command registration reuses
 one read helper for standalone and nested commands. The CLI
@@ -272,8 +276,9 @@ service definitions remain available in `docker-compose.dev.yml` and
 
 ## Next Step
 
-Add an authenticated CLI command for reporting service actual state; do not
-change ZITADEL token validation or the C4 model.
+Implement the first authenticated Worker Agent to Master reconciliation HTTP
+client path for WebService actual-state reporting; do not change ZITADEL token
+validation or the C4 model.
 
 ---
 

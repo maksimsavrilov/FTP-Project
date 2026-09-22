@@ -163,6 +163,24 @@ def service_state_get(args, context):
     )
 
 
+def service_state_report(args, context):
+    return run_authenticated(
+        context,
+        "No authenticated session. Log in before reporting service actual state.",
+        lambda client: client.create(
+            f"/v1/services/{args.service_id}/actual-state",
+            {
+                "assignment_id": args.assignment_id,
+                "version": args.version,
+                "status": args.status,
+                "configuration": args.configuration,
+                "health": args.health,
+                "observed_at": args.observed_at,
+            },
+        ),
+    )
+
+
 def service_plan_get(args, context):
     return run_authenticated(
         context,
