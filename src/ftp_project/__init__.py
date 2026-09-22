@@ -2,6 +2,7 @@
 
 from .master import MasterApiError, MasterClient, MasterClientError
 from .session import AuthenticationClient, LoginError, SessionStore, UserSession
+from .worker_agent import WorkerAgentMasterClient
 from .cli.parser import build_parser
 from .cli.session import CliContext
 
@@ -13,6 +14,7 @@ __all__ = [
     "MasterClientError",
     "SessionStore",
     "UserSession",
+    "WorkerAgentMasterClient",
     "main",
 ]
 

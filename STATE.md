@@ -5,7 +5,7 @@
 - Phase: Implementation
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `84ca901`
+- Last verified commit: `WORKTREE`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Production Compose stack is running and the user-facing authentication foundation is implemented, including access-token validation, introspection, and CLI user sessions
 
@@ -231,6 +231,9 @@ architecture review.
 - Production Compose stack started successfully with PostgreSQL, ZITADEL,
   Authentication Service and Master; live endpoints and the ZITADEL
   Management API were checked.
+- Authenticated Worker Agent-to-Master HTTP client path implemented for
+  WebService actual-state reporting, reusing the established Master client
+  transport and error handling.
 
 ### Domain Model
 
@@ -262,6 +265,8 @@ and reads, WebService creation and reads, DnsService creation and reads. The CLI
 Service creation and read commands now also cover the common Service aggregate.
 The CLI also reports service actual state through the existing authenticated
 Master endpoint.
+An authenticated Worker Agent Master client now reports WebService actual
+state through the same endpoint.
 The CLI Service reconciliation-state read command now also covers the existing
 Master desired/actual state endpoint, and hosting command registration reuses
 one read helper for standalone and nested commands. The CLI
@@ -276,9 +281,9 @@ service definitions remain available in `docker-compose.dev.yml` and
 
 ## Next Step
 
-Implement the first authenticated Worker Agent to Master reconciliation HTTP
-client path for WebService actual-state reporting; do not change ZITADEL token
-validation or the C4 model.
+Implement the first authenticated Web Agent HTTP endpoint for receiving desired
+WebService state from Master; do not change ZITADEL token validation or the C4
+model.
 
 ---
 
