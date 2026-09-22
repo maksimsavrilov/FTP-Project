@@ -2,6 +2,7 @@
 
 import os
 import sys
+from urllib.parse import urlencode
 
 from ..session import LoginError
 from .session import CliContext, run_authenticated
@@ -44,6 +45,18 @@ def node_get(args, context):
         context,
         "No authenticated session. Log in before reading a worker node.",
         lambda client: client.get(f"/v1/nodes/{args.node_id}"),
+    )
+
+
+def node_list(args, context):
+    query = urlencode(
+        [(key, value) for key, value in (("status", args.status), ("capability", args.capability)) if value]
+    )
+    path = f"/v1/nodes?{query}" if query else "/v1/nodes"
+    return run_authenticated(
+        context,
+        "No authenticated session. Log in before listing worker nodes.",
+        lambda client: client.get(path),
     )
 
 

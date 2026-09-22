@@ -210,6 +210,9 @@ architecture review.
   `subscription get` uses the persisted session and Master API.
 - Authenticated CLI Worker Node read command implemented:
   `node get` uses the persisted session and Master API.
+- Authenticated CLI Worker Node listing command implemented:
+  `node list` uses the persisted session and Master API with status and
+  capability filters.
 - Master service added to `docker-compose.prod.yml` with production build settings,
   port exposure, and required database and authentication service URLs.
 - PostgreSQL and ZITADEL services added to `docker-compose.prod.yml`; Master now
@@ -257,6 +260,7 @@ The CLI Service reconciliation-state read command now also covers the existing
 Master desired/actual state endpoint, and hosting command registration reuses
 one read helper for standalone and nested commands. The CLI
 login/session flow, existing user commands, authenticated Worker Node reads,
+authenticated Worker Node listing,
 Master API adapter, composition root, production container runtime, and compose
 service definitions remain available in `docker-compose.dev.yml` and
 `docker-compose.prod.yml`.
@@ -265,7 +269,7 @@ service definitions remain available in `docker-compose.dev.yml` and
 
 ## Next Step
 
-Add an authenticated CLI command for listing Worker Node resources; do not
+Add an authenticated CLI command for Worker Node heartbeat updates; do not
 change ZITADEL token validation or the C4 model.
 
 ---
