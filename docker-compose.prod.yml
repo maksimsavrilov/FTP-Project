@@ -16,6 +16,22 @@ services:
     networks:
         - hosting
 
+  web-agent:
+    build:
+      context: .
+      dockerfile: agents/web_agent/Dockerfile
+    environment:
+      MASTER_AGENT_TOKEN: ${MASTER_AGENT_TOKEN:-change-me-web-agent-token}
+      MASTER_SERVICE_URL: ${MASTER_SERVICE_URL:-http://master:8000}
+      WEB_AGENT_HOST: ${WEB_AGENT_HOST:-0.0.0.0}
+      WEB_AGENT_PORT: ${WEB_AGENT_PORT:-8002}
+      WEB_AGENT_LOG_LEVEL: ${WEB_AGENT_LOG_LEVEL:-info}
+    ports:
+      - "${WEB_AGENT_PORT:-8002}:8002"
+    restart: unless-stopped
+    networks:
+      - hosting
+
   auth:
     build:
       context: .
