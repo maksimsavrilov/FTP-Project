@@ -1,6 +1,302 @@
-# FTP Project
+# FTP-Project
 
-FTP Project is a learning/pet project to create a distributed Web/DB hosting management system using CLI2API and the desired state concept.
+Distributed hosting control plane with CLI command sed inspired by Plesk Panel.
+
+FTP-Project is an educational backend project for managing hosting services across a distributed set of worker nodes.
+
+The project follows a **control-plane / worker-agent architecture**:
+
+```text
+                         ┌──────────────────┐
+                         │       CLI        │
+                         └────────┬─────────┘
+                                  │ REST
+                                  ▼
+                         ┌──────────────────┐
+                         │      Master      │
+                         │                  │
+                         │ Domain Model     │
+                         │ Desired State    │
+                         │ Scheduler        │
+                         │ Placement        │
+                         │ Reconciliation   │
+                         └────────┬─────────┘
+                                  │
+                           REST / versioned
+                                  │
+                ┌─────────────────┼─────────────────┐
+                │                 │                 │
+                ▼                 ▼                 ▼
+         ┌────────────┐    ┌────────────┐    ┌────────────┐
+         │ Web Agent  │    │ DNS Agent  │    │ DB Agent   │
+         └─────┬──────┘    └────────────┘    └────────────┘
+               │
+          ┌────▼─────┐
+          │ Provider │
+          └────┬─────┘
+               │
+          ┌────┴─────┐
+          ▼          ▼
+        Nginx      Apache
+```
+
+## Project goals
+
+The project is primarily intended as a practical exploration of:
+
+* distributed system architecture;
+* declarative desired state;
+* reconciliation loops;
+* service placement and scheduling;
+* idempotent operations;
+* resource management;
+* REST-based service communication;
+* authentication and authorization;
+* provider abstraction;
+* automated testing;
+* infrastructure-oriented backend development.
+
+The system is intentionally implemented using relatively simple building blocks rather than introducing a large distributed infrastructure stack.
+
+## Current architecture
+
+The system consists of:
+
+### Master
+
+The Master is the control-plane entry point.
+
+It is responsible for:
+
+* authentication and authorization;
+* hosting the public REST API;
+* managing the domain model;
+* storing desired state;
+* scheduling services;
+* assigning services to worker nodes;
+* initiating reconciliation;
+* receiving actual state from agents.
+
+### Worker Nodes
+
+Worker nodes provide the execution environment for hosting services.
+
+A worker can run one or more agents.
+
+### Agents
+
+Agents manage a particular type of hosting service on a worker node.
+
+Current/planned agents include:
+
+* Web Agent;
+* DNS Agent;
+* Mail Agent;
+* Database Agent.
+
+Agents do not call other agents directly.
+
+When one service depends on another service, the dependency is represented in the control-plane model and coordinated by the Master.
+
+### Providers
+
+Providers encapsulate implementation-specific behaviour.
+
+For example:
+
+```text
+Web Agent
+    │
+    ▼
+WebProvider
+    ├── NginxProvider
+    └── ApacheProvider
+```
+
+The domain model and desired state remain provider-neutral.
+
+This allows the execution implementation to change without coupling the Master to a particular software product.
+
+## Desired state and reconciliation
+
+Services are managed using a desired-state model.
+
+Conceptually:
+
+```text
+Desired State
+      │
+      ▼
+   Master
+      │
+      ▼
+Service Assignment
+      │
+      ▼
+    Agent
+      │
+      ▼
+   Provider
+      │
+      ▼
+ Actual State
+      │
+      └──────────────► Master
+```
+
+Agents reconcile the actual state of the worker with the desired state received from the Master.
+
+Operations are designed to be idempotent and version-aware so that stale or duplicated requests do not incorrectly overwrite newer state.
+
+## Example
+
+The CLI is intended to provide commands such as:
+
+```bash
+ftp-project login
+
+ftp-project user create alice
+
+ftp-project domain create example.com
+
+ftp-project website create example.com
+```
+
+A website creation request eventually becomes a desired state on a worker node:
+
+```text
+Master
+  │
+  ├── Website
+  ├── ServiceAssignment
+  └── DesiredState
+          │
+          ▼
+      Web Agent
+          │
+          ▼
+      NginxProvider
+          │
+          ▼
+    running website
+```
+
+The agent then reports the observed state back to the Master.
+
+## Technology
+
+Current technology choices include:
+
+* Python;
+* FastAPI;
+* PostgreSQL;
+* REST APIs;
+* Podman / containers;
+* ZITADEL for identity and authentication;
+* pytest;
+* Structurizr DSL for C4 architecture.
+
+The project is designed to run on Linux.
+
+## Repository structure
+
+```text
+.
+├── master/                 # Control-plane service
+├── agents/                 # Worker agents
+├── cli/                    # Command-line interface
+├── auth/                   # Authentication/authorization integration
+├── tests/                  # Automated tests
+│
+├── docs/
+│   ├── domain-model.md
+│   ├── implementation-boundaries.md
+│   ├── master-api.md
+│   └── master-persistence.md
+│
+├── structurizr/
+│   └── ...                 # C4 architecture model
+│
+├── STATE.md                # Current development state
+├── AGENTS.md               # Instructions for coding agents
+└── README.md
+```
+
+The repository deliberately separates architectural documentation from implementation documentation.
+
+## Architecture documentation
+
+The following documents are the authoritative sources for different aspects of the system:
+
+| Area                         | Source                              |
+| ---------------------------- | ----------------------------------- |
+| C4 architecture              | `structurizr/`                      |
+| Business domain              | `docs/domain-model.md`              |
+| Implementation boundaries    | `docs/implementation-boundaries.md` |
+| Master persistence           | `docs/master-persistence.md`        |
+| Master API                   | `docs/master-api.md`                |
+| Current implementation state | `STATE.md`                          |
+
+`README.md` provides an overview and is not intended to be a second source of truth for the architecture.
+
+## Development
+
+Start the development environment using the project's container configuration.
+
+Then run the relevant services and tests according to the development documentation.
+
+Typical development workflow:
+
+```text
+modify code
+    │
+    ▼
+run unit tests
+    │
+    ▼
+run integration tests
+    │
+    ▼
+validate architecture
+    │
+    ▼
+update STATE.md
+```
+
+The project uses automated tests to protect both application behaviour and distributed-system semantics.
+
+## Development principles
+
+The project follows several architectural principles:
+
+1. **Master owns desired state.**
+2. **Worker agents own local execution.**
+3. **Placement is represented by ServiceAssignment.**
+4. **Agents do not call other agents directly.**
+5. **Desired state is provider-neutral.**
+6. **Provider-specific implementation stays inside providers.**
+7. **Operations should be idempotent.**
+8. **State versions protect against stale updates.**
+9. **External infrastructure is responsible for Master/worker availability and failover.**
+10. **Architecture is documented separately from implementation details.**
+
+## Project status
+
+The project is under active development.
+
+The current development state and next implementation step are maintained in:
+
+```text
+STATE.md
+```
+
+For architectural context, start with:
+
+```text
+structurizr/
+docs/domain-model.md
+docs/implementation-boundaries.md
+```
 
 ## Production authorization
 
@@ -18,875 +314,6 @@ production stack. Compose fails during configuration when either value is
 missing, so the Authentication Service cannot silently start without a
 configured ZITADEL client.
 
-The CLI command set is inspired by the one in the Plesk panel
-(the contents of the $PLESK_DIR/bin and $PLESK_DIR/admin/sbin directories or
-https://docs.plesk.com/en-US/obsidian/cli-linux/using-command-line-utilities.40984/).
-Except for node management commands.
+## License
 
-## C4 Diagram
-
-## Overview, C4 context level
-
-```text
-                    Master
-                 control plane,
-                API/CLI Endpoint
-                       │
-          ┌────────────┼────────────┐
-          ▼            ▼            ▼
-      Node Agent   Node Agent   Node Agent
-          │            │            │
-          ▼            ▼            ▼
-       nginx        nginx      MySQL/PostgreSQL
-       Apache       Apache
-```
-
-The Master is responsible for:
-
-- Registering worker nodes
-- Detecting available resources
-- Accounting for their capacity
-- Scheduling
-- Creating/deleting/modifying services
-- Storing desired state
-- Issuing commands to agents
-- Monitoring the state of worker nodes
-
-The Worker Agent is responsible for:
-
-- Executing Master commands
-- Installing services
-- Configuration changes
-- Starting/stopping services
-- Creating virtual hosts
-- Creating a database
-- Retrieving the state of the local machine
-- Sending status/health back to the Master
-
-## Workflow example
-
-```text
-CLI
-  │
-  │ hosting site create example.com
-  ▼
-Master API
-  │
-  ▼
-Desired State DB
-
-website:
-  id: website-123
-  domain: example.com
-  document_root: /var/www/example.com
-  php_version: "8.4"
-
-web_service:
-id: web-service-123
-website_id: website-123
-
-placement:
-  service_assignment:
-    node_id: None
-
-provider:
-  name: nginx
-
-state:
-  desired_state: RUNNING
-  actual_state: PENDING
-
-dns:
-zone: example.com
-records:
-  - name: "@"
-    type: A
-    value: 203.0.113.10
-
-  │
-  ▼
-Desired State
-  │
-  ▼
-Scheduler
-  │
-  ▼
-  ├── Master
-  │      web_service:
-  │        id: web-service-123
-  │        placement:
-  │          service_assignment:
-  │            node_id: worker-03
-  │        state:
-  │          actual: PROVISIONING
-  │
-  ▼
-Worker Agent
-  │
-  ├── install nginx
-  ├── configure nginx
-  └── create vhost
-  │
-  ▼
-Master
-web_service:
-    id: web-service-123
-    actual: RUNNING
-```
-
-## Worker node resource abstraction
-
-```text
-                Worker Node
-                    │
-                    ├── WebProvider
-                    │   ├── nginx
-                    │   └── apache
-                    │
-                    ├── DatabaseProvider
-                    │   ├── mysql
-                    │   └── postgresql
-                    │
-                    └── ...
-```
-
-## C4 Views (Structurizr)
-
-### Context
-
-```text
-        Admin
-          │
-          ▼
-  Hosting Control System
-          │
-          ├── Worker Nodes
-          ├── DNS
-          └── Internet
-```
-
-### Container
-
-```text
-        Node Agent
-            │
-            ├── Web Provider
-            │     ├── nginx
-            │     └── Apache
-            │
-            └── DB Provider
-                  ├── MySQL
-                  └── PostgreSQL
-```
-
-
-### Sequence
-
-```text
-        CLI
-         │
-         │ create website
-         ▼
-      Master
-         │
-         │ schedule
-         ▼
-    Scheduler
-         │
-         │ assign
-         ▼
-  Worker Agent
-         │
-         ├── configure nginx
-         ├── configure Apache
-         └── create filesystem
-         │
-         ▼
-      Master
-         │
-         │ status=running
-         ▼
-        CLI
-```
-
-## Context info for users <-> FTP Project interaction
-
-### Admin user
-
-- Worker Nodes management/monitoring
-- Users management
-- Resellers management
-- Resources management/monitoring
-- Service plans (resources limits hierarchy) management
-- Service plans for resellers management
-
-### Reseller
-
-- Users management
-- Subscriptions management
-- Service plans for users management
-
-### Site users
-
-- Services management, including:
-  - Web-hosting management
-  - DB management
-  - DNS management
-  - Mail subsystems management
-
-CLI is the only interface; all the UI should be implemented as a CLI wrapper.
-
-```text
-            Users
-              │
-              ▼
-             CLI
-              │
-              ▼
-       Master Node
-              │
-              ▼
-       Worker Nodes
-```
-
-Master is the control plane and desired state source. Worker Nodes are the execution plane.
-
-```text
-                    ┌─────────────┐
-                    │    Admin    │
-                    └──────┬──────┘
-                           │
-┌─────────────┐            │            ┌─────────────┐
-│ Site User   ├────────────┼────────────┤  Reseller   │
-└─────────────┘            ▼            └─────────────┘
-                    ┌──────────────┐
-                    │     CLI      │
-                    └──────┬───────┘
-                           │
-                           ▼
-                    ┌──────────────┐
-                    │ Master Node  │
-                    │              │
-                    │ Auth         │
-                    │ Control      │
-                    │ Desired State│
-                    │ Scheduler    │
-                    └──────┬───────┘
-                           │
-                     control plane
-                           │
-              ┌────────────┼────────────┐
-              ▼            ▼            ▼
-           Worker       Worker       Worker
-            Node         Node         Node
-```
-
-### Worker Node structure
-
-```text
-Worker Node
-  │
-  ├── Web Agent
-  │   WebProvider interface
-  │     │
-  │     ├── NginxProvider
-  │     └── ApacheProvider
-  │
-  ├── DNS Agent
-  │   └── DnsProvider
-  │       └── BindProvider
-  │
-  ├── Mail Agent
-  │    └── MailProvider
-  │       ├── PostfixProvider
-  │       └── DovecotProvider
-  │
-  └── DB Agent
-      └── DatabaseProvider
-          ├── PostgreSQLProvider
-          └── MySQLProvider
-      
-```
-
-## Master <-> Agents communication
-
-```text
-Master
-  │
-  │ desired state / commands
-  ▼
-Agent
-  │
-  ▼
-Local service
-  │
-  │ actual state
-  ▼
-Agent
-  │
-  ▼
-Master
-```
-
-### Worker Node registration
-
-```text
-Worker Node
-    │
-    │ 1. bootstrap credential
-    ▼
-POST /nodes/register
-    │
-    ▼
-  Master
-    │
-    ├── creates Node ID
-    ├── saves capabilities
-    └── issues credentials
-          │
-          ▼
-     Node registered
-```
-
-### Worker node registration data
-
-node_id
-hostname
-OS
-CPU
-RAM
-disk
-network
-agents:
-  - web
-  - dns
-  - mail
-  - database
-services:
-  - nginx
-  - apache
-  - bind
-  - postfix
-  - dovecot
-  - mysql
-  - postgresql
-
-
-  ### Worker node heartbeat data
-
-- CPU usage
-- RAM usage
-- disk usage
-- service state
-
-
-## C4 Container level
-
-### Master
-
-```text
-Master Node
-│
-├── FastAPI
-│   ├── Users
-│   ├── Resellers
-│   ├── Subscriptions
-│   ├── Service Plans
-│   ├── Resources
-│   ├── Nodes
-│   └── Scheduling
-│
-└── PostgreSQL
-      │
-      ├── State DB
-      └── encrypted secrets
-
-    Authentication Service
-    └── Authentication API
-
-
-Encryption key
-      │
-      └── external to DB
-```
-
-### Worker
-
-```text
-Worker Node
-│
-├── Web Agent  ──► nginx + Apache
-├── DNS Agent  ──► BIND
-├── Mail Agent ──► SMTP/IMAP/POP
-└── DB Agent   ──► MySQL/PostgreSQL
-```
-
-
-### CLI <-> Master <-> Agents communication protocol
-
-```text
-Admin ─────┐        
-Reseller ──┼───► CLI
-Site User ─┘      │
-                 REST
-                  │
-                  ▼
-                Master
-                  │
-                 REST
-                  ├──────────► Web Agent
-                  ├──────────► DNS Agent
-                  ├──────────► Mail Agent
-                  └──────────► DB Agent
-```
-
-## Bidirectional control + heartbeat
-
-```text
-                  Master
-                    │
-          ┌─────────┴─────────┐
-          │                   │
-      Commands            Desired State
-          │                   │
-          ▼                   ▼
-       Agent ───────────────► Master
-          │                 Actual State
-          │
-      heartbeat
-          │
-          ▼
-       Master
-```
-
-
-### Subscription model
-
-```text
-User
- └── Subscription
-      └── Service
-          ├── WebService
-          ├── DnsService
-          ├── MailService
-          └── DatabaseService
-```
-
-### service model
-
-```text
-Subscription
-│
-└── Service
-      └── ServiceAssignment ──► Worker Node
-```
-
-### Services are independent and each service agent receives service-specific desired state
-
-```text
-Master
-  │
-  ├── Web desired state
-  │      ├── domain
-  │      ├── IP
-  │      └── Users
-  │
-  ├── Mail desired state
-  │      ├── domain
-  │      ├── IP
-  │      ├── Users
-  │      └── mail configuration
-  │
-  ├── DNS desired state
-  │      └── records
-  │
-  │
-  └── DB desired state
-        ├── Name
-        ├── Type
-        └── Users and ACL
-
-```
-
-## Architecture rule
-
-Worker Agents do not interact to each other. All the cross-service dependencies are resolved by Master and are materialized to desired state of specific Agent.
-
-
-### Scheduler diagram
-
-1. CLI создаёт Service.
-2. Master записывает Service в PostgreSQL со статусом pending.
-3. Scheduler выбирает подходящую Node по:
-    - capability;
-    - доступному CPU/RAM/disk;
-    - Service Plan limits;
-    - уже размещённым сервисам.
-4. Master создаёт ServiceAssignment для Service и Worker Node.
-5. DesiredState изменяется.
-6. Agent получает новое состояние.
-7. Agent выполняет reconciliation.
-8. Agent возвращает actual state.
-9. Master переводит Service в running либо error.
-
-```text
-Control loop
-
-        ┌──────────────┐
-        │ Desired State│
-        └──────┬───────┘
-               ▼
-          Scheduler
-               │
-               ▼
-        ServiceAssignment
-               │
-               ▼
-        DesiredState
-               │
-               ▼
-             Agent
-               │
-               ▼
-         Actual State
-               │
-               ▼
-        ┌──────────────┐
-        │    Master    │
-        └──────┬───────┘
-               │
-               └────► reconciliation
-```
-
-
-## High availability principles
-
-Master's scope:
-- обнаруживает offline;
-- обновляет состояние Node;
-- помечает затронутые Services как degraded/unavailable;
-- уведомляет Admin;
-- не переносит и не восстанавливает сервисы автоматически.
-
-```text
-Infrastructure HA
-       │
-       ├── Master
-       └── Worker Nodes
-
-Hosting Control System
-       │
-       └── monitoring + desired state
-```
-
-
-## Node state list (lifecycle with each to each links)
-
-```text
-ACTIVE
-SUSPENDED
-STOPPED
-DELETED
-```
-
-
-## Service lifecycle
-
-```text
-ACTIVE
-   ↓
-SUSPENDED
-   ↓
-STOPPED
-   ↓
-DELETED
-
-e.g.
-Web Service
-  desired.lifecycle = RUNNING
-  actual.lifecycle = RUNNING
-  reason = created by user 'admin' using CLI command 
-```
-
-
-## Reconciliation condition
-
-```text
-PENDING
-   ↓
-RECONCILING
-   ↓
-READY
-   ↓
-DEGRADED
-   ↓
-ERROR
-   ↓
-UNKNOWN
-
-e.g.
-Web Service
-  desired.lifecycle = RUNNING
-  actual.lifecycle = RUNNING
-  condition = DEGRADED
-  reason = nginx configuration failed
-```
-
-## C4 Container diagram
-
-```text
-                    Admin / Reseller / Site User
-                                │
-                                ▼
-                         ┌──────────────┐
-                         │     CLI      │
-                         └──────┬───────┘
-                                │ REST
-                                ▼
-                    ┌──────────────────────┐
-                    │       Master         │
-                    │      FastAPI         │
-                    │                      │
-                    │ Auth                 │
-                    │ Users                │
-                    │ Resellers            │
-                    │ Subscriptions        │
-                    │ Service Plans        │
-                    │ Resources            │
-                    │ Node Management      │
-                    │ Scheduler            │
-                    │ Reconciliation       │
-                    └──────────┬───────────┘
-                               │
-                          PostgreSQL
-                               │
-              REST             │             REST
-        ┌──────────────────────┼──────────────────────┐
-        ▼                      ▼                      ▼
-┌──────────────┐       ┌──────────────┐       ┌──────────────┐
-│ Worker Node  │       │ Worker Node  │       │ Worker Node  │
-│              │       │              │       │              │
-│ Web Agent    │       │ Web Agent    │       │ DB Agent     │
-│ DNS Agent    │       │ DNS Agent    │       │              │
-│ Mail Agent   │       │ Mail Agent   │       │ MySQL        │
-│              │       │              │       │ PostgreSQL   │
-│ nginx        │       │ nginx        │       │              │
-│ Apache       │       │ Apache       │       └──────────────┘
-│ BIND         │       │ BIND         │
-│ SMTP/IMAP    │       │ SMTP/IMAP    │
-└──────────────┘       └──────────────┘
-```
-
-Следующий шаг — не писать ещё DSL, а правильно разделить Worker Nodes на два уровня:
-
-- Container View — программные части: Web Agent, DNS Agent, Mail Agent, DB Agent.
-- Deployment View — физические Worker Nodes, на которых эти агенты размещаются.
-
-Это важное различие C4.
-
-### Deployment view
-
-```text
-                    Hosting Control System
-                            │
-                    ┌───────▼────────┐
-                    │   Master Node  │
-                    │                │
-                    │ FastAPI        │
-                    │ PostgreSQL     │
-                    └───────┬────────┘
-                            │ REST
-             ┌──────────────┼──────────────┐
-             │              │              │
-             ▼              ▼              ▼
-       ┌──────────┐   ┌──────────┐   ┌──────────┐
-       │ Worker 1 │   │ Worker 2 │   │ Worker 3 │
-       │          │   │          │   │          │
-       │ Web      │   │ Web      │   │ Database │
-       │ DNS      │   │ DNS      │   │ Agent    │
-       │ Mail     │   │ Mail     │   │          │
-       │          │   │          │   │ MySQL    │
-       │ nginx    │   │ nginx    │   │ PostgreSQL│
-       │ Apache   │   │ Apache   │   └──────────┘
-       │ BIND     │   │ BIND     │
-       │ Mail     │   │ Mail     │
-       └──────────┘   └──────────┘
-```
-
-
-
-## C4 Level 3 — Component Diagram для Master Application.
-
-```text
-                    ┌─────────────────────┐
-                    │      FastAPI        │
-                    │    REST API Layer   │
-                    └──────────┬──────────┘
-                               │
-             ┌─────────────────┼─────────────────┐
-             ▼                 ▼                 ▼
-      User Management    Subscription
-                              │                 │
-                              │                 ▼
-                              │           Service Manager
-                              │                 │
-             ┌────────────────┼─────────────────┤
-             ▼                ▼                 ▼
-       Service Plans     Resource Manager    Node Manager
-                                                 │
-                                                 ▼
-                                            Scheduler
-                                                 │
-                                                 ▼
-                                          Reconciliation
-                                                 │
-                                                 ▼
-                                           Agent Client
-                                                 │
-                                                 │ REST
-                    ┌────────────────────────────┼──────────────┐
-                    ▼                            ▼              ▼
-                 Web Agent                  DNS Agent       Mail Agent
-```
-
-Components
-
-API Layer
-- REST API
-- Authentication is provided by the independent Authentication Service
-
-Domain
-- User Management
-- Reseller Management
-- Service Plan Management
-- Subscription Management
-- Service Management
-- Resource Management
-- Node Management
-
-Control Plane
-- Scheduler
-- Reconciliation Manager
-- Agent Client
-
-Persistence
-- Repositories
-
-
-
-### Domain as business-entity
-```text
-User
- └── Subscription
-       └── Domain
-
-Domain
-├── id
-├── name
-├── subscription_id
-├── status
-└── created_at
-
-Domain
-  └── Website
-
-Domain
-   │
-   ▼
-Website
-   │
-   ▼
-Web Service
-   │
-   ▼
-Worker Node
-
-```
-
-### web service entity
-```text
-Web Service
-├── id
-├── website_id
-├── status
-├── web_server
-├── php_version
-├── document_root
-└── configuration
-
-Website
-    domain = example.com
-    document_root = /var/www/example.com
-    php = 8.4
-
-Web Service
-    node = worker-03
-    provider = nginx
-    status = RUNNING
-```
-
-### Components relations
-```text
-Subscription
- └── Domain
-      └── Website
-           └── WebService
-
-WebService
-    │
-    └── ServiceAssignment
-            │
-            └── WorkerNode
-
-Subscription Management
-        │
-        └── Domain / Website ownership
-
-Service Management
-        │
-        └── Web Service
-
-Scheduler
-        │
-  └── Service → ServiceAssignment → Worker Node
-
-Reconciliation
-        │
-  └── Service DesiredState → Agent
-
-Repositories
-        │
-        ├── Domain
-        ├── Website
-        └── Web Service
-
-Service
- ├── DesiredState
- └── ActualState
-```
-
-
-### CLI enroll example
-```text
-domain create example.com
-    ↓
-  Master
-    ↓
-Subscription
-    ↓
-Domain
-
-website create example.com
-    ↓
-Website
-    ↓
-Web Service
-    ↓
-Scheduler
-    ↓
-Worker Node
-    ↓
-Reconciliation
-    ↓
-Web Agent
-```
+See `LICENSE` if any ;).
