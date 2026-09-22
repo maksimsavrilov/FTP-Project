@@ -420,11 +420,19 @@ corresponding `GET` endpoints and return `201` for successful creation.
 
 | Method | Path | Request | Response | Transaction |
 | --- | --- | --- | --- | --- |
+| `POST` | `/v1/nodes/register` | `hostname`, `capabilities`, `capacity`, `bootstrap_credential` | `WorkerNode` plus node credential | registration and identity lookup |
 | `POST` | `/v1/nodes/{node_id}/heartbeat` | status, usage, heartbeat timestamp | `WorkerNode` | heartbeat update |
 | `POST` | `/v1/services/{service_id}/actual-state` | `assignment_id`, `version`, `status`, `configuration`, `health`, `observed_at` | `{"accepted": boolean}` | assignment validation and stale-version check |
 
-These endpoints are called by authenticated Worker Agents. A heartbeat updates
-only the identified node. An actual-state report is accepted only for the
+Registration authenticates with the bootstrap credential and returns the
+stable node ID plus a node-specific credential. Repeating registration for the
+same hostname is idempotent. The node-specific credential is required for
+heartbeat and node operations; bootstrap credentials are not accepted there.
+The registration response is the only response that contains a node
+credential. Repeated registration returns the same stable credential. A heartbeat updates only the identified node, records
+`last_heartbeat_at`, and sets status to `ONLINE`. Master derives `OFFLINE`
+when the configured heartbeat timeout is exceeded. `DISABLED` nodes reject
+heartbeat authentication and cannot become `ONLINE`. An actual-state report is accepted only for the
 current `ServiceAssignment`; an older version or older observation is ignored
 idempotently and does not overwrite newer state. The `service_id` for the
 report is supplied by the URL, not repeated in the request body.

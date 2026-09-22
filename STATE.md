@@ -234,6 +234,10 @@ architecture review.
 - Authenticated Worker Agent-to-Master HTTP client path implemented for
   WebService actual-state reporting, reusing the established Master client
   transport and error handling.
+- Worker Node registration lifecycle implemented: bootstrap-authenticated,
+  idempotent registration returns a stable node identity and node-specific
+  credential; authenticated heartbeats update liveness, stale nodes become
+  `OFFLINE`, and `DISABLED` nodes cannot be revived.
 - Authenticated Web Agent desired-state HTTP endpoint implemented for `WEB`
   services, including assignment/version/configuration validation and
   idempotent process-local acceptance of repeated versions.
@@ -258,11 +262,17 @@ architecture review.
 
 ## Current Task
 
-Completed: the Web Agent now reconciles provider-neutral desired web state through an explicit WebProvider adapter, with Nginx configuration generation, validation, application, inspection, provider error results, and version idempotency verified.
+Completed: the Worker Node registration lifecycle now covers bootstrap
+registration, stable identity, node credentials, authenticated heartbeat,
+`ONLINE`/`OFFLINE` liveness, and disabled-node protection.
 
 ## Current Step
 
-Completed: the provider adapter layer was added without changing Master placement, authentication, persistence, or the existing desired-state acceptance contract. The accepted payload is:
+Completed: the Worker Node lifecycle was added without changing Master
+placement, ZITADEL, Agent boundaries, or the desired-state acceptance
+contract.
+
+The existing provider adapter payload remains:
 
 - `assignment_id`: current assignment identifier
 - `version`: non-negative integer, stale versions rejected
@@ -277,7 +287,8 @@ This contract is enforced by `ActualStateRequest.from_dict`, accepted only when 
 
 ## Next Step
 
-Review the remaining legacy WebService provider-selection field before the next Web Agent integration slice.
+Move node bootstrap and node-specific credential delivery into the deployed
+Worker Agent startup path.
 
 ---
 

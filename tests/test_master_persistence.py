@@ -1,5 +1,6 @@
 import unittest
 import uuid
+from datetime import datetime, timezone
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -55,7 +56,7 @@ class MasterPersistenceTests(unittest.TestCase):
             usage={"cpu": 2, "memory": 3500, "disk": 5000},
             last_heartbeat_at="2026-01-01T00:00:00Z",
         )
-        self.assertEqual(updated.status, "DEGRADED")
+        self.assertEqual(updated.status, "ONLINE")
 
         desired = self.desired_repo.put_next(
             "service-123",
@@ -216,8 +217,49 @@ class MasterPersistenceTests(unittest.TestCase):
             last_heartbeat_at="2026-01-01T00:10:00Z",
         )
 
-        self.assertEqual(node.status, "DEGRADED")
+        self.assertEqual(node.status, "ONLINE")
         self.assertEqual(node.memory_usage, 3500)
+
+    def test_node_service_marks_stale_nodes_offline_but_preserves_disabled(self):
+        with self.session.begin():
+            self.worker_repo.create(
+                WorkerNode(
+                    hostname="stale-node",
+                    status="ONLINE",
+                    capabilities={},
+                    cpu_capacity=1,
+                    memory_capacity=1,
+                    disk_capacity=1,
+                    cpu_usage=0,
+                    memory_usage=0,
+                    disk_usage=0,
+                    last_heartbeat_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
+                )
+            )
+            self.worker_repo.create(
+                WorkerNode(
+                    hostname="disabled-node",
+                    status="DISABLED",
+                    capabilities={},
+                    cpu_capacity=1,
+                    memory_capacity=1,
+                    disk_capacity=1,
+                    cpu_usage=0,
+                    memory_usage=0,
+                    disk_usage=0,
+                    last_heartbeat_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
+                )
+            )
+
+        service = MasterNodeService(
+            lambda: Session(self.engine),
+            heartbeat_timeout=__import__("datetime").timedelta(seconds=60),
+        )
+        nodes = service.list()
+
+        statuses = {node.hostname: node.status for node in nodes}
+        self.assertEqual(statuses["stale-node"], "OFFLINE")
+        self.assertEqual(statuses["disabled-node"], "DISABLED")
 
     def test_reconciliation_service_reports_and_reads_actual_state(self):
         node_id = str(uuid.uuid4())

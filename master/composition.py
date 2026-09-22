@@ -87,4 +87,6 @@ def create_master_app(
     engine = engine_factory(database_url)
     session_factory = sessionmaker(bind=engine, expire_on_commit=False)
     api = build_master_api(session_factory, AuthenticationClient(auth_service_url))
+    api.node_service.bootstrap_credential = os.environ.get("NODE_BOOTSTRAP_CREDENTIAL", "")
+    api.node_service.node_credential_secret = os.environ.get("NODE_CREDENTIAL_SECRET", "")
     return create_app(api)

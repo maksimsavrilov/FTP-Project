@@ -18,7 +18,8 @@ Each Agent has its own deployable REST service and local provider adapter. Agent
 The Master owns the SQLAlchemy models, repositories, transactions, and lifecycle transitions for:
 
 - `User`, `ServicePlan`, `Subscription`, `Domain`, and service-specific domain entities.
-- `WorkerNode`, including capabilities, capacity, health, and heartbeat timestamps.
+- `WorkerNode`, including stable identity, registration credentials, capabilities,
+  capacity, health, status, and heartbeat timestamps.
 - `ServiceAssignment`, linking a `Service` to its selected `WorkerNode`.
 - `DesiredState`, with a monotonically increasing version per service.
 - `ActualState`, with the latest version, status, configuration, health, and observation time.
@@ -32,6 +33,12 @@ Repositories are the only persistence access used by Master application componen
 ### Client to Master
 
 The CLI and future UI call the Master REST API for business operations. The Master validates the request, applies domain rules, persists the desired result, and returns the resource or operation status.
+
+Worker Agents register through `POST /v1/nodes/register` with the bootstrap
+credential. Master returns the stable node ID and node-specific credential;
+repeated registration for the same hostname returns the same identity and
+credential. Bootstrap credentials are not used for heartbeat or other node
+communication.
 
 ### Master to Authentication Service
 
@@ -50,7 +57,12 @@ The Agent accepts only the service types it owns and treats the desired-state ve
 
 ### Agent to Master
 
-An Agent reports actual state, reconciliation result, health, and heartbeat to Master over REST/HTTP. Master validates that the report belongs to the current assignment and persists it as `ActualState`. Stale versions must not overwrite a newer observation.
+An Agent reports actual state, reconciliation result, health, and heartbeat to
+Master over REST/HTTP using its node-specific credential. Master validates the
+credential and node identity before accepting a heartbeat. A heartbeat sets
+the node `ONLINE`; timeout reconciliation sets it `OFFLINE`, while a
+`DISABLED` node remains disabled. Master validates actual-state reports against
+the current assignment and persists them as `ActualState`.
 
 ## Reconciliation flow
 

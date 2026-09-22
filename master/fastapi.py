@@ -76,6 +76,10 @@ def create_app(api: MasterApi) -> FastAPI:
     async def get_node(node_id: str, request: Request):
         return await invoke(request, api.get_node, node_id)
 
+    @app.post("/v1/nodes/register")
+    async def register_node(request: Request):
+        return await invoke(request, api.register_node, with_body=True)
+
     @app.post("/v1/nodes/{node_id}/heartbeat")
     async def heartbeat(node_id: str, request: Request):
         return await invoke(request, api.heartbeat, node_id, with_body=True)

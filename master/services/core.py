@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import hashlib
+import hmac
+from datetime import timedelta
 from dataclasses import dataclass
 from typing import Any, Callable
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ..persistence.repositories import (
@@ -27,6 +31,7 @@ from ..persistence.repositories import (
     IdentityReferenceRepository,
     ResourceEntitlementRepository,
 )
+from ..persistence.models import WorkerNode
 
 
 @dataclass(frozen=True)
@@ -293,6 +298,12 @@ class DatabaseUserResult:
     username: str
     status: str
     privileges: dict[str, Any]
+
+
+@dataclass(frozen=True)
+class NodeRegistrationResult:
+    node: Any
+    credential: str
 
 
 class MasterUserService:
@@ -846,18 +857,121 @@ class MasterDatabaseUserService:
 
 
 class MasterNodeService:
-    """Application boundary for node reads and heartbeat updates."""
+    """Application boundary for node registration, liveness and heartbeat."""
 
-    def __init__(self, session_factory: Callable[[], Session]):
+    def __init__(
+        self,
+        session_factory: Callable[[], Session],
+        bootstrap_credential: str = "",
+        node_credential_secret: str = "",
+        heartbeat_timeout: timedelta = timedelta(seconds=60),
+    ):
         self.session_factory = session_factory
+        self.bootstrap_credential = bootstrap_credential
+        self.node_credential_secret = node_credential_secret
+        self.heartbeat_timeout = heartbeat_timeout
+
+    def _node_credential(self, node_id: str) -> str:
+        if not self.node_credential_secret:
+            raise RuntimeError("node credential secret is not configured")
+        digest = hmac.new(
+            self.node_credential_secret.encode(), node_id.encode(), hashlib.sha256
+        ).hexdigest()
+        return f"node_{node_id}_{digest}"
+
+    @staticmethod
+    def _credential_hash(credential: str) -> str:
+        return hashlib.sha256(credential.encode()).hexdigest()
+
+    def register(
+        self,
+        hostname: str,
+        capabilities: dict[str, Any],
+        capacity: dict[str, Any],
+        bootstrap_credential: str,
+    ) -> NodeRegistrationResult:
+        if not self.bootstrap_credential or not hmac.compare_digest(
+            bootstrap_credential, self.bootstrap_credential
+        ):
+            raise PermissionError("invalid bootstrap credential")
+        if not hostname.strip():
+            raise ValueError("hostname must be a non-empty string")
+        if not self.node_credential_secret:
+            raise RuntimeError("node credential secret is not configured")
+
+        try:
+            with self.session_factory() as session, session.begin():
+                repository = WorkerNodeRepository(session)
+                node = repository.get_by_hostname(hostname)
+                if node is None:
+                    node = repository.create(
+                        WorkerNode(
+                            hostname=hostname,
+                            status="REGISTERED",
+                            credential_hash="pending",
+                            capabilities=capabilities,
+                            cpu_capacity=capacity["cpu"],
+                            memory_capacity=capacity["memory"],
+                            disk_capacity=capacity["disk"],
+                            cpu_usage=0,
+                            memory_usage=0,
+                            disk_usage=0,
+                        )
+                    )
+                    credential = self._node_credential(node.id)
+                    node.credential_hash = self._credential_hash(credential)
+                    session.flush()
+                else:
+                    credential = self._node_credential(node.id)
+                    if node.credential_hash is None:
+                        node.credential_hash = self._credential_hash(credential)
+                        session.flush()
+                session.expunge(node)
+                return NodeRegistrationResult(node, credential)
+        except IntegrityError:
+            with self.session_factory() as session, session.begin():
+                node = WorkerNodeRepository(session).get_by_hostname(hostname)
+                if node is None:
+                    raise
+                credential = self._node_credential(node.id)
+                session.expunge(node)
+                return NodeRegistrationResult(node, credential)
+
+    def authenticate(self, node_id: str, credential: str | None) -> bool:
+        with self.session_factory() as session:
+            node = WorkerNodeRepository(session).get(node_id)
+            if (
+                node is None
+                or node.status == "DISABLED"
+                or node.credential_hash is None
+                or not credential
+            ):
+                return False
+            return hmac.compare_digest(
+                node.credential_hash, self._credential_hash(credential)
+            )
+
+    def _refresh_liveness(self, session: Session, now=None):
+        from ..persistence.repositories.utils import utcnow
+
+        now = now or utcnow()
+        WorkerNodeRepository(session).mark_offline(now - self.heartbeat_timeout, now)
 
     def get(self, node_id: str):
-        with self.session_factory() as session:
-            return WorkerNodeRepository(session).get(node_id)
+        with self.session_factory() as session, session.begin():
+            self._refresh_liveness(session)
+            node = WorkerNodeRepository(session).get(node_id)
+            if node is not None:
+                session.expunge(node)
+            return node
 
     def list(self, status: str | None = None, capability: str | None = None):
-        with self.session_factory() as session:
-            return WorkerNodeRepository(session).list(status, capability)
+        with self.session_factory() as session, session.begin():
+            self._refresh_liveness(session)
+            nodes = WorkerNodeRepository(session).list(status, capability)
+            for node in nodes:
+                session.expunge(node)
+            return nodes
 
     def heartbeat(
         self,

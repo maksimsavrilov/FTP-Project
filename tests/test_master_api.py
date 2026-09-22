@@ -610,6 +610,92 @@ class MasterApiTests(unittest.TestCase):
         self.assertEqual(response.headers["X-Request-ID"], "req-1")
         self.assertEqual(response.body["usage"]["memory"], 3500)
 
+    def test_node_registration_is_idempotent_and_returns_stable_credentials(self):
+        self.api.node_service.bootstrap_credential = "bootstrap-secret"
+        self.api.node_service.node_credential_secret = "master-secret"
+        body = {
+            "hostname": "registered-node",
+            "capabilities": {"web": True},
+            "capacity": {"cpu": 4, "memory": 4096, "disk": 50000},
+            "bootstrap_credential": "bootstrap-secret",
+        }
+
+        first = self.api.register_node(body, request_id="req-register-1")
+        second = self.api.register_node(body, request_id="req-register-2")
+
+        self.assertEqual(first.status_code, 201)
+        self.assertEqual(first.body["status"], "REGISTERED")
+        self.assertEqual(first.body["id"], second.body["id"])
+        self.assertEqual(first.body["credential"], second.body["credential"])
+        with Session(self.engine) as session:
+            self.assertEqual(session.query(WorkerNode).filter_by(hostname="registered-node").count(), 1)
+
+    def test_registration_rejects_invalid_bootstrap_credential(self):
+        self.api.node_service.bootstrap_credential = "bootstrap-secret"
+        self.api.node_service.node_credential_secret = "master-secret"
+        response = self.api.register_node(
+            {
+                "hostname": "registered-node",
+                "capabilities": {},
+                "capacity": {"cpu": 1, "memory": 1, "disk": 1},
+                "bootstrap_credential": "wrong",
+            },
+            request_id="req-register-invalid",
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.body["code"], "AUTHENTICATION_FAILED")
+
+    def test_registered_node_heartbeat_requires_credential_and_becomes_online(self):
+        self.api.node_service.bootstrap_credential = "bootstrap-secret"
+        self.api.node_service.node_credential_secret = "master-secret"
+        registration = self.api.register_node(
+            {
+                "hostname": "registered-node",
+                "capabilities": {},
+                "capacity": {"cpu": 1, "memory": 1, "disk": 1},
+                "bootstrap_credential": "bootstrap-secret",
+            }
+        )
+        heartbeat = self.api.heartbeat(
+            registration.body["id"],
+            {"status": "DEGRADED", "usage": {"cpu": 0, "memory": 0, "disk": 0}, "last_heartbeat_at": "2026-01-01T00:00:00Z"},
+            credential=registration.body["credential"],
+        )
+        invalid = self.api.heartbeat(
+            registration.body["id"],
+            {"status": "ONLINE", "usage": {}, "last_heartbeat_at": "2026-01-01T00:00:01Z"},
+            credential="wrong",
+        )
+
+        self.assertEqual(heartbeat.status_code, 200)
+        self.assertEqual(heartbeat.body["status"], "ONLINE")
+        self.assertEqual(invalid.status_code, 401)
+
+    def test_disabled_node_cannot_be_revived_by_heartbeat(self):
+        self.api.node_service.bootstrap_credential = "bootstrap-secret"
+        self.api.node_service.node_credential_secret = "master-secret"
+        registration = self.api.register_node(
+            {
+                "hostname": "registered-node",
+                "capabilities": {},
+                "capacity": {"cpu": 1, "memory": 1, "disk": 1},
+                "bootstrap_credential": "bootstrap-secret",
+            }
+        )
+        with Session(self.engine) as session, session.begin():
+            session.get(WorkerNode, registration.body["id"]).status = "DISABLED"
+
+        response = self.api.heartbeat(
+            registration.body["id"],
+            {"status": "ONLINE", "usage": {}, "last_heartbeat_at": "2026-01-01T00:00:01Z"},
+            credential=registration.body["credential"],
+        )
+
+        self.assertEqual(response.status_code, 401)
+        with Session(self.engine) as session:
+            self.assertEqual(session.get(WorkerNode, registration.body["id"]).status, "DISABLED")
+
     def test_invalid_actual_state_request_is_rejected_before_service_call(self):
         response = self.api.report_actual_state("service-123", {"version": "1"}, request_id="req-2")
 

@@ -159,6 +159,7 @@ class WorkerNode(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     hostname: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    credential_hash: Mapped[str | None] = mapped_column(String, nullable=True)
     status: Mapped[str] = mapped_column(String, nullable=False)
     capabilities: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
     cpu_capacity: Mapped[float] = mapped_column(Numeric(precision=10, scale=2), nullable=False)

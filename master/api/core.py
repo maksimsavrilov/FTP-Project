@@ -73,6 +73,29 @@ class HeartbeatRequest:
 
 
 @dataclass(frozen=True)
+class NodeRegistrationRequest:
+    hostname: str
+    capabilities: dict[str, Any]
+    capacity: dict[str, Any]
+    bootstrap_credential: str
+
+    @classmethod
+    def from_dict(cls, body: dict[str, Any]) -> NodeRegistrationRequest:
+        _require_object(body)
+        capacity = _required_object(body, "capacity")
+        for name in ("cpu", "memory", "disk"):
+            value = capacity.get(name)
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or value < 0:
+                raise RequestValidationError(f"capacity.{name} must be non-negative")
+        return cls(
+            hostname=_required_string(body, "hostname"),
+            capabilities=_required_object(body, "capabilities"),
+            capacity=capacity,
+            bootstrap_credential=_required_string(body, "bootstrap_credential"),
+        )
+
+
+@dataclass(frozen=True)
 class ActualStateRequest:
     assignment_id: str
     version: int
@@ -161,6 +184,12 @@ def _node_body(node: Any) -> dict[str, Any]:
         "created_at": _timestamp(node.created_at),
         "updated_at": _timestamp(node.updated_at),
     }
+
+
+def _registration_body(result: Any) -> dict[str, Any]:
+    body = _node_body(result.node)
+    body["credential"] = result.credential
+    return body
 
 
 def _user_body(user: Any) -> dict[str, Any]:
@@ -426,7 +455,31 @@ class MasterApi:
 
     def get_node(self, node_id: str, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
         request_id = self._request_id(request_id)
-        return self._call(request_id, lambda: (self._authorize(credential, f"node:{node_id}", "read", request_id), _node_body(self.node_service.get(node_id)))[1])
+        def operation() -> dict[str, Any]:
+            node = self.node_service.get(node_id)
+            if node is None:
+                raise LookupError(f"WorkerNode {node_id} not found")
+            if node.credential_hash is not None:
+                if not self.node_service.authenticate(node_id, credential):
+                    raise PermissionError("invalid node credential")
+            else:
+                self._authorize(credential, f"node:{node_id}", "read", request_id)
+            return _node_body(node)
+        return self._call(request_id, operation)
+
+    def register_node(self, body: dict[str, Any], request_id: str | None = None) -> ApiResponse:
+        request_id = self._request_id(request_id)
+        def operation() -> dict[str, Any]:
+            request = NodeRegistrationRequest.from_dict(body)
+            result = self.node_service.register(
+                request.hostname,
+                request.capabilities,
+                request.capacity,
+                request.bootstrap_credential,
+            )
+            return _registration_body(result)
+        response = self._call(request_id, operation)
+        return ApiResponse(201, response.body, response.headers) if response.status_code == 200 else response
 
     def list_nodes(self, status: str | None = None, capability: str | None = None, credential: str | None = None, request_id: str | None = None) -> ApiResponse:
         request_id = self._request_id(request_id)
@@ -435,8 +488,15 @@ class MasterApi:
     def heartbeat(self, node_id: str, body: dict[str, Any], credential: str | None = None, request_id: str | None = None) -> ApiResponse:
         request_id = self._request_id(request_id)
         def operation() -> dict[str, Any]:
-            self._authorize(credential, f"node:{node_id}", "write", request_id)
             request = HeartbeatRequest.from_dict(body)
+            node = self.node_service.get(node_id)
+            if node is None:
+                raise LookupError(f"WorkerNode {node_id} not found")
+            if node.credential_hash is not None:
+                if not self.node_service.authenticate(node_id, credential):
+                    raise PermissionError("invalid node credential")
+            else:
+                self._authorize(credential, f"node:{node_id}", "write", request_id)
             return _node_body(self.node_service.heartbeat(node_id, request.status, request.usage, request.last_heartbeat_at))
         return self._call(request_id, operation)
 

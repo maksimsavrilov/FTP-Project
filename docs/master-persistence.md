@@ -26,7 +26,8 @@ entities.
 | --- | --- | --- | --- |
 | `id` | UUID | yes | Primary key |
 | `hostname` | text | yes | Node identity; not necessarily a resolvable DNS name |
-| `lifecycle` | text | yes | `ACTIVE`, `SUSPENDED`, `STOPPED`, or `DELETED` |
+| `credential_hash` | text | no | Hash of the node-specific credential; never the plaintext credential |
+| `status` | text | yes | `REGISTERED`, `ONLINE`, `OFFLINE`, `DISABLED`, or `DECOMMISSIONED` |
 | `reconciliation_condition` | text | yes | `PENDING`, `RECONCILING`, `READY`, `DEGRADED`, `ERROR`, or `UNKNOWN` |
 | `capabilities` | JSONB | yes | Supported service families and provider capabilities; default `{}` |
 | `cpu_capacity` | numeric | yes | Schedulable capacity; non-negative |
@@ -41,8 +42,8 @@ entities.
 
 Constraints and indexes:
 
-- `hostname` is unique for nodes that are not decommissioned; a node identity
-  cannot be registered twice while active.
+- `hostname` is unique; repeated registration returns the existing node
+  identity rather than creating another logical node.
 - Usage must not be negative. Capacity validation belongs to the Master domain
   layer and must also prevent allocation beyond capacity.
 - Index `status` and `last_heartbeat_at` for node monitoring and scheduling.
@@ -130,9 +131,12 @@ to callers.
 
 ### `WorkerNodeRepository`
 
-- `get(node_id)` and `list(status=None, capability=None)`
+- `get(node_id)`, `get_by_hostname(hostname)` and `list(status=None, capability=None)`
 - `create(node)`
-- `update_health(node_id, status, usage, last_heartbeat_at)`
+- `update_health(node_id, usage, last_heartbeat_at)`; accepted heartbeats set
+  status to `ONLINE` and cannot update a `DISABLED` node
+- `mark_offline(before)`; marks stale non-disabled nodes `OFFLINE`
+- authenticate a node-specific credential against its stored hash
 - `reserve_capacity(node_id, allocation)` with an atomic capacity check
 - `decommission(node_id)` only when no active assignments remain
 
@@ -175,8 +179,11 @@ are:
 1. **Placement:** lock the service's desired-state row and the selected node's
    capacity row, then create or replace the active assignment and increment the
    desired-state version before commit.
-2. **Heartbeat:** update node health, usage and heartbeat timestamp in one
-   transaction.
+2. **Registration:** validate the bootstrap credential, create or load the
+  unique hostname record, and establish the node-specific credential in one
+  transaction.
+3. **Heartbeat:** update node health, usage and heartbeat timestamp in one
+  transaction; a valid heartbeat makes the node `ONLINE`.
 3. **Actual-state report:** validate the current assignment and upsert the
    observation only if its version is not stale, in one transaction.
 

@@ -132,8 +132,16 @@ Subscription: PENDING → ACTIVE → SUSPENDED → EXPIRED/TERMINATED
 Domain:       PENDING → ACTIVE → SUSPENDED → DELETED
 Service:      PENDING → PROVISIONING → RUNNING → DEGRADED/STOPPED → DELETED
 Assignment:   PROPOSED → ACTIVE → REPLACED/REMOVED
-WorkerNode:   PROVISIONING → ONLINE → DEGRADED → OFFLINE → DECOMMISSIONED
+WorkerNode:   REGISTERED → ONLINE → OFFLINE → DISABLED/DECOMMISSIONED
 ```
+
+Worker Node registration and liveness are separate concerns. Registration
+creates the stable node identity and returns node-specific credentials;
+registration leaves the node `REGISTERED` until a valid heartbeat is
+accepted. A valid heartbeat updates `last_heartbeat_at` and sets the node to
+`ONLINE`. Master derives `OFFLINE` when the heartbeat timeout is exceeded.
+`DISABLED` is an explicit administrative state and cannot be revived by a
+heartbeat. Bootstrap credentials are accepted only by registration.
 
 Suspending a customer, subscription or domain changes desired business state;
 it does not mean that Master has already stopped a provider process. Master

@@ -363,6 +363,11 @@ class WorkerNodeRepository:
     def get(self, node_id):
         return self.session.get(WorkerNode, _normalize_id(node_id))
 
+    def get_by_hostname(self, hostname: str):
+        return self.session.execute(
+            select(WorkerNode).where(WorkerNode.hostname == hostname)
+        ).scalar_one_or_none()
+
     def list(self, status: str | None = None, capability: str | None = None):
         query = select(WorkerNode)
         if status:
@@ -378,6 +383,22 @@ class WorkerNodeRepository:
         self.session.flush()
         return node
 
+    def mark_offline(self, before, now=None):
+        now = now or _utcnow()
+        nodes = self.session.execute(
+            select(WorkerNode)
+            .where(
+                WorkerNode.last_heartbeat_at < before,
+                WorkerNode.status.not_in(["DISABLED", "DECOMMISSIONED"]),
+            )
+            .with_for_update()
+        ).scalars().all()
+        for node in nodes:
+            node.status = "OFFLINE"
+            node.updated_at = now
+        self.session.flush()
+        return nodes
+
     def update_health(self, node_id, status: str, usage: dict[str, Any], last_heartbeat_at):
         node = self.session.execute(
             select(WorkerNode).where(WorkerNode.id == _normalize_id(node_id)).with_for_update()
@@ -385,7 +406,10 @@ class WorkerNodeRepository:
         if node is None:
             raise LookupError(f"WorkerNode {node_id} not found")
 
-        node.status = status
+        if node.status == "DISABLED":
+            raise ValueError("disabled WorkerNode cannot receive a heartbeat")
+
+        node.status = "ONLINE"
         node.cpu_usage = float(usage.get("cpu", node.cpu_usage or 0))
         node.memory_usage = int(usage.get("memory", node.memory_usage or 0))
         node.disk_usage = int(usage.get("disk", node.disk_usage or 0))
