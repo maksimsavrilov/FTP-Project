@@ -34,9 +34,11 @@ architecture review.
 - Infrastructure is responsible for HA/failover.
 - Planned cluster size: up to 1000 Worker Nodes.
 - CLI is the primary interface.
+- CLI commands must use the REST API rather than directly accessing service internals.
 - UI is a wrapper over the CLI.
 - Master and Agents use Python/FastAPI.
 - PostgreSQL is the Master state database.
+- Changes must preserve the existing architecture documented in Structurizr.
 
 ---
 
@@ -326,3 +328,13 @@ After completing a task:
 Do not use this file as a changelog.
 
 Historical information belongs in Git history.
+
+## Last Architect Review
+
+Status: findings
+
+Review: reviews/architecture/20260922-193000.json
+
+## Last Test Result
+
+Status: not_run
