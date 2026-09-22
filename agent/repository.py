@@ -18,6 +18,7 @@ IGNORED_DIRS = {
     ".vscode",
 }
 
+
 TEXT_EXTENSIONS = {
     ".py",
     ".md",
@@ -40,7 +41,10 @@ def iter_repository_files(root: Path):
         if not path.is_file():
             continue
 
-        if any(part in IGNORED_DIRS for part in path.parts):
+        if any(
+            part in IGNORED_DIRS
+            for part in path.parts
+        ):
             continue
 
         if path.suffix.lower() not in TEXT_EXTENSIONS:
@@ -52,12 +56,37 @@ def iter_repository_files(root: Path):
 def build_repository_index(root: Path) -> str:
     files = sorted(iter_repository_files(root))
 
-    lines = ["Repository files:", ""]
+    return "\n".join(
+        str(path.relative_to(root))
+        for path in files
+    )
 
-    for path in files:
-        lines.append(str(path.relative_to(root)))
 
-    return "\n".join(lines)
+def resolve_repository_file(
+    root: Path,
+    filename: str,
+) -> Path | None:
+    repository_root = root.resolve()
+    path = (root / filename).resolve()
+
+    try:
+        path.relative_to(repository_root)
+    except ValueError:
+        return None
+
+    if not path.is_file():
+        return None
+
+    if any(
+        part in IGNORED_DIRS
+        for part in path.relative_to(repository_root).parts
+    ):
+        return None
+
+    if path.suffix.lower() not in TEXT_EXTENSIONS:
+        return None
+
+    return path
 
 
 def read_files(
@@ -68,31 +97,26 @@ def read_files(
     sections: list[str] = []
 
     for filename in files:
-        path = (root / filename).resolve()
+        path = resolve_repository_file(
+            root,
+            filename,
+        )
 
-        # Prevent the agent from requesting files outside the repository.
-        try:
-            path.relative_to(root.resolve())
-        except ValueError:
-            continue
-
-        if not path.is_file():
+        if path is None:
             continue
 
         if path.stat().st_size > max_file_size:
             sections.append(
                 f"\n===== {filename} =====\n"
-                f"[FILE TOO LARGE: {path.stat().st_size} bytes]\n"
+                "[FILE TOO LARGE]\n"
             )
             continue
 
         try:
-            content = path.read_text(encoding="utf-8")
-        except UnicodeDecodeError:
-            sections.append(
-                f"\n===== {filename} =====\n"
-                "[BINARY OR NON-UTF8 FILE]\n"
+            content = path.read_text(
+                encoding="utf-8",
             )
+        except UnicodeDecodeError:
             continue
 
         sections.append(

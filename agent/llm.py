@@ -1,49 +1,39 @@
-from dataclasses import dataclass
+from __future__ import annotations
+
 from openai import OpenAI
 
-from .config import Config
+from .config import settings
 
 
-@dataclass(frozen=True)
-class LLMResponse:
-    content: str
-    model: str
+client = OpenAI(
+    api_key=settings.openrouter_api_key,
+    base_url="https://openrouter.ai/api/v1",
+)
 
 
-class OpenRouterLLM:
-    def __init__(self, config: Config) -> None:
-        self.config = config
+def ask_llm(
+    *,
+    system_prompt: str,
+    user_prompt: str,
+) -> str:
+    response = client.chat.completions.create(
+        model=settings.architect_model,
+        messages=[
+            {
+                "role": "system",
+                "content": system_prompt,
+            },
+            {
+                "role": "user",
+                "content": user_prompt,
+            },
+        ],
+        temperature=0,
+    )
 
-        self.client = OpenAI(
-            api_key=config.openrouter_api_key,
-            base_url=config.base_url,
-        )
+    content = response.choices[0].message.content
 
-    def generate(self, prompt: str) -> LLMResponse:
-        response = self.client.chat.completions.create(
-            model=self.config.model,
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "You are a senior software architect "
-                        "performing an independent architecture review."
-                    ),
-                },
-                {
-                    "role": "user",
-                    "content": prompt,
-                },
-            ],
-            temperature=0.1,
-        )
+    if not content:
+        raise RuntimeError("LLM returned an empty response.")
 
-        message = response.choices[0].message
-
-        if not message.content:
-            raise RuntimeError("LLM returned an empty response")
-
-        return LLMResponse(
-            content=message.content,
-            model=response.model,
-        )
+    return content

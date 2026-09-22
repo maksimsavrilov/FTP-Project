@@ -1,223 +1,284 @@
-from pathlib import Path
+from __future__ import annotations
+
+import json
 from datetime import datetime, timezone
+from pathlib import Path
 
-from .config import Config
-from .llm import OpenRouterLLM
-
-
-CONTEXT_FILES = [
-    "AGENTS.md",
-    "STATE.md",
-    "roadmap.md",
-]
-
-
-CONTEXT_DIRECTORIES = [
-    "structurizr",
-    "domain-model",
-]
+from .config import settings
+from .llm import ask_llm
+from .repository import (
+    build_repository_index,
+    read_files,
+)
+from .state import (
+    read_state,
+    update_after_architect,
+    validate_state,
+)
 
 
-def read_file(path: Path) -> str:
-    if not path.exists():
-        return f"[FILE NOT FOUND: {path}]"
+def read_prompt(name: str) -> str:
+    path = (
+        Path(__file__).parent
+        / "prompts"
+        / name
+    )
 
-    if not path.is_file():
-        return f"[NOT A FILE: {path}]"
+    return path.read_text(
+        encoding="utf-8",
+    )
 
-    return path.read_text(encoding="utf-8")
 
+def read_architecture_context(
+    root: Path,
+) -> str:
+    parts: list[str] = []
 
-def collect_context(project_root: Path) -> str:
-    sections: list[str] = []
+    for filename in (
+        "AGENTS.md",
+        "STATE.md",
+        "roadmap.md",
+    ):
+        path = root / filename
 
-    for relative_path in CONTEXT_FILES:
-        path = project_root / relative_path
-
-        sections.append(
-            f"""
-===== {relative_path} =====
-
-{read_file(path)}
-"""
-        )
-
-    for directory in CONTEXT_DIRECTORIES:
-        directory_path = project_root / directory
-
-        if not directory_path.exists():
-            sections.append(
-                f"\n===== {directory}/ =====\n[DIRECTORY NOT FOUND]\n"
+        if path.exists():
+            parts.append(
+                f"\n===== {filename} =====\n"
+                + path.read_text(
+                    encoding="utf-8",
+                )
             )
+
+    for directory in (
+        "structurizr",
+        "domain-model",
+    ):
+        path = root / directory
+
+        if not path.exists():
             continue
 
-        for path in sorted(directory_path.rglob("*")):
-            if not path.is_file():
+        for file in sorted(path.rglob("*")):
+            if not file.is_file():
                 continue
 
-            relative_path = path.relative_to(project_root)
-
-            sections.append(
-                f"""
-===== {relative_path} =====
-
-{read_file(path)}
-"""
+            parts.append(
+                f"\n===== {file.relative_to(root)} =====\n"
+                + file.read_text(
+                    encoding="utf-8",
+                )
             )
 
-    return "\n".join(sections)
+    return "\n".join(parts)
 
 
-def build_prompt(context: str) -> str:
-    return f"""
-You are reviewing the architecture of the FTP-Project.
+def parse_json_response(
+    response: str,
+) -> dict:
+    try:
+        return json.loads(response)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(
+            "Architect returned invalid JSON:\n"
+            + response
+        ) from exc
 
-Your role is ARCHITECT only.
 
-Do NOT implement code.
-Do NOT modify files.
-Do NOT invent architecture that is not supported by the project documentation.
-Do NOT report a problem without concrete evidence.
+def discovery(root: Path) -> list[str]:
+    system_prompt = read_prompt(
+        "architect_discovery.md",
+    )
 
-The project follows an architecture documented in Structurizr DSL,
-domain model documentation, AGENTS.md, STATE.md and roadmap.md.
+    context = read_architecture_context(root)
 
-Your task is to determine whether the current project direction and
-implementation are consistent with the documented architecture.
+    index = build_repository_index(root)
 
-Review the following areas:
-
-1. Architecture consistency
-2. Domain model consistency
-3. Service and agent boundaries
-4. Master/worker responsibilities
-5. API boundaries
-6. Authentication and authorization boundaries
-7. CLI architecture
-8. Dependency direction
-9. Test coverage of architectural rules
-10. Roadmap consistency
-
-For every finding provide:
-
-- unique ID
-- severity
-- area
-- title
-- description
-- concrete evidence
-- expected architecture
-- recommended action
-
-Severity must be one of:
-
-- critical
-- high
-- medium
-- low
-- info
-
-IMPORTANT:
-
-A finding MUST contain concrete evidence from the supplied project context.
-
-If the architecture is unclear, report it as an architectural ambiguity
-rather than inventing a violation.
-
-At the end provide:
-
-- overall status
-- architectural strengths
-- findings
-- recommended next actions
-
-Return ONLY valid JSON.
-
-Expected structure:
-
-{{
-  "status": "ok | attention_required | critical",
-  "architectural_strengths": [
-    "..."
-  ],
-  "findings": [
-    {{
-      "id": "ARCH-001",
-      "severity": "high",
-      "area": "...",
-      "title": "...",
-      "description": "...",
-      "evidence": [
-        "..."
-      ],
-      "expected_architecture": "...",
-      "recommended_action": "..."
-    }}
-  ],
-  "next_actions": [
-    "..."
-  ]
-}}
-
-PROJECT CONTEXT:
+    response = ask_llm(
+        system_prompt=system_prompt,
+        user_prompt=f"""
+ARCHITECTURAL CONTEXT
+=====================
 
 {context}
-"""
+
+REPOSITORY FILE INDEX
+=====================
+
+{index}
+
+Determine which implementation and test files
+must be inspected for the architectural review.
+""",
+    )
+
+    result = parse_json_response(response)
+
+    files = result.get("files")
+
+    if not isinstance(files, list):
+        raise RuntimeError(
+            "Discovery result contains no valid files list."
+        )
+
+    return [
+        filename
+        for filename in files
+        if isinstance(filename, str)
+    ]
 
 
-def save_review(project_root: Path, content: str, model: str) -> Path:
-    review_dir = project_root / "reviews" / "architecture"
-    review_dir.mkdir(parents=True, exist_ok=True)
+def perform_review(
+    root: Path,
+    selected_files: list[str],
+) -> dict:
+    system_prompt = read_prompt(
+        "architect_review.md",
+    )
 
-    timestamp = datetime.now(timezone.utc)
-    filename = timestamp.strftime("%Y-%m-%dT%H-%M-%SZ.md")
+    context = read_architecture_context(root)
 
-    path = review_dir / filename
+    implementation = read_files(
+        root,
+        selected_files,
+    )
 
-    document = f"""# Architecture Review
+    response = ask_llm(
+        system_prompt=system_prompt,
+        user_prompt=f"""
+ARCHITECTURAL CONTEXT
+=====================
 
-**Date:** {timestamp.isoformat()}
-**Model:** `{model}`
+{context}
 
-## Review
+IMPLEMENTATION
+==============
 
-```json
-{content}
-```
-"""
-    path.write_text(document, encoding="utf-8")
+{implementation}
 
-    latest = review_dir / "latest.md"
-    latest.write_text(document, encoding="utf-8")
+Perform the architectural review.
+""",
+    )
+
+    return parse_json_response(response)
+
+
+def save_review(
+    root: Path,
+    result: dict,
+    selected_files: list[str],
+) -> Path:
+    directory = (
+        root
+        / "reviews"
+        / "architecture"
+    )
+
+    directory.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    timestamp = datetime.now().strftime(
+        "%Y%m%d-%H%M%S"
+    )
+
+    result["review_metadata"] = {
+        "timestamp": datetime.now(
+            timezone.utc
+        ).isoformat(),
+        "selected_files": selected_files,
+    }
+
+    content = json.dumps(
+        result,
+        indent=2,
+        ensure_ascii=False,
+    )
+
+    path = directory / f"{timestamp}.json"
+
+    path.write_text(
+        content,
+        encoding="utf-8",
+    )
+
+    (
+        directory / "latest.json"
+    ).write_text(
+        content,
+        encoding="utf-8",
+    )
 
     return path
 
-def run_architecture_review(config: Config) -> Path:
-    project_root = Path(config.project_root).resolve()
 
-    print("Collecting project context...")
-
-    context = collect_context(project_root)
-
-    print(f"Context size: {len(context):,} characters")
-    print(f"Model: {config.model}")
-    print("Running architecture review...")
-
-    llm = OpenRouterLLM(config)
-
-    response = llm.generate(
-        build_prompt(context)
+def extract_next_step(
+    result: dict,
+) -> str:
+    next_actions = result.get(
+        "next_actions",
+        [],
     )
 
-    path = save_review(
-        project_root,
-        response.content,
-        response.model,
+    if not isinstance(next_actions, list):
+        raise RuntimeError(
+            "Architect returned invalid next_actions."
+        )
+
+    if not next_actions:
+        return "No architectural action required."
+
+    return str(next_actions[0])
+
+
+def run_architect(
+    root: Path,
+    *,
+    update_state: bool = False,
+) -> dict:
+    validate_state(root)
+
+    print(
+        "Architect: discovering relevant files..."
     )
 
-    print()
-    print("Architecture review completed.")
-    print(f"Model: {response.model}")
-    print(f"Review: {path}")
+    selected_files = discovery(root)
 
-    return path
+    print(
+        f"Architect: selected "
+        f"{len(selected_files)} files."
+    )
+
+    print(
+        "Architect: performing review..."
+    )
+
+    result = perform_review(
+        root,
+        selected_files,
+    )
+
+    review_path = save_review(
+        root,
+        result,
+        selected_files,
+    )
+
+    if update_state:
+        next_step = extract_next_step(
+            result,
+        )
+
+        update_after_architect(
+            root,
+            review_file=str(
+                review_path.relative_to(root)
+            ),
+            status=result.get(
+                "status",
+                "unknown",
+            ),
+            next_step=next_step,
+        )
+
+    return result
