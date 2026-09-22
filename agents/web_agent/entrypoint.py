@@ -3,9 +3,13 @@
 import os
 
 from .app import create_app
+from .providers import NginxProvider
 
 
-app = create_app(master_token=os.environ.get("MASTER_AGENT_TOKEN", ""))
+app = create_app(
+    master_token=os.environ.get("MASTER_AGENT_TOKEN", ""),
+    provider=NginxProvider(),
+)
 
 if __name__ == "__main__":
     import uvicorn

@@ -258,11 +258,11 @@ architecture review.
 
 ## Current Task
 
-Completed: accepted WebService desired-state storage and the first actual-state follow-through for the accepted version are implemented and verified without widening the architecture or token-validation boundaries. The Web Agent now keeps the latest accepted desired version and reports it back to Master using the authenticated Worker Agent client with the same assignment and configuration.
+Completed: the Web Agent now reconciles provider-neutral desired web state through an explicit WebProvider adapter, with Nginx configuration generation, validation, application, inspection, provider error results, and version idempotency verified.
 
 ## Current Step
 
-Completed: the first end-to-end Worker Agent / CLI follow-through for reporting actual state after a WebService desired-state acceptance has been implemented and verified. The accepted payload is:
+Completed: the provider adapter layer was added without changing Master placement, authentication, persistence, or the existing desired-state acceptance contract. The accepted payload is:
 
 - `assignment_id`: current assignment identifier
 - `version`: non-negative integer, stale versions rejected
@@ -271,17 +271,13 @@ Completed: the first end-to-end Worker Agent / CLI follow-through for reporting 
 - `health`: required object
 - `observed_at`: required timestamp string
 
-This contract is enforced by `ActualStateRequest.from_dict`, accepted only when `MasterReconciliationService.report_actual_state` sees the current assignment and newer version, and transmitted by the authenticated `WorkerAgentMasterClient` for `POST /v1/services/{service_id}/actual-state`. The end-to-end Worker Agent /
-CLI follow-through remains intentionally deferred to keep the existing token
-validation and architecture boundaries unchanged.
+This contract is enforced by `ActualStateRequest.from_dict`, accepted only when `MasterReconciliationService.report_actual_state` sees the current assignment and newer version, and transmitted by the authenticated `WorkerAgentMasterClient` for `POST /v1/services/{service_id}/actual-state`. Provider reconciliation remains local to the Web Agent and reports provider failures through actual-state diagnostics.
 
 ---
 
 ## Next Step
 
-Implement the first end-to-end Worker Agent / CLI follow-through for reporting
-actual state after a WebService desired-state acceptance, while keeping the
-existing token validation and architecture boundaries unchanged.
+Review the remaining legacy WebService provider-selection field before the next Web Agent integration slice.
 
 ---
 

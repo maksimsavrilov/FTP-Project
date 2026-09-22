@@ -43,10 +43,10 @@ The Master Agent Client sends an authenticated desired-state operation to the Ag
 
 - service identity and service type;
 - assignment identity and target version;
-- provider-specific desired configuration;
+- provider-neutral desired web configuration;
 - desired lifecycle state.
 
-The Agent accepts only the service types it owns and treats the desired-state version as an idempotency key. The response acknowledges acceptance or rejection and includes the latest known actual state when available.
+The Agent accepts only the service types it owns and treats the desired-state version as an idempotency key. Its provider adapter translates the desired web configuration into local provider configuration and applies it. The response acknowledges acceptance or rejection and includes the latest known actual state when available.
 
 ### Agent to Master
 

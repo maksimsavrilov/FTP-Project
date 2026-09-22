@@ -18,16 +18,16 @@ webAgent = container "Web Agent" {
         description "Compares desired and actual state and determines required changes"
         technology "Python"
     }
-    webConfig = component "Web Configuration Manager" {
-        description "Builds and manages web hosting configuration"
+    webProvider = component "Web Provider Adapter" {
+        description "Translates desired web state and manages the selected local provider"
         technology "Python"
     }
-    nginxManager = component "Nginx Manager" {
-        description "Manages nginx configuration and lifecycle"
+    nginxProvider = component "Nginx Provider" {
+        description "Generates, validates and applies Nginx configuration"
         technology "Python"
     }
-    apacheManager = component "Apache Manager" {
-        description "Manages Apache configuration and lifecycle"
+    apacheProvider = component "Apache Provider" {
+        description "Generates, validates and applies Apache configuration"
         technology "Python"
     }
     webStateReporter = component "State & Health Reporter" {
@@ -41,9 +41,9 @@ webAgent = container "Web Agent" {
     webApi -> webAuth "Authenticates Master requests" "Python"
     webApi -> webDesiredState "Accepts desired state" "Python"
     webDesiredState -> webReconciliation "Triggers reconciliation" "Python"
-    webReconciliation -> webConfig "Applies required configuration" "Python"
-    webConfig -> nginxManager "Configures nginx" "Python"
-    webConfig -> apacheManager "Configures Apache" "Python"
+    webReconciliation -> webProvider "Applies required configuration" "Python"
+    webProvider -> nginxProvider "Uses Nginx implementation" "Python"
+    webProvider -> apacheProvider "Uses Apache implementation" "Python"
     webReconciliation -> webStateReporter "Reports reconciliation result" "Python"
     webStateReporter -> webApi "Exposes state and health information" "Python"
 }

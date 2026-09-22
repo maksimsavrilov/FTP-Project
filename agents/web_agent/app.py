@@ -8,6 +8,13 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, ValidationError
 
+from .providers import (
+    ProviderConfigurationError,
+    ProviderError,
+    ProviderExecutionError,
+    WebProvider,
+)
+
 
 class DesiredWebServiceState(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -19,11 +26,24 @@ class DesiredWebServiceState(BaseModel):
     configuration: dict[str, Any]
 
 
+class WebReconciliationResult(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    version: int
+    status: str
+    configuration: dict[str, Any]
+    health: dict[str, Any]
+    error_code: str | None = None
+    error_message: str | None = None
+
+
 class WebAgentDesiredStateStore:
     """Small process-local store for the accepted desired version per service."""
 
-    def __init__(self) -> None:
+    def __init__(self, provider: WebProvider | None = None) -> None:
         self._states: dict[str, DesiredWebServiceState] = {}
+        self._actual: dict[str, WebReconciliationResult] = {}
+        self._provider = provider
 
     def get(self, service_id: str) -> DesiredWebServiceState | None:
         return self._states.get(service_id)
@@ -35,6 +55,67 @@ class WebAgentDesiredStateStore:
         if current is None or state.version > current.version:
             self._states[service_id] = state
         return True, None
+
+    def reconcile(self, service_id: str) -> WebReconciliationResult:
+        state = self._states.get(service_id)
+        if state is None:
+            raise LookupError(f"{service_id} has no accepted desired state")
+
+        current = self._actual.get(service_id)
+        if current is not None and current.version == state.version:
+            return current
+        if self._provider is None:
+            result = WebReconciliationResult(
+                version=state.version,
+                status="ACCEPTED",
+                configuration=state.configuration,
+                health={},
+            )
+            self._actual[service_id] = result
+            return result
+
+        try:
+            self._provider.validate(state.configuration)
+            generated = self._provider.generate_configuration(state.configuration)
+            applied = self._provider.apply(generated)
+            result = WebReconciliationResult(
+                version=state.version,
+                status=applied.status,
+                configuration=state.configuration,
+                health={**applied.health, "actual": self._provider.inspect()},
+            )
+        except ProviderConfigurationError as exc:
+            result = WebReconciliationResult(
+                version=state.version,
+                status="ERROR",
+                configuration=state.configuration,
+                health={},
+                error_code="PROVIDER_CONFIGURATION_INVALID",
+                error_message=str(exc),
+            )
+        except ProviderExecutionError as exc:
+            result = WebReconciliationResult(
+                version=state.version,
+                status="ERROR",
+                configuration=state.configuration,
+                health={},
+                error_code="PROVIDER_EXECUTION_FAILED",
+                error_message=str(exc),
+            )
+        except ProviderError as exc:
+            result = WebReconciliationResult(
+                version=state.version,
+                status="ERROR",
+                configuration=state.configuration,
+                health={},
+                error_code="PROVIDER_FAILED",
+                error_message=str(exc),
+            )
+        self._actual[service_id] = result
+        return result
+
+    def actual(self, service_id: str) -> WebReconciliationResult | None:
+        return self._actual.get(service_id)
 
     def report_actual_state(
         self,
@@ -65,12 +146,13 @@ class WebAgentDesiredStateStore:
 def create_app(
     master_token: str | None = None,
     store: WebAgentDesiredStateStore | None = None,
+    provider: WebProvider | None = None,
 ) -> FastAPI:
     """Build the authenticated Web Agent desired-state HTTP boundary."""
 
     app = FastAPI(title="Web Agent", version="1.0.0")
     expected_token = master_token if master_token is not None else os.environ.get("MASTER_AGENT_TOKEN", "")
-    desired_states = store or WebAgentDesiredStateStore()
+    desired_states = store or WebAgentDesiredStateStore(provider=provider)
 
     def request_id(request: Request) -> str:
         return request.headers.get("X-Request-ID", "")
@@ -111,9 +193,15 @@ def create_app(
         accepted, rejection = desired_states.accept(service_id, state)
         if not accepted:
             return error(request, 409, "STALE_DESIRED_STATE", rejection or "desired state was rejected")
+        result = desired_states.reconcile(service_id)
         return JSONResponse(
             status_code=202,
-            content={"accepted": True, "service_id": service_id, "version": state.version},
+            content={
+                "accepted": True,
+                "service_id": service_id,
+                "version": state.version,
+                **({"status": result.status, "error_code": result.error_code} if provider else {}),
+            },
             headers={"X-Request-ID": request_id(request)},
         )
 
@@ -137,7 +225,12 @@ def create_app(
                 "version": state.version,
                 "lifecycle_state": state.lifecycle_state,
                 "configuration": state.configuration,
-                "status": "ACCEPTED",
+                "status": (desired_states.actual(service_id) or WebReconciliationResult(
+                    version=state.version,
+                    status="ACCEPTED",
+                    configuration=state.configuration,
+                    health={},
+                )).status,
             },
             headers={"X-Request-ID": request_id(request)},
         )
