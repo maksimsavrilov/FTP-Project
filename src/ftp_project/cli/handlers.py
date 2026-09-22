@@ -39,6 +39,14 @@ def user_get(args, context):
     )
 
 
+def node_get(args, context):
+    return run_authenticated(
+        context,
+        "No authenticated session. Log in before reading a worker node.",
+        lambda client: client.get(f"/v1/nodes/{args.node_id}"),
+    )
+
+
 def account_create(args, context):
     return run_authenticated(
         context,

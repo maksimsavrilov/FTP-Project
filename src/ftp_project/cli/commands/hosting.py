@@ -16,6 +16,7 @@ def _create_get(registry, name, create, get, create_args, identifier):
 
 
 def register(registry) -> None:
+    _get(registry, ("node", "get"), handlers.node_get, "node_id")
     _create_get(registry, "service", handlers.service_create, handlers.service_get,
                 (("--subscription-id", {"required": True}), ("--type", {"required": True}),
                  ("--allocation", {"type": json.loads, "required": True}),
