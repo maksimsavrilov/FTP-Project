@@ -316,4 +316,27 @@ configured ZITADEL client.
 
 ## License
 
-See `LICENSE` if any ;).
+FTP-Project is licensed under the **Business Source License 1.1 (BSL 1.1)**.
+
+The source code is publicly available and may be used, copied, modified, and redistributed for **non-production purposes**, including development, testing, evaluation, and educational use.
+
+**Production use requires a separate commercial license** from the copyright holder.
+
+The current license parameters are:
+
+| Parameter            | Value                                    |
+| -------------------- | ---------------------------------------- |
+| Licensor             | Maksim Savrilov                          |
+| Licensed Work        | FTP-Project                              |
+| Additional Use Grant | None                                     |
+| Change Date          | 2030-09-22                               |
+| Change License       | GNU General Public License v2.0 or later |
+
+On the Change Date, the applicable version of FTP-Project will automatically become available under the specified Change License, subject to the terms of BSL 1.1.
+
+Each version of FTP-Project may have its own Change Date and license parameters.
+
+For commercial licensing, please contact the copyright holder.
+
+The Business Source License is **not an Open Source license** according to the Open Source Definition. FTP-Project is source-available under BSL 1.1 and is intended to become available under an Open Source license according to the terms of the BSL.
+
