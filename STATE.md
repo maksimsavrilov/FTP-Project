@@ -5,7 +5,7 @@
 - Phase: Implementation
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `af7ff016a101a8bc189ec1e60e937c82a9b59303`
+- Last verified commit: `040063ffa34fd919dfdb8c3c90715251deb63a6c`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Production Compose stack is running and the user-facing authentication foundation is implemented, including access-token validation, introspection, and CLI user sessions
 
@@ -258,43 +258,46 @@ architecture review.
 
 ## Current Task
 
-The Master, Web Agent and CLI now expose authenticated application, HTTP, and command
-boundaries for Account roles, identity references, subscription entitlements,
-ServicePlan creation and reads, Subscription creation and reads, Domain
-creation, Website creation and reads,
-MailDomain creation and reads, MailAccount creation and reads, MailService
-creation and reads, DatabaseService creation and reads, DatabaseUser creation
-and reads, WebService creation and reads, DnsService creation and reads. The CLI
-Service creation and read commands now also cover the common Service aggregate.
-The CLI also reports service actual state through the existing authenticated
-Master endpoint.
-An authenticated Worker Agent Master client now reports WebService actual
-state through the same endpoint. The Web Agent accepts authenticated desired
-WebService state through its first REST endpoint and rejects stale versions.
-The CLI Service reconciliation-state read command now also covers the existing
-Master desired/actual state endpoint, and hosting command registration reuses
-one read helper for standalone and nested commands. The CLI
-login/session flow, existing user commands, authenticated Worker Node reads,
-authenticated Worker Node listing,
-authenticated Worker Node heartbeat updates,
-Master API adapter, composition root, production container runtime, and compose
-service definitions remain available in `docker-compose.dev.yml` and
+The Master, Web Agent and CLI remain in the authenticated application, HTTP,
+and command boundaries for Account roles, identity references, subscription
+entitlements, ServicePlan creation and reads, Subscription creation and reads,
+Domain creation, Website creation and reads, MailDomain creation and reads,
+MailAccount creation and reads, MailService creation and reads,
+DatabaseService creation and reads, DatabaseUser creation and reads,
+WebService creation and reads, and DnsService creation and reads. The CLI
+Service creation and read commands also cover the common Service aggregate.
+The CLI reports service actual state through the existing authenticated Master
+endpoint, and the authenticated Worker Agent Master client already reports
+WebService actual state through the same endpoint. The Web Agent accepts
+authenticated desired WebService state through its first REST endpoint and
+rejects stale versions.
+The current implementation scope is intentionally limited to the verified
+Web Agent desired-state acceptance and readback path; the first end-to-end
+Worker Agent / CLI follow-through is deferred and not implemented in this step.
+The CLI login/session flow, existing user commands, authenticated Worker Node
+reads, authenticated Worker Node listing, authenticated Worker Node heartbeat
+updates, Master API adapter, composition root, production container runtime, and
+compose service definitions remain available in `docker-compose.dev.yml` and
 `docker-compose.prod.yml`.
 
 ---
 
 ## Current Step
 
-Completed: the minimal Web Agent reconciliation handler for an accepted desired
-WebService version is implemented and verified in the Web Agent boundary. It
-accepts authenticated desired-state updates, stores the accepted version per
-service, and exposes a readback of the accepted state without introducing any
-provider-specific management or C4 changes.
+Completed: the verified Web Agent reconciliation handler for an accepted desired
+WebService version remains in place and has been validated in the Web Agent
+boundary. It accepts authenticated desired-state updates, stores the accepted
+version per service, and exposes a readback of the accepted state without
+introducing any provider-specific management or C4 changes. The Worker Agent /
+CLI follow-through for actual-state reporting remains intentionally deferred in
+order to keep the existing token validation and architecture boundaries
+unchanged.
 
 ## Next Step
 
-Defer the next task: add the first end-to-end Worker Agent / CLI follow-through
-for reporting actual state after a WebService desired-state acceptance, while
+Define the exact actual-state reporting contract and acceptance criteria for the
+first Worker Agent / CLI follow-through, then validate the contract without
+implementing the follow-through in this step. Then add the first end-to-end Worker Agent / CLI follow-through for reporting actual state after a WebService desired-state acceptance, while
 keeping the existing token validation and architecture boundaries unchanged.
 
 ---
