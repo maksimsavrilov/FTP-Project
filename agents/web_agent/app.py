@@ -36,6 +36,31 @@ class WebAgentDesiredStateStore:
             self._states[service_id] = state
         return True, None
 
+    def report_actual_state(
+        self,
+        service_id: str,
+        client: Any,
+        *,
+        status: str,
+        health: dict[str, Any],
+        observed_at: str,
+        request_id: str | None = None,
+    ) -> dict[str, Any]:
+        state = self._states.get(service_id)
+        if state is None:
+            raise LookupError(f"{service_id} has no accepted desired state")
+
+        return client.report_web_service_actual_state(
+            service_id,
+            state.assignment_id,
+            state.version,
+            status,
+            state.configuration,
+            health,
+            observed_at,
+            request_id=request_id,
+        )
+
 
 def create_app(
     master_token: str | None = None,

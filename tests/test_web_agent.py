@@ -2,6 +2,7 @@ import unittest
 
 from fastapi.testclient import TestClient
 
+from agents.web_agent.app import DesiredWebServiceState, WebAgentDesiredStateStore
 from ftp_project.web_agent import create_app
 
 
@@ -77,6 +78,72 @@ class WebAgentTests(unittest.TestCase):
                 "status": "ACCEPTED",
             },
         )
+
+    def test_store_reports_accepted_desired_state_to_master(self):
+        store = WebAgentDesiredStateStore()
+        state = DesiredWebServiceState.model_validate(
+            {
+                "service_type": "WEB",
+                "assignment_id": "assignment-2",
+                "version": 7,
+                "lifecycle_state": "RUNNING",
+                "configuration": {"web_server": "nginx", "php_version": "8.3"},
+            }
+        )
+        accepted, rejection = store.accept("service-3", state)
+
+        self.assertTrue(accepted)
+        self.assertIsNone(rejection)
+
+        class Client:
+            def __init__(self):
+                self.calls = []
+
+            def report_web_service_actual_state(
+                self,
+                service_id,
+                assignment_id,
+                version,
+                status,
+                configuration,
+                health,
+                observed_at,
+                request_id=None,
+            ):
+                self.calls.append(
+                    {
+                        "service_id": service_id,
+                        "assignment_id": assignment_id,
+                        "version": version,
+                        "status": status,
+                        "configuration": configuration,
+                        "health": health,
+                        "observed_at": observed_at,
+                        "request_id": request_id,
+                    }
+                )
+                return {"accepted": True}
+
+        client = Client()
+        result = store.report_actual_state(
+            "service-3",
+            client,
+            status="RUNNING",
+            health={"ready": True},
+            observed_at="2026-01-01T00:10:00Z",
+        )
+
+        self.assertEqual(result, {"accepted": True})
+        self.assertEqual(client.calls, [{
+            "service_id": "service-3",
+            "assignment_id": "assignment-2",
+            "version": 7,
+            "status": "RUNNING",
+            "configuration": {"web_server": "nginx", "php_version": "8.3"},
+            "health": {"ready": True},
+            "observed_at": "2026-01-01T00:10:00Z",
+            "request_id": None,
+        }])
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@
 - Phase: Implementation
 - Repository: `FTP-Project`
 - Repo URL `https://github.com/maksimsavrilov/FTP-Project.git`
-- Last verified commit: `3ee57c787837922445a3a77ee8619fd1e85fa755`
+- Last verified commit: `78cd5a229caf93e99626e956c9e52c18e57fd320`
 - Current focus: Master, Auth Service, Agents and reconciliation boundaries
 - Status: Production Compose stack is running and the user-facing authentication foundation is implemented, including access-token validation, introspection, and CLI user sessions
 
@@ -258,34 +258,58 @@ architecture review.
 
 ## Current Task
 
-The Master, Web Agent and CLI remain in the authenticated application, HTTP,
-and command boundaries for Account roles, identity references, subscription
-entitlements, ServicePlan creation and reads, Subscription creation and reads,
-Domain creation, Website creation and reads, MailDomain creation and reads,
-MailAccount creation and reads, MailService creation and reads,
-DatabaseService creation and reads, DatabaseUser creation and reads,
-WebService creation and reads, and DnsService creation and reads. The CLI
-Service creation and read commands also cover the common Service aggregate.
-The CLI reports service actual state through the existing authenticated Master
-endpoint, and the authenticated Worker Agent Master client already reports
-WebService actual state through the same endpoint. The Web Agent accepts
-authenticated desired WebService state through its first REST endpoint and
-rejects stale versions.
-The current implementation scope is intentionally limited to the verified
-Web Agent desired-state acceptance and readback path; the first end-to-end
-Worker Agent / CLI follow-through is deferred and not implemented in this step.
-The CLI login/session flow, existing user commands, authenticated Worker Node
-reads, authenticated Worker Node listing, authenticated Worker Node heartbeat
-updates, Master API adapter, composition root, production container runtime, and
-compose service definitions remain available in `docker-compose.dev.yml` and
-`docker-compose.prod.yml`.
-
----
+Completed: accepted WebService desired-state storage and the first actual-state follow-through for the accepted version are implemented and verified without widening the architecture or token-validation boundaries. The Web Agent now keeps the latest accepted desired version and reports it back to Master using the authenticated Worker Agent client with the same assignment and configuration.
 
 ## Current Step
 
-Completed: the exact actual-state reporting contract for the first Worker Agent /
-CLI follow-through has been defined and validated without implementing the
+Completed: the first end-to-end Worker Agent / CLI follow-through for reporting actual state after a WebService desired-state acceptance has been implemented and verified. The accepted payload is:
+
+- `assignment_id`: current assignment identifier
+- `version`: non-negative integer, stale versions rejected
+- `status`: required service status string
+- `configuration`: required object
+- `health`: required object
+- `observed_at`: required timestamp string
+
+This contract is enforced by `ActualStateRequest.from_dict`, accepted only when `MasterReconciliationService.report_actual_state` sees the current assignment and newer version, and transmitted by the authenticated `WorkerAgentMasterClient` for `POST /v1/services/{service_id}/actual-state`.
+
+## Next Step
+
+Review the same accepted-desired-state to actual-state flow for the next service type only when that service-specific requirement is introduced; keep the current token-validation and architecture boundaries unchanged.
+
+## Verification Rules
+
+Before changing architecture:
+
+- Verify the current repository state.
+- Treat this file as project execution state, not as historical documentation.
+- Treat Structurizr as the canonical C4 architecture model.
+- Treat `docs/domain-model.md` as the canonical business-domain model.
+- Do not infer architecture from obsolete README diagrams when they conflict with the canonical models.
+- Validate Structurizr identifiers and dynamic-view scopes.
+- Check every included DSL file.
+- Keep Agent-to-Agent communication prohibited.
+- Keep scheduling and placement in Master.
+- Keep reconciliation between desired and actual state explicit.
+- If required libraries are missing from the environment, stop and ask the user to install them; continue only after the user confirms installation.
+
+---
+
+## Change Policy
+
+After completing a task:
+
+1. Update `Completed`.
+2. Remove resolved items from `Known Issues`.
+3. Update `Current Task`.
+4. Define exactly one `Next Step`.
+5. Update `Last verified commit`.
+6. Commit the state together with the corresponding project changes.
+
+Do not use this file as a changelog.
+
+Historical information belongs in Git history.
+
 follow-through. The accepted payload is:
 
 - `assignment_id`: current assignment identifier
