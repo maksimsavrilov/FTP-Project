@@ -234,6 +234,9 @@ architecture review.
 - Authenticated Worker Agent-to-Master HTTP client path implemented for
   WebService actual-state reporting, reusing the established Master client
   transport and error handling.
+- Authenticated Web Agent desired-state HTTP endpoint implemented for `WEB`
+  services, including assignment/version/configuration validation and
+  idempotent process-local acceptance of repeated versions.
 
 ### Domain Model
 
@@ -255,7 +258,7 @@ architecture review.
 
 ## Current Task
 
-The Master and CLI now expose authenticated application, HTTP, and command
+The Master, Web Agent and CLI now expose authenticated application, HTTP, and command
 boundaries for Account roles, identity references, subscription entitlements,
 ServicePlan creation and reads, Subscription creation and reads, Domain
 creation, Website creation and reads,
@@ -266,7 +269,8 @@ Service creation and read commands now also cover the common Service aggregate.
 The CLI also reports service actual state through the existing authenticated
 Master endpoint.
 An authenticated Worker Agent Master client now reports WebService actual
-state through the same endpoint.
+state through the same endpoint. The Web Agent accepts authenticated desired
+WebService state through its first REST endpoint and rejects stale versions.
 The CLI Service reconciliation-state read command now also covers the existing
 Master desired/actual state endpoint, and hosting command registration reuses
 one read helper for standalone and nested commands. The CLI
@@ -281,9 +285,9 @@ service definitions remain available in `docker-compose.dev.yml` and
 
 ## Next Step
 
-Implement the first authenticated Web Agent HTTP endpoint for receiving desired
-WebService state from Master; do not change ZITADEL token validation or the C4
-model.
+Implement the minimal Web Agent reconciliation handler for an accepted desired
+WebService version; do not add provider-specific service management, change
+ZITADEL token validation, or modify the C4 model.
 
 ---
 
