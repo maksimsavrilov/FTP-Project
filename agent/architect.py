@@ -62,12 +62,15 @@ def read_architecture_context(
             if not file.is_file():
                 continue
 
-            parts.append(
-                f"\n===== {file.relative_to(root)} =====\n"
-                + file.read_text(
-                    encoding="utf-8",
+            try:
+                parts.append(
+                    f"\n===== {file.relative_to(root)} =====\n"
+                    + file.read_text(
+                        encoding="utf-8",
+                    )
                 )
-            )
+            except Exception:
+                print(f"Error reading {file}")
 
     return "\n".join(parts)
 

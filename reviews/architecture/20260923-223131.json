@@ -1,0 +1,116 @@
+{
+  "status": "findings",
+  "architectural_strengths": [
+    "Master retains ownership of placement: service creation selects an online capable Worker Node, reserves capacity, creates a ServiceAssignment, and advances desired state within a transaction (`master/services/core.py`, `MasterServiceService._create_in_session`).",
+    "Desired and actual state are separate persisted representations, and actual-state acceptance checks the current assignment and rejects stale observations (`master/persistence/models/entities.py`, `DesiredState` and `ActualState; `master/persistence/repositories/implementations.py`, `ActualStateRepository.record_observation`).",
+    "Master and the Web Agent expose REST boundaries, and the Web Agent keeps provider execution local behind a provider interface (`master/fastapi.py`; `agents/web_agent/app.py`; `agents/web_agent/providers.py`).",
+    "Authentication is represented as a separate service, and Master delegates authorization decisions through an Authentication Client (`structurizr/model/relations.dsl`; `master/auth.py`; `docker-compose.prod.yml`)."
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "type": "implementation_bug",
+      "title": "WebService desired state does not satisfy the deployed Nginx provider's required configuration",
+      "evidence": [
+        "master/services/core.py (MasterWebServiceService.create)",
+        "agents/web_agent/providers.py (NginxProvider.validate)",
+        "agents/web_agent/entrypoint.py"
+      ],
+      "description": "Master creates WebService desired configuration with `web_server`, `php_version`, and `document_root`, but no `hostname`. The production Web Agent uses `NginxProvider`, whose validation requires both `hostname` and `document_root`. Consequently, the normal WebService creation path reaches provider reconciliation without a required field and produces an error instead of applying the service.",
+      "recommendation": "Align the WebService desired-state payload with the provider's required configuration, using the existing Website/Domain data where appropriate or revising the provider contract. Add a focused test covering the Master-to-provider configuration path."
+    },
+    {
+      "severity": "high",
+      "type": "architectural_violation",
+      "title": "Web Agent reconciliation results are not reported to Master",
+      "evidence": [
+        "agents/web_agent/app.py (receive_desired_state)",
+        "agents/web_agent/app.py (WebAgentDesiredStateStore.report_actual_state)",
+        "structurizr/model/agent-web.dsl (webReconciliation and webStateReporter relationships)",
+        "structurizr/model/relations.dsl (hosting.webAgent -> hosting.master)"
+      ],
+      "description": "The desired-state endpoint calls local reconciliation and returns an acceptance response, but it does not invoke `report_actual_state` or otherwise send the reconciliation result to Master. The reporting helper exists but has no caller in the shown Web Agent request path. This leaves Master without the actual-state feedback required by the documented reconciliation boundary.",
+      "recommendation": "Wire the Web Agent's reconciliation result to the existing Master actual-state reporting path, including provider failures, and verify that Master records the report for the current assignment and version."
+    },
+    {
+      "severity": "high",
+      "type": "implementation_bug",
+      "title": "The production Agent credential is incompatible with Master actual-state authorization by default",
+      "evidence": [
+        "docker-compose.prod.yml (web-agent MASTER_AGENT_TOKEN)",
+        "master/api/core.py (MasterApi.report_actual_state)",
+        "auth/service.py (ZitadelClient.introspect and authorize)",
+        "src/ftp_project/worker_agent.py (WorkerAgentMasterClient)"
+      ],
+      "description": "Production Compose supplies a default static `MASTER_AGENT_TOKEN`, and the Worker Agent client sends it as a Bearer token. Master actual-state reporting delegates authorization to the Authentication Service, which introspects Bearer credentials with ZITADEL. The default Compose token is not established as a ZITADEL-issued token, so the deployed reporting credential does not satisfy the configured authorization flow. The node-specific credentials issued by registration are not used by this reporting path.",
+      "recommendation": "Choose and consistently implement the Agent-to-Master authentication contract. Prefer using the registered node credential for Agent reports if that is the intended node credential, and verify that Master validates it for the assigned node before accepting actual state."
+    },
+    {
+      "severity": "medium",
+      "type": "architectural_risk",
+      "title": "Node registration is not connected to Worker Agent deployment or startup",
+      "evidence": [
+        "structurizr/views/dynamic-node-registration-web.dsl",
+        "src/ftp_project/cli/commands/hosting.py (register)",
+        "agents/web_agent/entrypoint.py",
+        "docker-compose.prod.yml (web-agent)"
+      ],
+      "description": "The documented registration flow includes a CLI request, Master bootstrap of the Agent, Agent registration, and delivery of permanent credentials. The current CLI registers node read/list/heartbeat commands but no registration/bootstrap command; the Web Agent entrypoint constructs the app without registering itself; and Compose provides a static token rather than connecting startup to registration. The registration API therefore exists without the documented deployed onboarding flow.",
+      "recommendation": "Implement the single next onboarding slice for the deployed Web Agent: start it with bootstrap configuration, register it with Master, and persist/use the returned node credential. Keep placement in Master and use the existing REST boundary."
+    }
+  ],
+  "next_actions": [
+    "Align the WebService desired-state payload with the Nginx provider's required hostname and document-root inputs; verify the Master-to-provider path with a focused test.",
+    "Connect Web Agent reconciliation results, including errors, to Master actual-state reporting and verify that Master records the current assignment/version.",
+    "Connect Web Agent startup to node registration and use the registered node credential for authenticated reports; verify the deployed onboarding and reporting flow."
+  ],
+  "review_metadata": {
+    "timestamp": "2026-09-23T19:31:31.282604+00:00",
+    "selected_files": [
+      "auth/entrypoint.py",
+      "auth/fastapi.py",
+      "auth/service.py",
+      "agents/web_agent/app.py",
+      "agents/web_agent/entrypoint.py",
+      "agents/web_agent/providers.py",
+      "master/api/core.py",
+      "master/auth.py",
+      "master/composition.py",
+      "master/entrypoint.py",
+      "master/fastapi.py",
+      "master/persistence/models/base.py",
+      "master/persistence/models/entities.py",
+      "master/persistence/repositories/implementations.py",
+      "master/persistence/repositories/utils.py",
+      "master/services/core.py",
+      "src/ftp_project/cli/commands/hosting.py",
+      "src/ftp_project/cli/commands/identity.py",
+      "src/ftp_project/cli/commands/session.py",
+      "src/ftp_project/cli/commands/subscription.py",
+      "src/ftp_project/cli/handlers.py",
+      "src/ftp_project/cli/parser.py",
+      "src/ftp_project/cli/registry.py",
+      "src/ftp_project/cli/session.py",
+      "src/ftp_project/master.py",
+      "src/ftp_project/session.py",
+      "src/ftp_project/web_agent.py",
+      "src/ftp_project/worker_agent.py",
+      "tests/test_auth_service.py",
+      "tests/test_cli_registry.py",
+      "tests/test_cli_session.py",
+      "tests/test_master_api.py",
+      "tests/test_master_composition.py",
+      "tests/test_master_fastapi.py",
+      "tests/test_master_persistence.py",
+      "tests/test_web_agent.py",
+      "tests/test_web_agent_providers.py",
+      "tests/test_web_agent_service_layout.py",
+      "tests/test_worker_agent.py",
+      "tests/zitadel_auth_test.sh",
+      "docker-compose.dev.yml",
+      "docker-compose.prod.yml",
+      "postgres-init.sql",
+      "pyproject.toml"
+    ]
+  }
+}

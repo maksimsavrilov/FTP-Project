@@ -16,9 +16,10 @@
 These decisions are established and must not be changed without explicit
 architecture review.
 
-- Master is the control plane and the source of desired state.
+- Master is the control plane, single orchestration entry point and the source of desired state.
 - Worker Nodes are the execution plane.
 - Master communicates with Worker Agents via REST/HTTP.
+- Communication between services uses REST APIs.
 - Worker Agents never communicate directly with each other.
 - Worker services have dedicated Agents:
   - Web Agent
@@ -333,7 +334,7 @@ Historical information belongs in Git history.
 
 Status: findings
 
-Review: reviews/architecture/20260922-193000.json
+Review: reviews/architecture/20260923-223131.json
 
 ## Last Test Result
 

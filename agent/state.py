@@ -10,7 +10,7 @@ REQUIRED_SECTIONS = (
     "Current State",
     "Current Task",
     "Next Step",
-    "Architectural Constraints",
+    "Architecture Invariants",
     "Last Architect Review",
     "Last Test Result",
 )
