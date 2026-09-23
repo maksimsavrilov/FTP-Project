@@ -29,3 +29,6 @@ __pycache__/
 .continue/
 arch_prompt.md
 temp_db.sql
+.agents/
+.codex/
+.pytest_cache/

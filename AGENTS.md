@@ -122,6 +122,7 @@ If test code is longer or more convoluted than the implementation code, default 
 - No extra construction done to make it look complete
 
 ## General Principles
+If something can be expressed clearly through code structure, names, types, interfaces or tests, prefer that over prose documentation. Use prose to document intent, constraints, trade-offs and decisions that cannot be derived reliably from the code.
 Confirm intent first, then complete acceptance with minimal changes.
 Designs that cannot prove necessity are not done by default.
 Tests that cannot prove necessity are not added by default.
