@@ -244,6 +244,7 @@ def extract_next_step(
 def run_architect(
     root: Path,
     *,
+    iteration: int,
     update_state: bool = False,
 ) -> dict:
     validate_state(root)
@@ -269,9 +270,10 @@ def run_architect(
     )
 
     review_path = save_review(
-        root,
-        result,
-        selected_files,
+    root,
+    result,
+    selected_files,
+    iteration=iteration,
     )
 
     if update_state:
