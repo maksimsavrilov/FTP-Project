@@ -1,11 +1,21 @@
 """FTP-Project AI agents.
 
-export OPENROUTER_API_KEY="sk-or-v1-..." or source ~/.bashrc
-export PROJECT_ROOT="$PWD"
-export ARCHITECT_MODEL="qwen/qwen3.8-27b:free"
+.env file variables:
+OPENROUTER_API_KEY=
 
-python -m agent.cli architect review
-OR
-python -m agent.cli architect review --update-state
+OPENROUTER_MODEL=
+
+# Application-level OpenRouter request limiter.
+OPENROUTER_REQUESTS_PER_MINUTE=10
+
+# Maximum Programmer -> Tester cycles for one action.
+AGENT_MAX_ACTION_ATTEMPTS=3
+
+# Maximum Architect iterations.
+AGENT_MAX_ITERATIONS=20
+
+AGENT_REPOSITORY_ROOT=.
+
+uv run python -m agent.cli run
 
 """

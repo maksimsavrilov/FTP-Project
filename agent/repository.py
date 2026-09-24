@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 
@@ -9,119 +10,69 @@ IGNORED_DIRS = {
     "venv",
     "__pycache__",
     ".pytest_cache",
-    ".mypy_cache",
-    ".ruff_cache",
     "node_modules",
     "dist",
-    "build",
+    "build"
+    ".structurizr",
     ".idea",
     ".vscode",
 }
 
 
-TEXT_EXTENSIONS = {
-    ".py",
-    ".md",
-    ".yaml",
-    ".yml",
-    ".toml",
-    ".json",
-    ".xml",
-    ".ini",
-    ".cfg",
-    ".conf",
-    ".dsl",
-    ".sql",
-    ".sh",
-}
+class Repository:
+    def __init__(self, root: str) -> None:
+        self.root = Path(root).resolve()
 
+    def read(self, relative_path: str) -> str:
+        path = self._resolve(relative_path)
+        return path.read_text(encoding="utf-8")
 
-def iter_repository_files(root: Path):
-    for path in root.rglob("*"):
-        if not path.is_file():
-            continue
+    def write(self, relative_path: str, content: str) -> None:
+        path = self._resolve(relative_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
 
-        if any(
-            part in IGNORED_DIRS
-            for part in path.parts
-        ):
-            continue
+    def exists(self, relative_path: str) -> bool:
+        return self._resolve(relative_path).exists()
 
-        if path.suffix.lower() not in TEXT_EXTENSIONS:
-            continue
+    def list_files(self) -> list[str]:
+        result: list[str] = []
 
-        yield path
+        for path in self.root.rglob("*"):
+            if not path.is_file():
+                continue
 
+            if any(part in IGNORED_DIRS for part in path.parts):
+                continue
 
-def build_repository_index(root: Path) -> str:
-    files = sorted(iter_repository_files(root))
+            result.append(str(path.relative_to(self.root)))
 
-    return "\n".join(
-        str(path.relative_to(root))
-        for path in files
-    )
+        return sorted(result)
 
-
-def resolve_repository_file(
-    root: Path,
-    filename: str,
-) -> Path | None:
-    repository_root = root.resolve()
-    path = (root / filename).resolve()
-
-    try:
-        path.relative_to(repository_root)
-    except ValueError:
-        return None
-
-    if not path.is_file():
-        return None
-
-    if any(
-        part in IGNORED_DIRS
-        for part in path.relative_to(repository_root).parts
-    ):
-        return None
-
-    if path.suffix.lower() not in TEXT_EXTENSIONS:
-        return None
-
-    return path
-
-
-def read_files(
-    root: Path,
-    files: list[str],
-    max_file_size: int = 100_000,
-) -> str:
-    sections: list[str] = []
-
-    for filename in files:
-        path = resolve_repository_file(
-            root,
-            filename,
+    def git_diff(self) -> str:
+        result = subprocess.run(
+            ["git", "diff", "--no-ext-diff"],
+            cwd=self.root,
+            capture_output=True,
+            text=True,
+            check=False,
         )
 
-        if path is None:
-            continue
+        return result.stdout
 
-        if path.stat().st_size > max_file_size:
-            sections.append(
-                f"\n===== {filename} =====\n"
-                "[FILE TOO LARGE]\n"
-            )
-            continue
-
-        try:
-            content = path.read_text(
-                encoding="utf-8",
-            )
-        except UnicodeDecodeError:
-            continue
-
-        sections.append(
-            f"\n===== {filename} =====\n"
-            f"{content}\n"
+    def run(self, command: list[str]) -> tuple[int, str]:
+        result = subprocess.run(
+            command,
+            cwd=self.root,
+            capture_output=True,
+            text=True,
+            check=False,
         )
 
-    return "\n".join(sections)
+        output = result.stdout
+
+        if result.stderr:
+            output += "\n" + result.stderr
+
+        return result.returncode, output
+    
