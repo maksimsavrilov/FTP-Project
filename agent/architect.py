@@ -112,6 +112,8 @@ REPOSITORY FILE INDEX
 Determine which implementation and test files
 must be inspected for the architectural review.
 """,
+    model=settings.architect_model,
+    max_tokens=settings.architect_max_tokens,
     )
 
     result = parse_json_response(response)
@@ -160,6 +162,8 @@ IMPLEMENTATION
 
 Perform the architectural review.
 """,
+    model=settings.architect_model,
+    max_tokens=settings.architect_max_tokens,
     )
 
     return parse_json_response(response)
@@ -169,6 +173,8 @@ def save_review(
     root: Path,
     result: dict,
     selected_files: list[str],
+    *,
+    iteration: int,
 ) -> Path:
     directory = (
         root
@@ -189,6 +195,7 @@ def save_review(
         "timestamp": datetime.now(
             timezone.utc
         ).isoformat(),
+        "iteration": iteration,
         "selected_files": selected_files,
     }
 
