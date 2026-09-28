@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import random
 import threading
 import time
+from xml.parsers.expat import model
 
-from openai import OpenAI
+from openai import OpenAI, RateLimitError
 
 from .config import settings
 
@@ -50,30 +52,41 @@ def ask_llm(
     user_prompt: str,
     model: str | None = None,
     max_tokens: int | None = None,
+    max_retries: int = 5,
 ) -> str:
-    rate_limiter.wait()
+    for attempt in range(max_retries):
+        rate_limiter.wait()
 
-    response = client.chat.completions.create(
-        model=model or settings.architect_model,
-        messages=[
-            {
-                "role": "system",
-                "content": system_prompt,
-            },
-            {
-                "role": "user",
-                "content": user_prompt,
-            },
-        ],
-        temperature=0,
-        max_tokens=max_tokens or settings.architect_max_tokens,
-    )
+        try:
+            response = client.chat.completions.create(
+                model=model or settings.architect_model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": system_prompt,
+                    },
+                    {
+                        "role": "user",
+                        "content": user_prompt,
+                    },
+                ],
+                temperature=0,
+                max_tokens=max_tokens or settings.architect_max_tokens,
+            )
+            content = response.choices[0].message.content
+            if not content:
+                raise RuntimeError(
+                    "LLM returned an empty response."
+                )
+            return content
+        
+        except RateLimitError:
+            if attempt == max_retries - 1:
+                raise
 
-    content = response.choices[0].message.content
+            delay = 2 ** attempt + random.uniform(0, 1)
+            print(
+                f"Rate limit exceeded. Retrying in {delay:.2f} seconds..."
+            )
+            time.sleep(delay)
 
-    if not content:
-        raise RuntimeError(
-            "LLM returned an empty response."
-        )
-
-    return content
