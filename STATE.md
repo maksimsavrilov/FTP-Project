@@ -93,6 +93,27 @@ architecture review.
 - Master persistence schema and repository boundaries for WorkerNode, ServiceAssignment, DesiredState and ActualState defined in `docs/master-persistence.md`.
 - Shared API schemas and the Master-to-Authentication Service client contract defined in `docs/api-contracts.md`.
 - Master REST API resource schemas and handler boundaries defined in `docs/master-api.md`.
+
+### Domain Model
+
+- Business domain model separated from C4 model.
+- User → Subscription → ServicePlan model defined.
+- Domain → Website / DNS / Mail model defined.
+- Service hierarchy defined.
+- WebService, DnsService, MailService and DatabaseService defined.
+- ServiceAssignment defined as explicit placement entity.
+- WorkerNode defined with capacity and health information.
+- DesiredState and ActualState defined as separate entities.
+- Canonical domain model expanded with Administrator, Reseller, Customer,
+  identity references, resource entitlement inheritance, lifecycle separation,
+  Master/Agent ownership, and Plesk reference classification.
+- Domain model roadmap aligned with the current implementation state and kept
+  separate from the canonical Structurizr C4 model.
+
+### Completed Steps
+
+
+
 - Master application services for node operations, placement, and reconciliation reports implemented and verified.
 - Master API schemas and handlers for node reads, heartbeats, reconciliation-state reads and actual-state reports implemented and verified.
 - ServicePlan persistence model, repository, lifecycle application service, and API create/read boundary implemented and verified.
@@ -245,53 +266,30 @@ architecture review.
   services, including assignment/version/configuration validation and
   idempotent process-local acceptance of repeated versions.
 
-### Domain Model
-
-- Business domain model separated from C4 model.
-- User → Subscription → ServicePlan model defined.
-- Domain → Website / DNS / Mail model defined.
-- Service hierarchy defined.
-- WebService, DnsService, MailService and DatabaseService defined.
-- ServiceAssignment defined as explicit placement entity.
-- WorkerNode defined with capacity and health information.
-- DesiredState and ActualState defined as separate entities.
-- Canonical domain model expanded with Administrator, Reseller, Customer,
-  identity references, resource entitlement inheritance, lifecycle separation,
-  Master/Agent ownership, and Plesk reference classification.
-- Domain model roadmap aligned with the current implementation state and kept
-  separate from the canonical Structurizr C4 model.
-
 ---
 
-## Current Task
+## Implementation Plan
 
-Completed: the Worker Node registration lifecycle now covers bootstrap
-registration, stable identity, node credentials, authenticated heartbeat,
-`ONLINE`/`OFFLINE` liveness, and disabled-node protection.
+1. Connect the deployed Web Agent startup to Master node registration over
+REST/HTTP: submit its configured hostname, capabilities, capacity, and
+bootstrap credential; retain the returned stable node ID and node-specific
+credential for authenticated heartbeat and actual-state reports. Keep
+Master-to-Agent desired-state authentication separate from Agent-to-Master
+node authentication.
 
-## Current Step
 
-Completed: the Worker Node lifecycle was added without changing Master
-placement, ZITADEL, Agent boundaries, or the desired-state acceptance
-contract.
+### Current Step
 
-The existing provider adapter payload remains:
+1. Connect the deployed Web Agent startup to Master node registration over
+REST/HTTP: submit its configured hostname, capabilities, capacity, and
+bootstrap credential; retain the returned stable node ID and node-specific
+credential for authenticated heartbeat and actual-state reports. Keep
+Master-to-Agent desired-state authentication separate from Agent-to-Master
+node authentication.
 
-- `assignment_id`: current assignment identifier
-- `version`: non-negative integer, stale versions rejected
-- `status`: required service status string
-- `configuration`: required object
-- `health`: required object
-- `observed_at`: required timestamp string
+### Plan Status
 
-This contract is enforced by `ActualStateRequest.from_dict`, accepted only when `MasterReconciliationService.report_actual_state` sees the current assignment and newer version, and transmitted by the authenticated `WorkerAgentMasterClient` for `POST /v1/services/{service_id}/actual-state`. Provider reconciliation remains local to the Web Agent and reports provider failures through actual-state diagnostics.
-
----
-
-## Next Step
-
-Move node bootstrap and node-specific credential delivery into the deployed
-Worker Agent startup path.
+IN_PROGRESS
 
 ---
 
@@ -334,7 +332,23 @@ Historical information belongs in Git history.
 
 Status: findings
 
-Review: reviews/architecture/20260923-223131.json
+Review: The Master-side Worker Node lifecycle is implemented consistently
+with the domain model: registration is idempotent, issues stable node identity
+and node-specific credentials, and authenticated heartbeat controls liveness
+without reviving disabled nodes. The deployed Web Agent entrypoint does not
+yet call registration or heartbeat; it starts with `MASTER_AGENT_TOKEN`, which
+authenticates Master-to-Agent desired-state requests and is separate from the
+Agent credential used for Agent-to-Master calls. Integrating startup is the
+current valid next step. Architectural inconsistency: the Structurizr dynamic
+node-registration views describe Master bootstrapping Agents over SSH, which
+conflicts with the project REST/HTTP-only Master-Agent boundary and the
+implementation-boundaries document's REST registration contract. Do not add
+SSH to the implementation. Exact Next Step: Connect the deployed Web Agent
+startup to Master node registration over REST/HTTP: submit its configured
+hostname, capabilities, capacity, and bootstrap credential; retain the
+returned stable node ID and node-specific credential for authenticated
+heartbeat and actual-state reports. Keep Master-to-Agent desired-state
+authentication separate from Agent-to-Master node authentication.
 
 ## Last Test Result
 
