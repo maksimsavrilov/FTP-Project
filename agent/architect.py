@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+import re
 
 from .config import settings
 from .llm import ask_llm
@@ -75,16 +76,43 @@ def read_architecture_context(
     return "\n".join(parts)
 
 
-def parse_json_response(
-    response: str,
-) -> dict:
+def parse_json_response(response: str) -> dict:
+    """Parse JSON returned by an LLM.
+
+    Accepts both raw JSON and JSON wrapped in a Markdown code fence.
+    """
+    text = response.strip()
+
+    # Raw JSON.
     try:
-        return json.loads(response)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(
-            "Architect returned invalid JSON:\n"
-            + response
-        ) from exc
+        return json.loads(text)
+    except json.JSONDecodeError:
+        result = None
+
+    # Markdown code fence: ```json ... ``` or ``` ... ```
+    match = re.search(
+        r"```(?:json)?\s*(.*?)\s*```",
+        text,
+        re.DOTALL | re.IGNORECASE,
+    )
+
+    if match:
+        try:
+            result = json.loads(match.group(1))
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(
+                "Architect returned invalid JSON\n"
+                + exc.message
+                + "\n\nResponse:\n" 
+                + response
+            ) from exc
+
+        if isinstance(result, dict):
+            return result
+
+    raise RuntimeError(
+        f"Architect returned invalid JSON:\n{response}"
+    )
 
 
 def discovery(root: Path) -> list[str]:
@@ -112,6 +140,8 @@ REPOSITORY FILE INDEX
 Determine which implementation and test files
 must be inspected for the architectural review.
 """,
+    model=settings.architect_model,
+    max_tokens=settings.architect_max_tokens,
     )
 
     result = parse_json_response(response)
@@ -160,6 +190,8 @@ IMPLEMENTATION
 
 Perform the architectural review.
 """,
+    model=settings.architect_model,
+    max_tokens=settings.architect_max_tokens,
     )
 
     return parse_json_response(response)
@@ -169,6 +201,8 @@ def save_review(
     root: Path,
     result: dict,
     selected_files: list[str],
+    *,
+    iteration: int,
 ) -> Path:
     directory = (
         root
@@ -189,6 +223,7 @@ def save_review(
         "timestamp": datetime.now(
             timezone.utc
         ).isoformat(),
+        "iteration": iteration,
         "selected_files": selected_files,
     }
 
@@ -237,6 +272,7 @@ def extract_next_step(
 def run_architect(
     root: Path,
     *,
+    iteration: int,
     update_state: bool = False,
 ) -> dict:
     validate_state(root)
@@ -262,9 +298,10 @@ def run_architect(
     )
 
     review_path = save_review(
-        root,
-        result,
-        selected_files,
+    root,
+    result,
+    selected_files,
+    iteration=iteration,
     )
 
     if update_state:

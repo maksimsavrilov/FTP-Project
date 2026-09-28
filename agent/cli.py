@@ -4,6 +4,7 @@ import argparse
 
 from .architect import run_architect
 from .config import settings
+from .workflow import run_workflow
 
 
 def main() -> None:
@@ -37,6 +38,18 @@ def main() -> None:
         help="Update STATE.md with the next step.",
     )
 
+    workflow = subparsers.add_parser(
+        "workflow",
+        help="Run Architect -> Programmer -> Tester loop.",
+    )
+
+    # workflow.add_argument(
+    #     "--max-iterations",
+    #     type=int,
+    #     default=None,
+    #     help="Override maximum Architect iterations.",
+    # )
+
     args = parser.parse_args()
 
     if (
@@ -45,14 +58,20 @@ def main() -> None:
     ):
         result = run_architect(
             settings.project_root,
+            iteration=0,
             update_state=args.update_state,
         )
 
         print()
-        print("Architecture review completed.")
         print(
-            f"Status: {result.get('status', 'unknown')}"
+            "Architecture review completed."
         )
+
+        print(
+            f"Status: "
+            f"{result.get('status', 'unknown')}"
+        )
+
         print(
             "Review: "
             "reviews/architecture/latest.json"
@@ -71,6 +90,13 @@ def main() -> None:
         if args.update_state:
             print()
             print("STATE.md updated.")
+
+        return
+
+    if args.command == "workflow":
+        run_workflow(
+            settings.project_root,
+        )
 
 
 if __name__ == "__main__":
