@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+import re
 
 from .config import settings
 from .llm import ask_llm
@@ -75,16 +76,43 @@ def read_architecture_context(
     return "\n".join(parts)
 
 
-def parse_json_response(
-    response: str,
-) -> dict:
+def parse_json_response(response: str) -> dict:
+    """Parse JSON returned by an LLM.
+
+    Accepts both raw JSON and JSON wrapped in a Markdown code fence.
+    """
+    text = response.strip()
+
+    # Raw JSON.
     try:
-        return json.loads(response)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(
-            "Architect returned invalid JSON:\n"
-            + response
-        ) from exc
+        return json.loads(text)
+    except json.JSONDecodeError:
+        result = None
+
+    # Markdown code fence: ```json ... ``` or ``` ... ```
+    match = re.search(
+        r"```(?:json)?\s*(.*?)\s*```",
+        text,
+        re.DOTALL | re.IGNORECASE,
+    )
+
+    if match:
+        try:
+            result = json.loads(match.group(1))
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(
+                "Architect returned invalid JSON\n"
+                + exc.message
+                + "\n\nResponse:\n" 
+                + response
+            ) from exc
+
+        if isinstance(result, dict):
+            return result
+
+    raise RuntimeError(
+        f"Architect returned invalid JSON:\n{response}"
+    )
 
 
 def discovery(root: Path) -> list[str]:
