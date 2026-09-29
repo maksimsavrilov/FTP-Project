@@ -320,7 +320,7 @@ After completing a task:
 
 1. Update `Completed Steps`.
 2. Remove resolved items from `Known Issues`.
-3. Update `Current Step` to the next in `Implementation plan`.
+3. Update `Current Step` to the next item in `Implementation Plan`.
 4. Update `Last verified commit`.
 5. Commit the state together with the corresponding project changes.
 
