@@ -112,8 +112,6 @@ architecture review.
 
 ### Completed Steps
 
-
-
 - Master application services for node operations, placement, and reconciliation reports implemented and verified.
 - Master API schemas and handlers for node reads, heartbeats, reconciliation-state reads and actual-state reports implemented and verified.
 - ServicePlan persistence model, repository, lifecycle application service, and API create/read boundary implemented and verified.
@@ -270,6 +268,9 @@ architecture review.
 
 ## Implementation Plan
 
+
+### Steps
+
 1. Connect the deployed Web Agent startup to Master node registration over
 REST/HTTP: submit its configured hostname, capabilities, capacity, and
 bootstrap credential; retain the returned stable node ID and node-specific
@@ -317,12 +318,11 @@ Before changing architecture:
 
 After completing a task:
 
-1. Update `Completed`.
+1. Update `Completed Steps`.
 2. Remove resolved items from `Known Issues`.
-3. Update `Current Task`.
-4. Define exactly one `Next Step`.
-5. Update `Last verified commit`.
-6. Commit the state together with the corresponding project changes.
+3. Update `Current Step` to the next in `Implementation plan`.
+4. Update `Last verified commit`.
+5. Commit the state together with the corresponding project changes.
 
 Do not use this file as a changelog.
 
@@ -339,11 +339,11 @@ without reviving disabled nodes. The deployed Web Agent entrypoint does not
 yet call registration or heartbeat; it starts with `MASTER_AGENT_TOKEN`, which
 authenticates Master-to-Agent desired-state requests and is separate from the
 Agent credential used for Agent-to-Master calls. Integrating startup is the
-current valid next step. Architectural inconsistency: the Structurizr dynamic
+current valid step. Architectural inconsistency: the Structurizr dynamic
 node-registration views describe Master bootstrapping Agents over SSH, which
 conflicts with the project REST/HTTP-only Master-Agent boundary and the
 implementation-boundaries document's REST registration contract. Do not add
-SSH to the implementation. Exact Next Step: Connect the deployed Web Agent
+SSH to the implementation. Exact Implementation Plan: Connect the deployed Web Agent
 startup to Master node registration over REST/HTTP: submit its configured
 hostname, capabilities, capacity, and bootstrap credential; retain the
 returned stable node ID and node-specific credential for authenticated

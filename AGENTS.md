@@ -10,13 +10,24 @@
 - Auth, Master, State database, Worker agents will operate as separate docker containers.
 - Worker agent container manages host services via standard CLI utilities and mounted configuration files and directories
 
-## Technology
+## Technology Stack
 - Docker/Podman
-- Python (version 3.12)
+- Python (version 3.14)
 - FastAPI
 - PostgreSQL
 - SQLAlchemy
 - pydantic
+- ZITADEL
+
+## Working Nodes Applications Stack
+- Linux OS
+- Apache web-server
+- Nginx proxy-server
+- PostgreSQL
+- MySQL/MariaDB
+- Let's Encrypt SSL certificates provider
+- Git version control
+- AWS/DO/GC remote storage services
 
 ## Development Rules
 - When modifying existing code, reuse the established local patterns and
