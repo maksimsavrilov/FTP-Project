@@ -7,7 +7,6 @@ Authoritative architectural sources:
 1. Structurizr
 2. domain-model
 3. AGENTS.md
-4. roadmap.md
 
 STATE.md describes current implementation state and current work.
 It is NOT allowed to redefine the architecture.

@@ -38,7 +38,6 @@ def read_architecture_context(
     for filename in (
         "AGENTS.md",
         "STATE.md",
-        "roadmap.md",
     ):
         path = root / filename
 

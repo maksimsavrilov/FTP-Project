@@ -20,7 +20,6 @@ Rules:
 - Do not modify unrelated files.
 - Do not modify STATE.md.
 - Do not modify AGENTS.md.
-- Do not modify roadmap.md.
 - Do not update architecture documentation unless the Architect action explicitly requires it.
 - Do not remove existing functionality unless explicitly required.
 - Follow existing project conventions.

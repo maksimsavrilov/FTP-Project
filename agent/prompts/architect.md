@@ -15,11 +15,10 @@ Use the following project artifacts:
 
 1. AGENTS.md
 2. STATE.md
-3. roadmap.md
-4. Structurizr DSL
-5. Domain model
-6. Source code
-7. Tests
+3. Structurizr DSL
+4. Domain model
+5. Source code
+6. Tests
 
 ## Responsibilities
 

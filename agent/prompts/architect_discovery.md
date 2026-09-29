@@ -9,7 +9,6 @@ Authoritative project context:
 
 - AGENTS.md
 - STATE.md
-- roadmap.md
 - structurizr/
 - domain-model/
 

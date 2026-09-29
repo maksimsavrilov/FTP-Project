@@ -13,7 +13,6 @@ from .repository import (
 PROTECTED_FILES = {
     "STATE.md",
     "AGENTS.md",
-    "roadmap.md",
 }
 
 
