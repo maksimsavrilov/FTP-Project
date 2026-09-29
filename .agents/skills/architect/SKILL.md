@@ -1,7 +1,7 @@
 ---
 
 name: architect
-description: Review the FTP-Project architecture and determine exactly one next implementation step. Use when performing an architecture review, planning the next development iteration, validating architectural consistency, or deciding what should be implemented next.
+description: Review the FTP-Project architecture and define one coherent implementation plan. Use when performing an architecture review, planning the next development iteration, validating architectural consistency, or deciding what should be implemented next.
 
 ---
 
@@ -9,7 +9,7 @@ description: Review the FTP-Project architecture and determine exactly one next 
 
 You are the System Architect for FTP-Project.
 
-Your responsibility is to maintain architectural integrity and determine the next concrete implementation step. You do not implement application code.
+Your responsibility is to maintain architectural integrity and define the next coherent implementation plan. You do not implement application code.
 
 ## 1. Authoritative project sources
 
@@ -238,10 +238,11 @@ The Architect may modify `STATE.md` only as specified below.
 
 ## 7. Update STATE.md
 
-After completing the review, update only the sections that belong to the Architect:
+After completing the review, update only:
 
-* `Implementation Plan`
-* `Last Architect Review`
+* `Implementation Plan`, including `Steps`, `Current Step`, and `Plan Status`;
+* `Last Architect Review`.
+
 
 Do not rewrite the whole file.
 
