@@ -1,7 +1,10 @@
+import os
 import unittest
+from unittest import mock
 
 from fastapi.testclient import TestClient
 
+from agents.web_agent import entrypoint
 from agents.web_agent.app import DesiredWebServiceState, WebAgentDesiredStateStore
 from ftp_project.web_agent import create_app
 
@@ -23,12 +26,18 @@ class WebAgentTests(unittest.TestCase):
             "configuration": {"web_server": "nginx", "php_version": "8.3"},
         }
 
-        first = self.client.post("/v1/services/service-1/desired-state", json=payload, headers=self.headers)
-        second = self.client.post("/v1/services/service-1/desired-state", json=payload, headers=self.headers)
+        first = self.client.post(
+            "/v1/services/service-1/desired-state", json=payload, headers=self.headers
+        )
+        second = self.client.post(
+            "/v1/services/service-1/desired-state", json=payload, headers=self.headers
+        )
 
         self.assertEqual(first.status_code, 202)
         self.assertEqual(second.status_code, 202)
-        self.assertEqual(first.json(), {"accepted": True, "service_id": "service-1", "version": 1})
+        self.assertEqual(
+            first.json(), {"accepted": True, "service_id": "service-1", "version": 1}
+        )
         self.assertEqual(second.json(), first.json())
 
     def test_rejects_missing_or_invalid_master_credentials(self):
@@ -40,10 +49,56 @@ class WebAgentTests(unittest.TestCase):
             "configuration": {},
         }
 
-        response = self.client.post("/v1/services/service-1/desired-state", json=payload)
+        response = self.client.post(
+            "/v1/services/service-1/desired-state", json=payload
+        )
 
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.json()["code"], "AUTHENTICATION_FAILED")
+
+    def test_registers_node_with_master_using_bootstrap_credentials(self):
+        previous_url = os.environ.get("MASTER_SERVICE_URL")
+        previous_credential = os.environ.get("NODE_BOOTSTRAP_CREDENTIAL")
+        try:
+            os.environ["MASTER_SERVICE_URL"] = "http://master.example.test:8000"
+            os.environ["NODE_BOOTSTRAP_CREDENTIAL"] = "bootstrap-secret"
+            with mock.patch.object(
+                entrypoint,
+                "_post_json",
+                return_value={"id": "node-123", "credential": "node-secret"},
+            ) as post_json:
+                result = entrypoint.register_node()
+
+            self.assertEqual(result, {"id": "node-123", "credential": "node-secret"})
+            self.assertEqual(
+                post_json.call_args.args[0],
+                "http://master.example.test:8000/v1/nodes/register",
+            )
+            self.assertEqual(
+                post_json.call_args.args[1]["bootstrap_credential"], "bootstrap-secret"
+            )
+            self.assertTrue(post_json.call_args.args[1]["capabilities"]["web"])
+        finally:
+            if previous_url is None:
+                os.environ.pop("MASTER_SERVICE_URL", None)
+            else:
+                os.environ["MASTER_SERVICE_URL"] = previous_url
+            if previous_credential is None:
+                os.environ.pop("NODE_BOOTSTRAP_CREDENTIAL", None)
+            else:
+                os.environ["NODE_BOOTSTRAP_CREDENTIAL"] = previous_credential
+
+    def test_entrypoint_registers_node_during_lifespan(self):
+        with (
+            mock.patch.object(
+                entrypoint,
+                "register_node",
+                return_value={"id": "node-123", "credential": "node-secret"},
+            ),
+            TestClient(entrypoint.app),
+        ):
+            self.assertEqual(entrypoint.app.state.node_id, "node-123")
+            self.assertEqual(entrypoint.app.state.node_credential, "node-secret")
 
     def test_returns_current_reconciliation_state_for_accepted_desired_version(self):
         payload = {
@@ -134,16 +189,21 @@ class WebAgentTests(unittest.TestCase):
         )
 
         self.assertEqual(result, {"accepted": True})
-        self.assertEqual(client.calls, [{
-            "service_id": "service-3",
-            "assignment_id": "assignment-2",
-            "version": 7,
-            "status": "RUNNING",
-            "configuration": {"web_server": "nginx", "php_version": "8.3"},
-            "health": {"ready": True},
-            "observed_at": "2026-01-01T00:10:00Z",
-            "request_id": None,
-        }])
+        self.assertEqual(
+            client.calls,
+            [
+                {
+                    "service_id": "service-3",
+                    "assignment_id": "assignment-2",
+                    "version": 7,
+                    "status": "RUNNING",
+                    "configuration": {"web_server": "nginx", "php_version": "8.3"},
+                    "health": {"ready": True},
+                    "observed_at": "2026-01-01T00:10:00Z",
+                    "request_id": None,
+                }
+            ],
+        )
 
 
 if __name__ == "__main__":
