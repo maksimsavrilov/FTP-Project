@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import hmac
 import os
+from collections.abc import Callable
+from contextlib import AbstractAsyncContextManager
 from typing import Any
 
 from fastapi import FastAPI, Request
@@ -147,10 +149,11 @@ def create_app(
     master_token: str | None = None,
     store: WebAgentDesiredStateStore | None = None,
     provider: WebProvider | None = None,
+    lifespan: Callable[[FastAPI], AbstractAsyncContextManager[None]] | None = None,
 ) -> FastAPI:
     """Build the authenticated Web Agent desired-state HTTP boundary."""
 
-    app = FastAPI(title="Web Agent", version="1.0.0")
+    app = FastAPI(title="Web Agent", version="1.0.0", lifespan=lifespan)
     expected_token = master_token if master_token is not None else os.environ.get("MASTER_AGENT_TOKEN", "")
     desired_states = store or WebAgentDesiredStateStore(provider=provider)
 
