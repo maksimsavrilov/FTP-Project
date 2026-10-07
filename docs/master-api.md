@@ -432,10 +432,7 @@ The registration response is the only response that contains a node
 credential. Repeated registration returns the same stable credential. A heartbeat updates only the identified node, records
 `last_heartbeat_at`, and sets status to `ONLINE`. Master derives `OFFLINE`
 when the configured heartbeat timeout is exceeded. `DISABLED` nodes reject
-heartbeat authentication and cannot become `ONLINE`. An actual-state report is accepted only for the
-current `ServiceAssignment`; an older version or older observation is ignored
-idempotently and does not overwrite newer state. The `service_id` for the
-report is supplied by the URL, not repeated in the request body.
+heartbeat authentication and cannot become `ONLINE`. An actual-state report is accepted only when the `Authorization` bearer value matches the node-specific credential for the current active `ServiceAssignment` owner; a user-session token is rejected even if the user is otherwise authorized. An older version or older observation is ignored idempotently and does not overwrite newer state. The `service_id` for the report is supplied by the URL, not repeated in the request body.
 
 `GET /v1/services/{service_id}/state` returns an object with nullable
 `desired`, `assignment`, and `actual` members. `desired` and `actual` contain

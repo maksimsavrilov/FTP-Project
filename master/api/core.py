@@ -507,8 +507,13 @@ class MasterApi:
     def report_actual_state(self, service_id: str, body: dict[str, Any], credential: str | None = None, request_id: str | None = None) -> ApiResponse:
         request_id = self._request_id(request_id)
         def operation() -> dict[str, Any]:
-            self._authorize(credential, f"service:{service_id}", "write", request_id)
             request = ActualStateRequest.from_dict(body)
+            state = self.reconciliation_service.get_state(service_id)
+            assignment = state.assignment
+            if assignment is None:
+                raise LookupError(f"ServiceAssignment for service {service_id} not found")
+            if not self.node_service.authenticate(assignment.worker_node_id, credential):
+                raise PermissionError("invalid node credential")
             result = self.reconciliation_service.report_actual_state(
                 service_id,
                 request.assignment_id,
@@ -517,6 +522,7 @@ class MasterApi:
                 request.configuration,
                 request.health,
                 request.observed_at,
+                worker_node_id=assignment.worker_node_id,
             )
             return {"accepted": result.accepted}
         return self._call(request_id, operation)

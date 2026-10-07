@@ -273,10 +273,39 @@ architecture review.
 
 ### Steps
 
+1. Correct the Structurizr node-registration dynamic views in
+   `structurizr/views/dynamic-node-registration-web.dsl` and
+   `structurizr/views/dynamic-node-registration-db.dsl`: show an already
+   deployed Agent initiating REST/HTTP registration with its bootstrap
+   credential, Master persisting the WorkerNode, and Master returning its
+   stable ID and node-specific credential. Remove the implication that Master
+   starts or remotely bootstraps an Agent.
+2. Enforce Agent ownership for actual-state writes in the Master API and
+   application boundary: authenticate the reporting node with its
+   node-specific credential, require it to own the service's current active
+   assignment, and prevent user-session credentials from writing Agent-owned
+   actual state. Remove the CLI `service state report` command and align its
+   related tests and API documentation; preserve authenticated state reads.
+3. Add an authenticated heartbeat operation to
+   `WorkerAgentMasterClient` in `src/ftp_project/worker_agent.py`, using the
+   registered node ID and credential and the existing Master HTTP transport.
+   The client must send the heartbeat payload and request ID and surface
+   Master API and transport failures.
+4. Wire the production Web Agent lifespan and reconciliation path in
+   `agents/web_agent/entrypoint.py` and `agents/web_agent/app.py` to use the
+   node-specific client created from registration: send periodic heartbeats
+   and automatically report each provider reconciliation result, including
+   status, configuration, health and observation time. Keep the
+   Master-to-Agent desired-state token separate and surface report failures.
 
 
 ### Current Step
 
+Add an authenticated heartbeat operation to
+`WorkerAgentMasterClient` in `src/ftp_project/worker_agent.py`, using the
+registered node ID and credential and the existing Master HTTP transport.
+The client must send the heartbeat payload and request ID and surface
+Master API and transport failures.
 
 
 ### Plan Status
@@ -323,23 +352,26 @@ Historical information belongs in Git history.
 
 Status: findings
 
-Review: The Master-side Worker Node lifecycle is implemented consistently
-with the domain model: registration is idempotent, issues stable node identity
-and node-specific credentials, and authenticated heartbeat controls liveness
-without reviving disabled nodes. The deployed Web Agent entrypoint does not
-yet call registration or heartbeat; it starts with `MASTER_AGENT_TOKEN`, which
-authenticates Master-to-Agent desired-state requests and is separate from the
-Agent credential used for Agent-to-Master calls. Integrating startup is the
-current valid step. Architectural inconsistency: the Structurizr dynamic
-node-registration views describe Master bootstrapping Agents over SSH, which
-conflicts with the project REST/HTTP-only Master-Agent boundary and the
-implementation-boundaries document's REST registration contract. Do not add
-SSH to the implementation. Exact Implementation Plan: Connect the deployed Web Agent
-startup to Master node registration over REST/HTTP: submit its configured
-hostname, capabilities, capacity, and bootstrap credential; retain the
-returned stable node ID and node-specific credential for authenticated
-heartbeat and actual-state reports. Keep Master-to-Agent desired-state
-authentication separate from Agent-to-Master node authentication.
+Review: The Master remains the control plane for node identity, placement,
+desired state and persisted actual state; the Web Agent applies provider
+configuration locally. Web Agent startup now registers over REST/HTTP and
+retains the returned node ID and node-specific credential, while its
+Master-to-Agent desired-state token remains separate. However, startup does
+not send heartbeats or automatically report provider reconciliation results,
+so the Agent does not complete the documented liveness and actual-state
+feedback loop. The existing Master actual-state API calls the user
+authorization service, while the Worker Agent client sends a node credential;
+the API also validates that an assignment is current without proving the
+reporting node owns it. The CLI `service state report` exposes the same
+Agent-owned state write to user sessions, contrary to the domain and
+implementation-boundary documents. The Structurizr Web and DB
+node-registration dynamic views still imply Master starts Agents via HTTP; the
+implementation and REST registration contract instead have an already
+deployed Agent initiate registration. No Agent-to-Agent communication or
+automatic failover was found. Review outcome: retain the architecture, correct
+these boundary and documentation inconsistencies in the ordered
+Implementation Plan, and do not add SSH or move provider execution into
+Master.
 
 ## Last Test Result
 

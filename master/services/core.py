@@ -1012,9 +1012,15 @@ class MasterReconciliationService:
         configuration: dict[str, Any],
         health: dict[str, Any],
         observed_at: Any,
+        worker_node_id: str | None = None,
     ) -> ActualStateReportResult:
         with self.session_factory() as session:
             with session.begin():
+                assignment = ServiceAssignmentRepository(session).get_active_for_service(service_id)
+                if assignment is None:
+                    raise LookupError(f"ServiceAssignment for service {service_id} not found")
+                if worker_node_id is not None and assignment.worker_node_id != worker_node_id:
+                    raise PermissionError("reporting node does not own the current active assignment")
                 accepted = ActualStateRepository(session).record_observation(
                     service_id,
                     assignment_id,

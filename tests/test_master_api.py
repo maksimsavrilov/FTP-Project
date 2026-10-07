@@ -696,6 +696,63 @@ class MasterApiTests(unittest.TestCase):
         with Session(self.engine) as session:
             self.assertEqual(session.get(WorkerNode, registration.body["id"]).status, "DISABLED")
 
+    def test_actual_state_report_requires_node_credential_from_current_assignment_owner(self):
+        self.api.node_service.bootstrap_credential = "bootstrap-secret"
+        self.api.node_service.node_credential_secret = "master-secret"
+        registration = self.api.register_node(
+            {
+                "hostname": "reporter-node",
+                "capabilities": {"web": True},
+                "capacity": {"cpu": 2, "memory": 2048, "disk": 20000},
+                "bootstrap_credential": "bootstrap-secret",
+            },
+            request_id="req-register-actual",
+        )
+        with Session(self.engine) as session, session.begin():
+            assignment = ServiceAssignmentRepository(session).create_or_replace(
+                "service-reporter",
+                registration.body["id"],
+                "ASSIGNED",
+            )
+            DesiredStateRepository(session).put_next(
+                "service-reporter",
+                "RUNNING",
+                {"web_server": "nginx"},
+            )
+            assignment_id = assignment.id
+
+        success = self.api.report_actual_state(
+            "service-reporter",
+            {
+                "assignment_id": assignment_id,
+                "version": 1,
+                "status": "RUNNING",
+                "configuration": {"web_server": "nginx"},
+                "health": {"ready": True},
+                "observed_at": "2026-01-01T00:10:00Z",
+            },
+            credential=registration.body["credential"],
+            request_id="req-actual-success",
+        )
+        blocked = self.api.report_actual_state(
+            "service-reporter",
+            {
+                "assignment_id": assignment_id,
+                "version": 1,
+                "status": "RUNNING",
+                "configuration": {"web_server": "nginx"},
+                "health": {"ready": True},
+                "observed_at": "2026-01-01T00:11:00Z",
+            },
+            credential="user-session-token",
+            request_id="req-actual-blocked",
+        )
+
+        self.assertEqual(success.status_code, 200)
+        self.assertTrue(success.body["accepted"])
+        self.assertEqual(blocked.status_code, 401)
+        self.assertEqual(blocked.body["code"], "AUTHENTICATION_FAILED")
+
     def test_invalid_actual_state_request_is_rejected_before_service_call(self):
         response = self.api.report_actual_state("service-123", {"version": "1"}, request_id="req-2")
 
