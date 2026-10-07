@@ -48,7 +48,9 @@ class WebAgentDesiredStateStore:
     def get(self, service_id: str) -> DesiredWebServiceState | None:
         return self._states.get(service_id)
 
-    def accept(self, service_id: str, state: DesiredWebServiceState) -> tuple[bool, str | None]:
+    def accept(
+        self, service_id: str, state: DesiredWebServiceState
+    ) -> tuple[bool, str | None]:
         current = self._states.get(service_id)
         if current is not None and state.version < current.version:
             return False, "stale desired-state version"
@@ -147,17 +149,27 @@ def create_app(
     master_token: str | None = None,
     store: WebAgentDesiredStateStore | None = None,
     provider: WebProvider | None = None,
+    node_id: str | None = None,
+    node_credential: str | None = None,
 ) -> FastAPI:
     """Build the authenticated Web Agent desired-state HTTP boundary."""
 
     app = FastAPI(title="Web Agent", version="1.0.0")
-    expected_token = master_token if master_token is not None else os.environ.get("MASTER_AGENT_TOKEN", "")
+    app.state.node_id = node_id
+    app.state.node_credential = node_credential
+    expected_token = (
+        master_token
+        if master_token is not None
+        else os.environ.get("MASTER_AGENT_TOKEN", "")
+    )
     desired_states = store or WebAgentDesiredStateStore(provider=provider)
 
     def request_id(request: Request) -> str:
         return request.headers.get("X-Request-ID", "")
 
-    def error(request: Request, status_code: int, code: str, message: str) -> JSONResponse:
+    def error(
+        request: Request, status_code: int, code: str, message: str
+    ) -> JSONResponse:
         request_id_value = request_id(request)
         return JSONResponse(
             status_code=status_code,
@@ -177,22 +189,34 @@ def create_app(
     @app.post("/v1/services/{service_id}/desired-state")
     async def receive_desired_state(service_id: str, request: Request) -> JSONResponse:
         if not authenticated(request):
-            return error(request, 401, "AUTHENTICATION_FAILED", "authentication required")
+            return error(
+                request, 401, "AUTHENTICATION_FAILED", "authentication required"
+            )
         try:
             payload = await request.json()
             state = DesiredWebServiceState.model_validate(payload)
-        except (ValueError, ValidationError):
+        except ValueError, ValidationError:
             return error(request, 400, "INVALID_REQUEST", "desired state is invalid")
         if not service_id:
             return error(request, 400, "INVALID_REQUEST", "service_id is required")
         if state.service_type != "WEB":
-            return error(request, 400, "UNSUPPORTED_SERVICE_TYPE", "Web Agent accepts WEB services only")
+            return error(
+                request,
+                400,
+                "UNSUPPORTED_SERVICE_TYPE",
+                "Web Agent accepts WEB services only",
+            )
         if state.version < 1:
             return error(request, 400, "INVALID_REQUEST", "version must be positive")
 
         accepted, rejection = desired_states.accept(service_id, state)
         if not accepted:
-            return error(request, 409, "STALE_DESIRED_STATE", rejection or "desired state was rejected")
+            return error(
+                request,
+                409,
+                "STALE_DESIRED_STATE",
+                rejection or "desired state was rejected",
+            )
         result = desired_states.reconcile(service_id)
         return JSONResponse(
             status_code=202,
@@ -200,7 +224,11 @@ def create_app(
                 "accepted": True,
                 "service_id": service_id,
                 "version": state.version,
-                **({"status": result.status, "error_code": result.error_code} if provider else {}),
+                **(
+                    {"status": result.status, "error_code": result.error_code}
+                    if provider
+                    else {}
+                ),
             },
             headers={"X-Request-ID": request_id(request)},
         )
@@ -208,7 +236,9 @@ def create_app(
     @app.get("/v1/services/{service_id}/reconciliation")
     async def get_reconciliation(service_id: str, request: Request) -> JSONResponse:
         if not authenticated(request):
-            return error(request, 401, "AUTHENTICATION_FAILED", "authentication required")
+            return error(
+                request, 401, "AUTHENTICATION_FAILED", "authentication required"
+            )
         if not service_id:
             return error(request, 400, "INVALID_REQUEST", "service_id is required")
 
@@ -225,12 +255,15 @@ def create_app(
                 "version": state.version,
                 "lifecycle_state": state.lifecycle_state,
                 "configuration": state.configuration,
-                "status": (desired_states.actual(service_id) or WebReconciliationResult(
-                    version=state.version,
-                    status="ACCEPTED",
-                    configuration=state.configuration,
-                    health={},
-                )).status,
+                "status": (
+                    desired_states.actual(service_id)
+                    or WebReconciliationResult(
+                        version=state.version,
+                        status="ACCEPTED",
+                        configuration=state.configuration,
+                        health={},
+                    )
+                ).status,
             },
             headers={"X-Request-ID": request_id(request)},
         )
