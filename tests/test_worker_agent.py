@@ -23,6 +23,38 @@ class Response:
 
 
 class WorkerAgentMasterClientTests(unittest.TestCase):
+    def test_heartbeats_node_with_agent_credentials(self):
+        captured = {}
+
+        def opener(request, timeout):
+            captured["url"] = request.full_url
+            captured["method"] = request.method
+            captured["headers"] = dict(request.header_items())
+            captured["body"] = json.loads(request.data.decode("utf-8"))
+            captured["timeout"] = timeout
+            return Response(body=b'{"id": "node-1", "status": "ONLINE"}')
+
+        client = WorkerAgentMasterClient(
+            "agent-token", base_url="http://master", opener=opener
+        )
+
+        result = client.heartbeat(
+            "node-1",
+            "DEGRADED",
+            {"cpu": 2, "memory": 3500, "disk": 5000},
+            "2026-01-01T00:10:00Z",
+            request_id="req-heartbeat",
+        )
+
+        self.assertEqual(result, {"id": "node-1", "status": "ONLINE"})
+        self.assertEqual(captured["url"], "http://master/v1/nodes/node-1/heartbeat")
+        self.assertEqual(captured["method"], "POST")
+        self.assertEqual(captured["headers"]["Authorization"], "Bearer agent-token")
+        self.assertEqual(captured["headers"]["X-request-id"], "req-heartbeat")
+        self.assertEqual(captured["body"]["status"], "DEGRADED")
+        self.assertEqual(captured["body"]["usage"]["memory"], 3500)
+        self.assertEqual(captured["timeout"], 5)
+
     def test_reports_web_service_actual_state_with_agent_credentials(self):
         captured = {}
 

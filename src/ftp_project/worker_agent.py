@@ -18,6 +18,24 @@ class WorkerAgentMasterClient(MasterClient):
     ):
         super().__init__(UserSession(access_token, token_type), base_url, opener)
 
+    def heartbeat(
+        self,
+        node_id: str,
+        status: str,
+        usage: dict[str, Any],
+        last_heartbeat_at: str,
+        request_id: str | None = None,
+    ) -> dict[str, Any]:
+        return self.create(
+            f"/v1/nodes/{node_id}/heartbeat",
+            {
+                "status": status,
+                "usage": usage,
+                "last_heartbeat_at": last_heartbeat_at,
+            },
+            request_id=request_id,
+        )
+
     def report_web_service_actual_state(
         self,
         service_id: str,
