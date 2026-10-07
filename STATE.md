@@ -263,30 +263,30 @@ architecture review.
 - Authenticated Web Agent desired-state HTTP endpoint implemented for `WEB`
   services, including assignment/version/configuration validation and
   idempotent process-local acceptance of repeated versions.
+- Web node registration is implemented in web_agent with configured hostname,
+  capabilities, capacity, and bootstrap credential.
 
 ---
 
 ## Implementation Plan
 
-
 ### Steps
 
-1. Connect the deployed Web Agent startup to Master node registration over
-REST/HTTP: submit its configured hostname, capabilities, capacity, and
-bootstrap credential; retain the returned stable node ID and node-specific
-credential for authenticated heartbeat and actual-state reports. Keep
-Master-to-Agent desired-state authentication separate from Agent-to-Master
-node authentication.
+1. Implement Web Agent startup registration with the Master REST/HTTP node-registration contract: the process must submit hostname, capabilities, capacity, and bootstrap credential at startup, persist the stable node ID and node-specific credential, and keep the Master-to-Agent desired-state token separate from the Agent-to-Master node credential.
+   - Location: `agents/web_agent/entrypoint.py`, `agents/web_agent/app.py`, `docs/implementation-boundaries.md` and the Master node-registration API/service boundary.
+   - Completion: the Web Agent can boot, authenticate to Master using bootstrap credentials, receive a stable node identity, and store the node credential locally for subsequent heartbeat and actual-state calls.
 
+2. Add the authenticated Web Agent heartbeat loop and liveness lifecycle: startup must begin a periodic heartbeat to `/v1/nodes/{node_id}/heartbeat` using the node-specific credential, include health and usage data, and keep the node `ONLINE` while the process is alive.
+   - Location: `agents/web_agent/entrypoint.py`, `agents/web_agent/app.py`, `master/api/core.py`, and the Worker Node application/service layer.
+   - Completion: the Web Agent emits valid heartbeats and preserves the architecture where Master owns node liveness and Agent-to-Master communication remains separate from desired-state delivery.
+
+3. Complete Agent actual-state reporting and reconciliation verification: when desired state is accepted and reconciled, the Web Agent must report the observed service state and health back to Master with the node credential, while preserving version-idempotent reconciliation semantics and rejecting stale or unauthorized requests.
+   - Location: `agents/web_agent/app.py`, `agents/web_agent/providers.py`, `master/api/core.py`, and the relevant tests under `tests/`.
+   - Completion: actual-state reporting follows the established Master contract and can be validated with the existing Web Agent/unit test path without introducing direct Agent-to-Agent communication.
 
 ### Current Step
 
-1. Connect the deployed Web Agent startup to Master node registration over
-REST/HTTP: submit its configured hostname, capabilities, capacity, and
-bootstrap credential; retain the returned stable node ID and node-specific
-credential for authenticated heartbeat and actual-state reports. Keep
-Master-to-Agent desired-state authentication separate from Agent-to-Master
-node authentication.
+1. Implement Web Agent startup registration with the Master REST/HTTP node-registration contract: the process must submit hostname, capabilities, capacity, and bootstrap credential at startup, persist the stable node ID and node-specific credential, and keep the Master-to-Agent desired-state token separate from the Agent-to-Master node credential.
 
 ### Plan Status
 
@@ -332,23 +332,14 @@ Historical information belongs in Git history.
 
 Status: findings
 
-Review: The Master-side Worker Node lifecycle is implemented consistently
-with the domain model: registration is idempotent, issues stable node identity
-and node-specific credentials, and authenticated heartbeat controls liveness
-without reviving disabled nodes. The deployed Web Agent entrypoint does not
-yet call registration or heartbeat; it starts with `MASTER_AGENT_TOKEN`, which
-authenticates Master-to-Agent desired-state requests and is separate from the
-Agent credential used for Agent-to-Master calls. Integrating startup is the
-current valid step. Architectural inconsistency: the Structurizr dynamic
-node-registration views describe Master bootstrapping Agents over SSH, which
-conflicts with the project REST/HTTP-only Master-Agent boundary and the
-implementation-boundaries document's REST registration contract. Do not add
-SSH to the implementation. Exact Implementation Plan: Connect the deployed Web Agent
-startup to Master node registration over REST/HTTP: submit its configured
-hostname, capabilities, capacity, and bootstrap credential; retain the
-returned stable node ID and node-specific credential for authenticated
-heartbeat and actual-state reports. Keep Master-to-Agent desired-state
-authentication separate from Agent-to-Master node authentication.
+Review: The Master-side Worker Node lifecycle is implemented consistently with the domain model and the documented HTTP-only Master/Agent contract: registration is idempotent, Master issues a stable node identity plus node-specific credential, heartbeat updates liveness, and disabled nodes remain blocked. The current inconsistency is in the deployed Web Agent startup path: `agents/web_agent/entrypoint.py` authenticates only the Master-to-Agent desired-state token (`MASTER_AGENT_TOKEN`) and never performs the required Agent-to-Master node registration or heartbeat sequence. That means the runtime pathway is partially implemented but not yet aligned with the architecture or the Master API contract.
+
+Important findings:
+- The Web Agent desired-state API in `agents/web_agent/app.py` is valid and matches the Master-to-Agent boundary.
+- The missing startup behavior is outside `app.py`; it belongs in the process bootstrap and runtime lifecycle.
+- The project must retain two separate credentials: one for Master→Agent desired-state calls and one for Agent→Master registration/heartbeat/reporting.
+
+Architectural inconsistency: Structurizr dynamic node-registration views still describe bootstrapping over SSH, which conflicts with the canonical REST/HTTP-only architecture and the documentation in `docs/implementation-boundaries.md` and `docs/master-api.md`. Do not add SSH or any direct Agent-to-Agent calls. The current valid implementation step is to connect the Web Agent startup to the Master node-registration REST endpoint and then begin the heartbeat loop with the returned node credential.
 
 ## Last Test Result
 

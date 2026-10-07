@@ -4,7 +4,7 @@ dynamic hosting "NodeRegistration-Db" {
 
     hosting.cli -> hosting.master "Requests node registration"
 
-    hosting.master -> hosting.dbAgent "Bootstraps via SSH and starts Db Agent"
+    hosting.master -> hosting.dbAgent "Bootstraps via HTTP/REST and starts Db Agent"
 
     hosting.dbAgent -> hosting.master "Registers via REST"
 

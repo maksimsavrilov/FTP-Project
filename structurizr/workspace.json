@@ -5,7 +5,7 @@
   "description" : "Distributed hosting management system",
   "documentation" : { },
   "id" : 1,
-  "lastModifiedDate" : "2026-09-22T15:42:29Z",
+  "lastModifiedDate" : "2026-10-07T07:24:07Z",
   "model" : {
     "deploymentNodes" : [ {
       "containerInstances" : [ {
@@ -14,7 +14,7 @@
         "id" : "137",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "9c5101eb-ebc7-4eef-89b1-0dfb607bcd42.c950d841-5a3c-47aa-97c3-058bfacbaab0.masterInstance"
+          "structurizr.dsl.identifier" : "7c461235-2907-4bf4-aa20-3382285b23cb.ee7a6230-3429-43b8-b75b-b3f4a3463dc2.masterInstance"
         },
         "relationships" : [ {
           "description" : "Reads and writes state",
@@ -66,7 +66,7 @@
         "id" : "138",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "9c5101eb-ebc7-4eef-89b1-0dfb607bcd42.c950d841-5a3c-47aa-97c3-058bfacbaab0.databaseInstance"
+          "structurizr.dsl.identifier" : "7c461235-2907-4bf4-aa20-3382285b23cb.ee7a6230-3429-43b8-b75b-b3f4a3463dc2.databaseInstance"
         },
         "tags" : "Container Instance"
       } ],
@@ -75,7 +75,7 @@
       "instances" : "1",
       "name" : "Master Node",
       "properties" : {
-        "structurizr.dsl.identifier" : "9c5101eb-ebc7-4eef-89b1-0dfb607bcd42.c950d841-5a3c-47aa-97c3-058bfacbaab0"
+        "structurizr.dsl.identifier" : "7c461235-2907-4bf4-aa20-3382285b23cb.ee7a6230-3429-43b8-b75b-b3f4a3463dc2"
       },
       "tags" : "Element,Deployment Node"
     }, {
@@ -84,14 +84,14 @@
       "instances" : "1",
       "name" : "Authentication Node",
       "properties" : {
-        "structurizr.dsl.identifier" : "9c5101eb-ebc7-4eef-89b1-0dfb607bcd42.6e9696ce-a8bc-42d1-811c-52ef79a429b0"
+        "structurizr.dsl.identifier" : "7c461235-2907-4bf4-aa20-3382285b23cb.4d6100b9-a705-4073-89dd-fbce3cd7e9d0"
       },
       "softwareSystemInstances" : [ {
         "environment" : "Production",
         "id" : "141",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "9c5101eb-ebc7-4eef-89b1-0dfb607bcd42.6e9696ce-a8bc-42d1-811c-52ef79a429b0.authServiceInstance"
+          "structurizr.dsl.identifier" : "7c461235-2907-4bf4-aa20-3382285b23cb.4d6100b9-a705-4073-89dd-fbce3cd7e9d0.authServiceInstance"
         },
         "softwareSystemId" : "4",
         "tags" : "Software System Instance"
@@ -104,7 +104,7 @@
         "id" : "144",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "9c5101eb-ebc7-4eef-89b1-0dfb607bcd42.e82ff3ec-26c8-4391-a7f9-582fc9260563.webAgentInstance"
+          "structurizr.dsl.identifier" : "7c461235-2907-4bf4-aa20-3382285b23cb.23e588c1-bba6-4fd2-813f-fb4ff5821d91.webAgentInstance"
         },
         "relationships" : [ {
           "description" : "Reports state and heartbeat via REST/HTTP",
@@ -121,7 +121,7 @@
         "id" : "147",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "9c5101eb-ebc7-4eef-89b1-0dfb607bcd42.e82ff3ec-26c8-4391-a7f9-582fc9260563.dnsAgentInstance"
+          "structurizr.dsl.identifier" : "7c461235-2907-4bf4-aa20-3382285b23cb.23e588c1-bba6-4fd2-813f-fb4ff5821d91.dnsAgentInstance"
         },
         "relationships" : [ {
           "description" : "Reports state and heartbeat via REST/HTTP",
@@ -138,7 +138,7 @@
         "id" : "150",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "9c5101eb-ebc7-4eef-89b1-0dfb607bcd42.e82ff3ec-26c8-4391-a7f9-582fc9260563.mailAgentInstance"
+          "structurizr.dsl.identifier" : "7c461235-2907-4bf4-aa20-3382285b23cb.23e588c1-bba6-4fd2-813f-fb4ff5821d91.mailAgentInstance"
         },
         "relationships" : [ {
           "description" : "Reports state and heartbeat via REST/HTTP",
@@ -158,7 +158,7 @@
         "id" : "153",
         "name" : "nginxRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "9c5101eb-ebc7-4eef-89b1-0dfb607bcd42.e82ff3ec-26c8-4391-a7f9-582fc9260563.38782cb7-fd00-401f-b693-e137b27e122c"
+          "structurizr.dsl.identifier" : "7c461235-2907-4bf4-aa20-3382285b23cb.23e588c1-bba6-4fd2-813f-fb4ff5821d91.b73a118b-ae4e-4cda-b5fc-3b542fda503f"
         },
         "relationships" : [ {
           "description" : "Managed by",
@@ -175,7 +175,7 @@
         "id" : "155",
         "name" : "apacheRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "9c5101eb-ebc7-4eef-89b1-0dfb607bcd42.e82ff3ec-26c8-4391-a7f9-582fc9260563.84390d3e-0d1b-4b9e-8de2-26fd08f6245d"
+          "structurizr.dsl.identifier" : "7c461235-2907-4bf4-aa20-3382285b23cb.23e588c1-bba6-4fd2-813f-fb4ff5821d91.8b121242-d29e-4df5-943b-2740146636fb"
         },
         "relationships" : [ {
           "description" : "Managed by",
@@ -192,7 +192,7 @@
         "id" : "157",
         "name" : "bindRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "9c5101eb-ebc7-4eef-89b1-0dfb607bcd42.e82ff3ec-26c8-4391-a7f9-582fc9260563.43676e4b-fa61-4a69-8ccd-3ffb69dedf1d"
+          "structurizr.dsl.identifier" : "7c461235-2907-4bf4-aa20-3382285b23cb.23e588c1-bba6-4fd2-813f-fb4ff5821d91.5c43b59e-0f80-4f65-85f7-165501c2c9e3"
         },
         "relationships" : [ {
           "description" : "Managed by",
@@ -209,7 +209,7 @@
         "id" : "159",
         "name" : "postfixRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "9c5101eb-ebc7-4eef-89b1-0dfb607bcd42.e82ff3ec-26c8-4391-a7f9-582fc9260563.2c48e8f9-6acb-4bc7-9ae7-06d980f15a75"
+          "structurizr.dsl.identifier" : "7c461235-2907-4bf4-aa20-3382285b23cb.23e588c1-bba6-4fd2-813f-fb4ff5821d91.ff44053f-d9fe-4ad3-9769-e710948d76cc"
         },
         "relationships" : [ {
           "description" : "Managed by",
@@ -226,7 +226,7 @@
         "id" : "161",
         "name" : "qmailRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "9c5101eb-ebc7-4eef-89b1-0dfb607bcd42.e82ff3ec-26c8-4391-a7f9-582fc9260563.347b2d84-2723-4380-926c-fa3a3d57e859"
+          "structurizr.dsl.identifier" : "7c461235-2907-4bf4-aa20-3382285b23cb.23e588c1-bba6-4fd2-813f-fb4ff5821d91.45068ea3-3d94-453a-ba4a-e094ec6e2d62"
         },
         "relationships" : [ {
           "description" : "Managed by",
@@ -243,7 +243,7 @@
         "id" : "163",
         "name" : "CourierRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "9c5101eb-ebc7-4eef-89b1-0dfb607bcd42.e82ff3ec-26c8-4391-a7f9-582fc9260563.306eea15-ddd9-425b-a517-d43740ffa1e7"
+          "structurizr.dsl.identifier" : "7c461235-2907-4bf4-aa20-3382285b23cb.23e588c1-bba6-4fd2-813f-fb4ff5821d91.91e60980-6193-4c3e-bbb4-cbf695d3aa8c"
         },
         "relationships" : [ {
           "description" : "Managed by",
@@ -258,7 +258,7 @@
       "instances" : "1",
       "name" : "Worker Node",
       "properties" : {
-        "structurizr.dsl.identifier" : "9c5101eb-ebc7-4eef-89b1-0dfb607bcd42.e82ff3ec-26c8-4391-a7f9-582fc9260563"
+        "structurizr.dsl.identifier" : "7c461235-2907-4bf4-aa20-3382285b23cb.23e588c1-bba6-4fd2-813f-fb4ff5821d91"
       },
       "tags" : "Element,Deployment Node"
     }, {
@@ -268,7 +268,7 @@
         "id" : "166",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "9c5101eb-ebc7-4eef-89b1-0dfb607bcd42.4878b411-0d18-4254-b300-52fc081a0982.dbAgentInstance"
+          "structurizr.dsl.identifier" : "7c461235-2907-4bf4-aa20-3382285b23cb.42434a90-d46d-4d57-b481-fe4e67addcd1.dbAgentInstance"
         },
         "relationships" : [ {
           "description" : "Reports state and heartbeat via REST/HTTP",
@@ -288,7 +288,7 @@
         "id" : "169",
         "name" : "mysqlRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "9c5101eb-ebc7-4eef-89b1-0dfb607bcd42.4878b411-0d18-4254-b300-52fc081a0982.b54b548f-5ad1-47e0-8a40-f146eec676cc"
+          "structurizr.dsl.identifier" : "7c461235-2907-4bf4-aa20-3382285b23cb.42434a90-d46d-4d57-b481-fe4e67addcd1.93cca55b-29a4-465b-821a-376efdfc1364"
         },
         "relationships" : [ {
           "description" : "Managed by",
@@ -305,7 +305,7 @@
         "id" : "171",
         "name" : "postgresqlRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "9c5101eb-ebc7-4eef-89b1-0dfb607bcd42.4878b411-0d18-4254-b300-52fc081a0982.cc0bc0c9-0090-4f94-a2c9-5071c4fd4389"
+          "structurizr.dsl.identifier" : "7c461235-2907-4bf4-aa20-3382285b23cb.42434a90-d46d-4d57-b481-fe4e67addcd1.d095773c-a046-4518-b369-57a4c05e92d7"
         },
         "relationships" : [ {
           "description" : "Managed by",
@@ -320,7 +320,7 @@
       "instances" : "1",
       "name" : "Database Worker Node",
       "properties" : {
-        "structurizr.dsl.identifier" : "9c5101eb-ebc7-4eef-89b1-0dfb607bcd42.4878b411-0d18-4254-b300-52fc081a0982"
+        "structurizr.dsl.identifier" : "7c461235-2907-4bf4-aa20-3382285b23cb.42434a90-d46d-4d57-b481-fe4e67addcd1"
       },
       "tags" : "Element,Deployment Node"
     } ],
@@ -2153,7 +2153,7 @@
         "order" : "2",
         "response" : false
       }, {
-        "description" : "Bootstraps via SSH and starts Web Agent",
+        "description" : "Bootstraps via HTTP/REST and starts Web Agent",
         "id" : "121",
         "order" : "3",
         "response" : false
@@ -2223,7 +2223,7 @@
         "order" : "2",
         "response" : false
       }, {
-        "description" : "Bootstraps via SSH and starts Db Agent",
+        "description" : "Bootstraps via HTTP/REST and starts Db Agent",
         "id" : "127",
         "order" : "3",
         "response" : false
