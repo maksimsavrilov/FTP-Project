@@ -263,6 +263,8 @@ architecture review.
 - Authenticated Web Agent desired-state HTTP endpoint implemented for `WEB`
   services, including assignment/version/configuration validation and
   idempotent process-local acceptance of repeated versions.
+- Web Agent registration over REST/HTTP: submit its configured hostname,
+  capabilities, capacity, and bootstrap credential.
 
 ---
 
@@ -271,22 +273,11 @@ architecture review.
 
 ### Steps
 
-1. Connect the deployed Web Agent startup to Master node registration over
-REST/HTTP: submit its configured hostname, capabilities, capacity, and
-bootstrap credential; retain the returned stable node ID and node-specific
-credential for authenticated heartbeat and actual-state reports. Keep
-Master-to-Agent desired-state authentication separate from Agent-to-Master
-node authentication.
 
 
 ### Current Step
 
-1. Connect the deployed Web Agent startup to Master node registration over
-REST/HTTP: submit its configured hostname, capabilities, capacity, and
-bootstrap credential; retain the returned stable node ID and node-specific
-credential for authenticated heartbeat and actual-state reports. Keep
-Master-to-Agent desired-state authentication separate from Agent-to-Master
-node authentication.
+
 
 ### Plan Status
 
