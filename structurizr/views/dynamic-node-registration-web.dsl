@@ -1,18 +1,12 @@
 dynamic hosting "NodeRegistration-Web" {
 
-    admin -> hosting.cli "Starts node registration command with parameter --role=web"
+    hosting.webAgent -> hosting.master "Registers via REST/HTTP using its bootstrap credential"
 
-    hosting.cli -> hosting.master "Requests node registration"
+    hosting.master -> hosting.database "Persists the WorkerNode record"
 
-    hosting.master -> hosting.webAgent "Bootstraps via HTTP/REST and starts Web Agent"
+    hosting.master -> hosting.webAgent "Returns the stable Node ID and node-specific credential"
 
-    hosting.webAgent -> hosting.master "Registers via REST"
-
-    hosting.master -> hosting.webAgent "Returns Node ID and permanent credentials"
-
-    hosting.webAgent -> hosting.master "Reports node information, capabilities and resources"
-
-    hosting.master -> hosting.database "Creates Worker Node record"
+    hosting.webAgent -> hosting.master "Uses the returned credential for heartbeats and status reporting"
 
     autoLayout lr
 }
