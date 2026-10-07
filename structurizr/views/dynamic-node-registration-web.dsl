@@ -4,7 +4,7 @@ dynamic hosting "NodeRegistration-Web" {
 
     hosting.cli -> hosting.master "Requests node registration"
 
-    hosting.master -> hosting.webAgent "Bootstraps via SSH and starts Web Agent"
+    hosting.master -> hosting.webAgent "Bootstraps via HTTP/REST and starts Web Agent"
 
     hosting.webAgent -> hosting.master "Registers via REST"
 
