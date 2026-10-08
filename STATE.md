@@ -275,10 +275,35 @@ architecture review.
 
 ### Steps
 
+1. Make Web Agent reconciliation service-scoped in `agents/web_agent/app.py`
+   and `agents/web_agent/providers.py`: give each service its own managed
+   Nginx configuration and make STOPPED/DELETED desired lifecycle states
+   remove only that service's configuration. Verify two services can
+   reconcile independently and removal is idempotent.
+2. Correct Nginx validation and application in `agents/web_agent/providers.py`:
+   validate the managed server block through the effective top-level Nginx
+   configuration, reload only after successful validation, and report
+   provider readiness from an actual inspection rather than a constant.
+   Verify command ordering and failures with the existing provider test seams.
+3. Make the production Web Agent deployment in
+   `agents/web_agent/Dockerfile` and `docker-compose.prod.yml` provide the
+   Linux Worker Node's managed Nginx configuration mount and required standard
+   provider-control utilities/access. Document required host paths and verify
+   the rendered Compose configuration matches the provider's paths.
+4. Replace the zero-valued heartbeat usage in
+   `agents/web_agent/entrypoint.py` with measured Worker Node CPU, memory and
+   disk usage, preserving authenticated REST/HTTP reporting and surfacing
+   measurement failures. Verify the heartbeat reports measurements rather
+   than fabricated zero values.
 
 
 ### Current Step
 
+Make Web Agent reconciliation service-scoped in `agents/web_agent/app.py` and
+`agents/web_agent/providers.py`: give each service its own managed Nginx
+configuration and make STOPPED/DELETED desired lifecycle states remove only
+that service's configuration. Verify two services can reconcile independently
+and removal is idempotent.
 
 
 ### Plan Status
@@ -325,26 +350,26 @@ Historical information belongs in Git history.
 
 Status: findings
 
-Review: The Master remains the control plane for node identity, placement,
-desired state and persisted actual state; the Web Agent applies provider
-configuration locally. Web Agent startup now registers over REST/HTTP and
-retains the returned node ID and node-specific credential, while its
-Master-to-Agent desired-state token remains separate. However, startup does
-not send heartbeats or automatically report provider reconciliation results,
-so the Agent does not complete the documented liveness and actual-state
-feedback loop. The existing Master actual-state API calls the user
-authorization service, while the Worker Agent client sends a node credential;
-the API also validates that an assignment is current without proving the
-reporting node owns it. The CLI `service state report` exposes the same
-Agent-owned state write to user sessions, contrary to the domain and
-implementation-boundary documents. The Structurizr Web and DB
-node-registration dynamic views still imply Master starts Agents via HTTP; the
-implementation and REST registration contract instead have an already
-deployed Agent initiate registration. No Agent-to-Agent communication or
-automatic failover was found. Review outcome: retain the architecture, correct
-these boundary and documentation inconsistencies in the ordered
-Implementation Plan, and do not add SSH or move provider execution into
-Master.
+Review: The core boundaries remain aligned: Master owns node identity,
+placement, desired state and persisted actual state; the Web Agent registers
+and reports over REST/HTTP with its node credential and applies provider
+changes locally. The Web and DB registration views now show Agent-initiated
+registration, and the Master actual-state API authenticates the current
+assignment's Worker Node rather than a user session. No Agent-to-Agent
+communication or automatic failover was found. The remaining execution path
+does not yet satisfy the deployment/domain contract: `NginxProvider` writes
+all services to one shared configuration file, ignores STOPPED/DELETED
+lifecycle intent, tests a server-block snippet as though it were the complete
+Nginx config, and returns hard-coded readiness. The production Web Agent
+image/Compose service has no host Nginx config mount or provider-control
+utility/access, so it cannot operate the Worker Node's Nginx runtime as
+specified. Web Agent heartbeats also report fixed zero CPU, memory and disk
+usage, which is not a valid Worker Node health/capacity observation. Review
+result: preserve the architecture and implement the ordered, bounded Web
+Agent execution/reliability slice; do not move provider control into Master
+or introduce Agent-to-Agent coordination. The recorded Last Test Result is
+the earlier 100-test run and does not establish verification of the more
+recent Worker Agent changes; retain it as historical test state.
 
 ## Last Test Result
 
