@@ -61,6 +61,8 @@ Review the current implementation against:
 * tests;
 * the stated roadmap.
 
+When designing or reviewing implementation, enforce the boundaries defined in `docs/implementation-boundaries.md`. Managed system services must remain outside agent containers unless an explicit architectural decision states otherwise.
+
 Pay particular attention to:
 
 ### Distributed architecture
