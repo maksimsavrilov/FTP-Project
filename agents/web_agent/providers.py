@@ -46,10 +46,14 @@ class NginxProvider:
     def __init__(
         self,
         config_path: str | Path = "/etc/nginx/conf.d/ftp-project.conf",
+        nginx_config_path: str | Path | None = None,
         write_configuration: Callable[[Path, str], None] | None = None,
         run_command: Callable[[Sequence[str]], None] | None = None,
     ) -> None:
         self.config_path = Path(config_path)
+        self.nginx_config_path = (
+            Path(nginx_config_path) if nginx_config_path is not None else Path("/etc/nginx/nginx.conf")
+        )
         self._write_configuration = write_configuration or self._write
         self._run_command = run_command or self._run
 
@@ -93,7 +97,7 @@ class NginxProvider:
         target = self.service_config_path(service_id) if service_id else self.config_path
         try:
             self._write_configuration(target, configuration)
-            self._run_command(("nginx", "-t", "-c", str(target)))
+            self._run_command(("nginx", "-t", "-c", str(self.nginx_config_path)))
             self._run_command(("systemctl", "reload", "nginx"))
         except ProviderError:
             raise
@@ -110,6 +114,13 @@ class NginxProvider:
         if target.exists():
             target.unlink()
             removed = True
+        try:
+            self._run_command(("nginx", "-t", "-c", str(self.nginx_config_path)))
+            self._run_command(("systemctl", "reload", "nginx"))
+        except ProviderError:
+            raise
+        except Exception as exc:
+            raise ProviderExecutionError(str(exc)) from exc
         return ProviderApplyResult(
             status="REMOVED",
             health={"provider": self.name, "ready": True, "service_id": service_id, "removed": removed},
@@ -117,9 +128,14 @@ class NginxProvider:
 
     def inspect(self, service_id: str | None = None) -> dict[str, Any]:
         target = self.service_config_path(service_id) if service_id else self.config_path
+        try:
+            self._run_command(("nginx", "-t", "-c", str(self.nginx_config_path)))
+            ready = True
+        except ProviderError:
+            ready = False
         return {
             "provider": self.name,
-            "ready": target.exists(),
+            "ready": ready,
             "service_id": service_id,
             "config_path": str(target),
         }

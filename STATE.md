@@ -302,12 +302,11 @@ architecture review.
 
 ### Current Step
 
-Make Web Agent reconciliation service-scoped in `agents/web_agent/app.py` and
-`agents/web_agent/providers.py`: give each service its own managed Nginx
-configuration and make STOPPED/DELETED desired lifecycle states remove only
-that service's configuration. Verify two services can reconcile independently
-and removal is idempotent.
-
+Correct Nginx validation and application in `agents/web_agent/providers.py`:
+validate the managed server block through the effective top-level Nginx
+configuration, reload only after successful validation, and report
+provider readiness from an actual inspection rather than a constant.
+Verify command ordering and failures with the existing provider test seams.
 
 ### Plan Status
 

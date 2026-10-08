@@ -72,6 +72,7 @@ class WebProviderTests(unittest.TestCase):
         commands: list[tuple[str, ...]] = []
         provider = NginxProvider(
             config_path="/tmp/web.conf",
+            nginx_config_path="/etc/nginx/nginx.conf",
             write_configuration=lambda path, content: written.append((path, content)),
             run_command=lambda command: commands.append(tuple(command)),
         )
@@ -81,9 +82,48 @@ class WebProviderTests(unittest.TestCase):
         self.assertEqual(result.status, "RUNNING")
         self.assertEqual(written, [(Path("/tmp/web.conf"), "server {}")])
         self.assertEqual(commands, [
-            ("nginx", "-t", "-c", "/tmp/web.conf"),
+            ("nginx", "-t", "-c", "/etc/nginx/nginx.conf"),
             ("systemctl", "reload", "nginx"),
         ])
+
+    def test_nginx_inspect_reports_runtime_readiness(self):
+        commands: list[tuple[str, ...]] = []
+        provider = NginxProvider(
+            config_path="/tmp/web.conf",
+            nginx_config_path="/etc/nginx/nginx.conf",
+            run_command=lambda command: commands.append(tuple(command)),
+        )
+
+        self.assertEqual(
+            provider.inspect("service-9"),
+            {
+                "provider": "nginx",
+                "ready": True,
+                "service_id": "service-9",
+                "config_path": "/tmp/web-service-9.conf",
+            },
+        )
+        self.assertEqual(commands, [("nginx", "-t", "-c", "/etc/nginx/nginx.conf")])
+
+    def test_nginx_reloads_only_after_validation_success(self):
+        commands: list[tuple[str, ...]] = []
+
+        def run_command(command: tuple[str, ...]) -> None:
+            commands.append(command)
+            if command[:3] == ("nginx", "-t", "-c"):
+                raise ProviderExecutionError("nginx validation failed")
+
+        provider = NginxProvider(
+            config_path="/tmp/web.conf",
+            nginx_config_path="/etc/nginx/nginx.conf",
+            write_configuration=lambda path, content: None,
+            run_command=run_command,
+        )
+
+        with self.assertRaises(ProviderExecutionError):
+            provider.apply("server {}")
+
+        self.assertEqual(commands, [("nginx", "-t", "-c", "/etc/nginx/nginx.conf")])
 
     def test_reconciliation_applies_provider_and_is_idempotent(self):
         provider = FakeProvider()
@@ -116,6 +156,7 @@ class WebProviderTests(unittest.TestCase):
 
         provider = NginxProvider(
             config_path="/tmp/ftp-project/nginx.conf",
+            nginx_config_path="/tmp/ftp-project/nginx.conf",
             write_configuration=write_configuration,
             run_command=lambda command: commands.append(tuple(command)),
         )
@@ -128,9 +169,13 @@ class WebProviderTests(unittest.TestCase):
         self.assertEqual(writes[0][0], Path("/tmp/ftp-project/nginx-service-1.conf"))
         self.assertEqual(writes[1][0], Path("/tmp/ftp-project/nginx-service-2.conf"))
         self.assertEqual(commands, [
-            ("nginx", "-t", "-c", "/tmp/ftp-project/nginx-service-1.conf"),
+            ("nginx", "-t", "-c", "/tmp/ftp-project/nginx.conf"),
             ("systemctl", "reload", "nginx"),
-            ("nginx", "-t", "-c", "/tmp/ftp-project/nginx-service-2.conf"),
+            ("nginx", "-t", "-c", "/tmp/ftp-project/nginx.conf"),
+            ("systemctl", "reload", "nginx"),
+            ("nginx", "-t", "-c", "/tmp/ftp-project/nginx.conf"),
+            ("systemctl", "reload", "nginx"),
+            ("nginx", "-t", "-c", "/tmp/ftp-project/nginx.conf"),
             ("systemctl", "reload", "nginx"),
         ])
         self.assertFalse(Path("/tmp/ftp-project/nginx-service-1.conf").exists())
