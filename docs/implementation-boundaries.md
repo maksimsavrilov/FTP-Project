@@ -12,6 +12,8 @@ This document translates the validated architecture and domain model into implem
 | PostgreSQL | Durable Master state, including domain entities, Worker Nodes, assignments, desired state, and observed actual state | Provider runtime state as an independent source of truth |
 
 Each Agent has its own deployable REST service and local provider adapter. Agents do not share a database with each other and do not call each other.
+Agents must never contain or manage the lifecycle of the system services they orchestrate.
+Agents communicate with managed services through an explicit runtime interface.
 
 ## Master persistence boundary
 
