@@ -22,12 +22,20 @@ webAgent = container "Web Agent" {
         description "Translates desired web state and manages the selected local provider"
         technology "Python"
     }
+    nginxRuntimeClient = component "Nginx Runtime Client" {
+        description "Publishes, validates and inspects per-service Nginx configuration through the host runtime"
+        technology "Python"
+    }
     nginxProvider = component "Nginx Provider" {
-        description "Generates, validates and applies Nginx configuration"
+        description "Generates and serializes per-service Nginx configuration for the runtime"
+        technology "Python"
+    }
+    apacheRuntimeClient = component "Apache Runtime Client" {
+        description "Publishes, validates and inspects per-service Apache configuration through the host runtime"
         technology "Python"
     }
     apacheProvider = component "Apache Provider" {
-        description "Generates, validates and applies Apache configuration"
+        description "Generates and serializes per-service Apache configuration for the runtime"
         technology "Python"
     }
     webStateReporter = component "State & Health Reporter" {
@@ -42,8 +50,10 @@ webAgent = container "Web Agent" {
     webApi -> webDesiredState "Accepts desired state" "Python"
     webDesiredState -> webReconciliation "Triggers reconciliation" "Python"
     webReconciliation -> webProvider "Applies required configuration" "Python"
-    webProvider -> nginxProvider "Uses Nginx implementation" "Python"
-    webProvider -> apacheProvider "Uses Apache implementation" "Python"
+    webProvider -> nginxProvider "Generates per-service Nginx config" "Python"
+    nginxProvider -> nginxRuntimeClient "Publishes and validates config through runtime" "Python"
+    webProvider -> apacheProvider "Generates per-service Apache config" "Python"
+    apacheProvider -> apacheRuntimeClient "Publishes and validates config through runtime" "Python"
     webReconciliation -> webStateReporter "Reports reconciliation result" "Python"
     webStateReporter -> webApi "Exposes state and health information" "Python"
 }

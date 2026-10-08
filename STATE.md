@@ -269,7 +269,12 @@ architecture review.
 - Production Web Agent lifespan wired to reconciliation path.
 - Web Agent reconciliation is service-scoped: each service now has its own
   managed Nginx configuration and make STOPPED/DELETED desired lifecycle
-  states remove only that service's configuration. 
+  states remove only that service's configuration.
+- Defined the host-side runtime boundary for Web Agent Nginx operations in
+  `docs/implementation-boundaries.md` and the Structurizr deployment model;
+  the runtime is now shown as a service-scoped REST/HTTP interface outside the
+  Web Agent container, with validation, publish/remove, reload, and status
+  responsibilities separated from the Agent.
 
 ---
 
@@ -301,11 +306,10 @@ architecture review.
 
 ### Current Step
 
-Define the Web Agent-to-host-service runtime interface in
-`docs/implementation-boundaries.md` and the Structurizr Agent/deployment
-model. Specify an explicit REST/HTTP contract for per-service configuration
-publication/removal, validation, reload and observed status, and show the
-Nginx runtime and its lifecycle manager outside the Web Agent container.
+Implement the Worker Node host-side runtime endpoint, separate from the
+Agent container, to own Nginx configuration files and invoke the host's
+validation, reload and inspection utilities. Keep operations scoped to one
+service and return observed status/configuration or explicit errors.
 
 ### Plan Status
 

@@ -14,16 +14,28 @@ deploymentEnvironment "Production" {
         dnsAgentInstance = containerInstance hosting.dnsAgent
         mailAgentInstance = containerInstance hosting.mailAgent
 
-        infrastructureNode nginxRuntime "nginx" {
-            description "Web server managed by Web Agent"
+        nginxRuntime = infrastructureNode "Nginx Runtime" {
+            description "Host-managed Nginx runtime outside the Web Agent container"
             technology "nginx"
-            -> webAgentInstance "Managed by"
+            -> webAgentInstance "REST/HTTP: publish / validate / reload / status"
         }
 
-        infrastructureNode apacheRuntime "Apache" {
-            description "Web server managed by Web Agent"
+        nginxLifecycleManager = infrastructureNode "Nginx Lifecycle Manager" {
+            description "Host-side supervisor that owns generated config files, validation and service reload operations"
+            technology "systemd / nginx"
+            -> nginxRuntime "Owns config files and daemon lifecycle"
+        }
+
+        apacheRuntime = infrastructureNode "Apache Runtime" {
+            description "Host-managed Apache runtime outside the Web Agent container"
             technology "Apache HTTP Server"
-            -> webAgentInstance "Managed by"
+            -> webAgentInstance "REST/HTTP: publish / validate / reload / status"
+        }
+        
+        apacheLifecycleManager = infrastructureNode "Apache Lifecycle Manager" {
+            description "Host-side supervisor that owns generated config files, validation and service reload operations"
+            technology "systemd / apache"
+            -> apacheRuntime "Owns config files and daemon lifecycle"
         }
 
         infrastructureNode bindRuntime "BIND" {
