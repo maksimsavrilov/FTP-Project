@@ -266,7 +266,10 @@ architecture review.
 - Web Agent registration over REST/HTTP: submit its configured hostname,
   capabilities, capacity, and bootstrap credential.
 - Web Agent authenticated heartbeat operation added
-- Production Web Agent lifespan wired to reconciliation path. 
+- Production Web Agent lifespan wired to reconciliation path.
+- Web Agent reconciliation is service-scoped: each service now has its own
+  managed Nginx configuration and make STOPPED/DELETED desired lifecycle
+  states remove only that service's configuration. 
 
 ---
 
@@ -376,11 +379,11 @@ recent Worker Agent changes; retain it as historical test state.
 Status: PASS
 
 Commands executed:
-- `make test` → PASS: 100 tests ran, all passed (`100 passed in 1.92s`).
-- `ruff check . && ruff format --check .` → still shows existing repository lint/format issues unrelated to the current step (import-order/style findings in `agent/architect.py` and other files), but this does not affect the current step’s behavior.
+- `make test -s` → PASS: 104 tests ran, all passed (`104 passed, 1 warning in 1.93s`).
+- `ruff check .` → FAIL: repository-wide lint/style issues remain in pre-existing files (notably `tests/test_master_persistence.py`), but they are unrelated to the current Web Agent step and do not indicate a regression in the requested behavior.
 
 Classification:
 - `make test`: PASS; the canonical suite passes in the current environment.
-- Lint/format: Existing repository issue outside the scope of the requested Web Agent startup registration change.
+- `ruff`: Existing repository lint issue outside the current step, not a defect in the Web Agent implementation.
 
-Summary: The current implementation satisfies the requested step. The deployed Web Agent startup now registers with Master over REST/HTTP using the configured hostname, capabilities, capacity, and bootstrap credential, stores the returned stable node ID and node-specific credential, and keeps the Master-to-Agent desired-state token separate from the Agent-to-Master registration credential.
+Summary: The current implementation satisfies the requested step. Each Web service now gets its own managed Nginx config file, `STOPPED`/`DELETED` desired states remove only that service’s configuration, and the reconciliation flow remains idempotent while allowing multiple services to reconcile independently.

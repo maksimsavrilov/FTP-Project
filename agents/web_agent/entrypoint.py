@@ -9,7 +9,7 @@ import socket
 import sys
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, build_opener
@@ -52,7 +52,7 @@ def _post_json(url: str, payload: dict[str, Any]) -> dict[str, Any]:
     except HTTPError as exc:
         try:
             body = json.loads(exc.read().decode("utf-8"))
-        except UnicodeDecodeError, json.JSONDecodeError:
+        except (UnicodeDecodeError, json.JSONDecodeError):
             body = {}
         message = body.get("message") if isinstance(body, dict) else str(exc)
         raise RuntimeError(
@@ -120,7 +120,7 @@ async def _heartbeat_loop(app: FastAPI, interval_seconds: float) -> None:
         node_id = getattr(app.state, "node_id", None)
         if client is None or not node_id:
             continue
-        heartbeat_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        heartbeat_at = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
         try:
             client.heartbeat(
                 node_id,
@@ -130,7 +130,7 @@ async def _heartbeat_loop(app: FastAPI, interval_seconds: float) -> None:
                 request_id=f"heartbeat-{uuid4()}",
             )
             app.state.last_heartbeat_error = None
-        except Exception as exc:  # pragma: no cover - surfaces heartbeat failures in the agent logs
+        except (AttributeError, KeyError, OSError, RuntimeError, TypeError, ValueError) as exc:
             app.state.last_heartbeat_error = exc
             print(f"Web Agent heartbeat failed: {exc}", file=sys.stderr)
 

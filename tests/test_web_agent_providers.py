@@ -1,6 +1,7 @@
 import unittest
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from agents.web_agent.app import DesiredWebServiceState, WebAgentDesiredStateStore
 from agents.web_agent.providers import (
@@ -9,7 +10,6 @@ from agents.web_agent.providers import (
     ProviderConfigurationError,
     ProviderExecutionError,
 )
-
 
 NEUTRAL_STATE = {
     "hostname": "example.test",
@@ -35,15 +35,21 @@ class FakeProvider:
         self.calls.append(("generate", desired))
         return "generated"
 
-    def apply(self, configuration: str) -> ProviderApplyResult:
-        self.calls.append(("apply", configuration))
+    def apply(self, configuration: str, *, service_id: str | None = None) -> ProviderApplyResult:
+        self.calls.append(("apply", configuration, service_id))
         if self.error:
             raise self.error
         return ProviderApplyResult(status="RUNNING", health={"ready": True})
 
-    def inspect(self) -> dict[str, Any]:
-        self.calls.append(("inspect",))
-        return {"provider": self.name}
+    def remove_service(self, service_id: str) -> ProviderApplyResult:
+        self.calls.append(("remove_service", service_id))
+        if self.error:
+            raise self.error
+        return ProviderApplyResult(status="REMOVED", health={"ready": True, "service_id": service_id})
+
+    def inspect(self, service_id: str | None = None) -> dict[str, Any]:
+        self.calls.append(("inspect", service_id))
+        return {"provider": self.name, "service_id": service_id}
 
 
 class WebProviderTests(unittest.TestCase):
@@ -99,6 +105,70 @@ class WebProviderTests(unittest.TestCase):
         self.assertEqual([call[0] for call in provider.calls], [
             "validate", "generate", "apply", "inspect",
         ])
+
+    def test_nginx_service_files_are_scoped_per_service_and_removal_is_idempotent(self):
+        writes: list[tuple[Path, str]] = []
+        commands: list[tuple[str, ...]] = []
+        def write_configuration(path: Path, content: str) -> None:
+            writes.append((path, content))
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(content, encoding="utf-8")
+
+        provider = NginxProvider(
+            config_path="/tmp/ftp-project/nginx.conf",
+            write_configuration=write_configuration,
+            run_command=lambda command: commands.append(tuple(command)),
+        )
+
+        provider.apply(provider.generate_configuration(NEUTRAL_STATE), service_id="service-1")
+        provider.apply(provider.generate_configuration(NEUTRAL_STATE), service_id="service-2")
+        provider.remove_service("service-1")
+        provider.remove_service("service-1")
+
+        self.assertEqual(writes[0][0], Path("/tmp/ftp-project/nginx-service-1.conf"))
+        self.assertEqual(writes[1][0], Path("/tmp/ftp-project/nginx-service-2.conf"))
+        self.assertEqual(commands, [
+            ("nginx", "-t", "-c", "/tmp/ftp-project/nginx-service-1.conf"),
+            ("systemctl", "reload", "nginx"),
+            ("nginx", "-t", "-c", "/tmp/ftp-project/nginx-service-2.conf"),
+            ("systemctl", "reload", "nginx"),
+        ])
+        self.assertFalse(Path("/tmp/ftp-project/nginx-service-1.conf").exists())
+        self.assertTrue(Path("/tmp/ftp-project/nginx-service-2.conf").exists())
+
+    def test_reconciliation_removes_service_on_stopped_state(self):
+        def write_configuration(path: Path, content: str) -> None:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(content, encoding="utf-8")
+
+        provider = NginxProvider(
+            config_path="/tmp/ftp-project-lifecycle/nginx.conf",
+            write_configuration=write_configuration,
+            run_command=lambda command: None,
+        )
+        store = WebAgentDesiredStateStore(provider=provider)
+        store.accept("service-stop", DesiredWebServiceState(
+            service_type="WEB",
+            assignment_id="assignment-1",
+            version=1,
+            lifecycle_state="RUNNING",
+            configuration=NEUTRAL_STATE,
+        ))
+        store.reconcile("service-stop")
+
+        store.accept("service-stop", DesiredWebServiceState(
+            service_type="WEB",
+            assignment_id="assignment-1",
+            version=2,
+            lifecycle_state="STOPPED",
+            configuration=NEUTRAL_STATE,
+        ))
+        first = store.reconcile("service-stop")
+        second = store.reconcile("service-stop")
+
+        self.assertEqual(first.status, "STOPPED")
+        self.assertEqual(second.status, "STOPPED")
+        self.assertFalse(Path("/tmp/ftp-project-lifecycle/nginx-service-stop.conf").exists())
 
     def test_reconciliation_reports_configuration_failure(self):
         provider = FakeProvider(ProviderConfigurationError("invalid web state"))

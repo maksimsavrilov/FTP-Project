@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Mapping, Protocol, Sequence
+from typing import Any, Protocol
 
 
 class ProviderError(Exception):
@@ -32,10 +33,10 @@ class WebProvider(Protocol):
     def generate_configuration(self, desired: Mapping[str, Any]) -> str:
         """Translate desired web state into provider configuration."""
 
-    def apply(self, configuration: str) -> ProviderApplyResult:
+    def apply(self, configuration: str, *, service_id: str | None = None) -> ProviderApplyResult:
         """Apply generated configuration and reload the provider if needed."""
 
-    def inspect(self) -> dict[str, Any]:
+    def inspect(self, service_id: str | None = None) -> dict[str, Any]:
         """Return provider-specific actual-state diagnostics."""
 
 
@@ -51,6 +52,11 @@ class NginxProvider:
         self.config_path = Path(config_path)
         self._write_configuration = write_configuration or self._write
         self._run_command = run_command or self._run
+
+    def service_config_path(self, service_id: str) -> Path:
+        if not service_id:
+            return self.config_path
+        return self.config_path.with_name(f"{self.config_path.stem}-{service_id}{self.config_path.suffix}")
 
     def validate(self, desired: Mapping[str, Any]) -> None:
         required = ("hostname", "document_root")
@@ -83,19 +89,40 @@ class NginxProvider:
         lines.extend(["}", ""])
         return "\n".join(lines)
 
-    def apply(self, configuration: str) -> ProviderApplyResult:
+    def apply(self, configuration: str, *, service_id: str | None = None) -> ProviderApplyResult:
+        target = self.service_config_path(service_id) if service_id else self.config_path
         try:
-            self._write_configuration(self.config_path, configuration)
-            self._run_command(("nginx", "-t", "-c", str(self.config_path)))
+            self._write_configuration(target, configuration)
+            self._run_command(("nginx", "-t", "-c", str(target)))
             self._run_command(("systemctl", "reload", "nginx"))
         except ProviderError:
             raise
         except Exception as exc:
             raise ProviderExecutionError(str(exc)) from exc
-        return ProviderApplyResult(status="RUNNING", health={"provider": self.name, "ready": True})
+        return ProviderApplyResult(
+            status="RUNNING",
+            health={"provider": self.name, "ready": True, "service_id": service_id},
+        )
 
-    def inspect(self) -> dict[str, Any]:
-        return {"provider": self.name, "ready": True}
+    def remove_service(self, service_id: str) -> ProviderApplyResult:
+        target = self.service_config_path(service_id)
+        removed = False
+        if target.exists():
+            target.unlink()
+            removed = True
+        return ProviderApplyResult(
+            status="REMOVED",
+            health={"provider": self.name, "ready": True, "service_id": service_id, "removed": removed},
+        )
+
+    def inspect(self, service_id: str | None = None) -> dict[str, Any]:
+        target = self.service_config_path(service_id) if service_id else self.config_path
+        return {
+            "provider": self.name,
+            "ready": target.exists(),
+            "service_id": service_id,
+            "config_path": str(target),
+        }
 
     @staticmethod
     def _write(path: Path, configuration: str) -> None:

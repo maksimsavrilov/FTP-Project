@@ -4,7 +4,7 @@ import hmac
 import os
 from collections.abc import Callable
 from contextlib import AbstractAsyncContextManager
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import FastAPI, Request
@@ -78,15 +78,41 @@ class WebAgentDesiredStateStore:
             return result
 
         try:
-            self._provider.validate(state.configuration)
-            generated = self._provider.generate_configuration(state.configuration)
-            applied = self._provider.apply(generated)
-            result = WebReconciliationResult(
-                version=state.version,
-                status=applied.status,
-                configuration=state.configuration,
-                health={**applied.health, "actual": self._provider.inspect()},
-            )
+            if state.lifecycle_state in {"STOPPED", "DELETED"}:
+                if hasattr(self._provider, "remove_service"):
+                    applied = self._provider.remove_service(service_id)
+                else:
+                    applied = None
+                try:
+                    actual = self._provider.inspect(service_id)
+                except TypeError:
+                    actual = self._provider.inspect()
+                result = WebReconciliationResult(
+                    version=state.version,
+                    status=state.lifecycle_state,
+                    configuration=state.configuration,
+                    health={
+                        **({} if applied is None else applied.health),
+                        "actual": actual,
+                    },
+                )
+            else:
+                self._provider.validate(state.configuration)
+                generated = self._provider.generate_configuration(state.configuration)
+                try:
+                    applied = self._provider.apply(generated, service_id=service_id)
+                except TypeError:
+                    applied = self._provider.apply(generated)
+                try:
+                    actual = self._provider.inspect(service_id)
+                except TypeError:
+                    actual = self._provider.inspect()
+                result = WebReconciliationResult(
+                    version=state.version,
+                    status=applied.status,
+                    configuration=state.configuration,
+                    health={**applied.health, "actual": actual},
+                )
         except ProviderConfigurationError as exc:
             result = WebReconciliationResult(
                 version=state.version,
@@ -207,7 +233,7 @@ def create_app(
                     client,
                     status=result.status,
                     health=result.health,
-                    observed_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    observed_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
                     request_id=request_id(request),
                 )
             except Exception as exc:  # pragma: no cover - surfaces dependency failure to the app logs
