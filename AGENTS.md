@@ -9,6 +9,7 @@
 - Auth as independent microservice (ZITADEL in docker container)
 - Auth, Master, State database, Worker agents will operate as separate docker containers.
 - Worker agent container manages host services via standard CLI utilities and mounted configuration files and directories
+- Do not add system service runtimes (Nginx, Apache, PostgreSQL, MySQL, BIND, mail services) to agent containers. Refer to `docs/implementation-boundaries.md` for the architectural boundary.
 
 ## Technology Stack
 - Docker/Podman

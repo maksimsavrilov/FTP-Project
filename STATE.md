@@ -278,35 +278,34 @@ architecture review.
 
 ### Steps
 
-1. Make Web Agent reconciliation service-scoped in `agents/web_agent/app.py`
-   and `agents/web_agent/providers.py`: give each service its own managed
-   Nginx configuration and make STOPPED/DELETED desired lifecycle states
-   remove only that service's configuration. Verify two services can
-   reconcile independently and removal is idempotent.
-2. Correct Nginx validation and application in `agents/web_agent/providers.py`:
-   validate the managed server block through the effective top-level Nginx
-   configuration, reload only after successful validation, and report
-   provider readiness from an actual inspection rather than a constant.
-   Verify command ordering and failures with the existing provider test seams.
-3. Make the production Web Agent deployment in
-   `agents/web_agent/Dockerfile` and `docker-compose.prod.yml` provide the
-   Linux Worker Node's managed Nginx configuration mount and required standard
-   provider-control utilities/access. Document required host paths and verify
-   the rendered Compose configuration matches the provider's paths.
-4. Replace the zero-valued heartbeat usage in
-   `agents/web_agent/entrypoint.py` with measured Worker Node CPU, memory and
-   disk usage, preserving authenticated REST/HTTP reporting and surfacing
-   measurement failures. Verify the heartbeat reports measurements rather
-   than fabricated zero values.
+1. Define the Web Agent-to-host-service runtime interface in
+   `docs/implementation-boundaries.md` and the Structurizr Agent/deployment
+   model. Specify an explicit REST/HTTP contract for per-service configuration
+   publication/removal, validation, reload and observed status, and show the
+   Nginx runtime and its lifecycle manager outside the Web Agent container.
+2. Implement the Worker Node host-side runtime endpoint, separate from the
+   Agent container, to own Nginx configuration files and invoke the host's
+   validation, reload and inspection utilities. Keep operations scoped to one
+   service and return observed status/configuration or explicit errors.
+3. Replace direct filesystem, `nginx` and `systemctl` operations in
+   `agents/web_agent/providers.py` with a client for that runtime interface;
+   wire its endpoint in the production deployment. Populate the reported
+   actual configuration and health from the runtime observation rather than
+   echoing desired configuration, and verify failures are surfaced.
+4. Remove the user-session `service state report` CLI command from
+   `src/ftp_project/cli/commands/hosting.py` and
+   `src/ftp_project/cli/handlers.py`, updating its CLI tests and documentation.
+   Preserve `service state get`; actual-state writes remain restricted to the
+   Worker Node owning the current assignment.
 
 
 ### Current Step
 
-Correct Nginx validation and application in `agents/web_agent/providers.py`:
-validate the managed server block through the effective top-level Nginx
-configuration, reload only after successful validation, and report
-provider readiness from an actual inspection rather than a constant.
-Verify command ordering and failures with the existing provider test seams.
+Define the Web Agent-to-host-service runtime interface in
+`docs/implementation-boundaries.md` and the Structurizr Agent/deployment
+model. Specify an explicit REST/HTTP contract for per-service configuration
+publication/removal, validation, reload and observed status, and show the
+Nginx runtime and its lifecycle manager outside the Web Agent container.
 
 ### Plan Status
 
@@ -352,26 +351,41 @@ Historical information belongs in Git history.
 
 Status: findings
 
-Review: The core boundaries remain aligned: Master owns node identity,
-placement, desired state and persisted actual state; the Web Agent registers
-and reports over REST/HTTP with its node credential and applies provider
-changes locally. The Web and DB registration views now show Agent-initiated
-registration, and the Master actual-state API authenticates the current
-assignment's Worker Node rather than a user session. No Agent-to-Agent
-communication or automatic failover was found. The remaining execution path
-does not yet satisfy the deployment/domain contract: `NginxProvider` writes
-all services to one shared configuration file, ignores STOPPED/DELETED
-lifecycle intent, tests a server-block snippet as though it were the complete
-Nginx config, and returns hard-coded readiness. The production Web Agent
-image/Compose service has no host Nginx config mount or provider-control
-utility/access, so it cannot operate the Worker Node's Nginx runtime as
-specified. Web Agent heartbeats also report fixed zero CPU, memory and disk
-usage, which is not a valid Worker Node health/capacity observation. Review
-result: preserve the architecture and implement the ordered, bounded Web
-Agent execution/reliability slice; do not move provider control into Master
-or introduce Agent-to-Agent coordination. The recorded Last Test Result is
-the earlier 100-test run and does not establish verification of the more
-recent Worker Agent changes; retain it as historical test state.
+Review: Master remains the owner of node identity, placement, desired state
+and persisted actual state. Agent registration/heartbeat and actual-state
+report authentication use the node-specific credential; Master checks that
+the reporter owns the current assignment. Registration views now show
+Agent-initiated REST/HTTP registration, and no Agent-to-Agent communication
+or automatic failover was found. The current plan's service-scoped Nginx
+configuration behavior is implemented; provider tests also cover top-level
+configuration validation before reload and readiness checks. However, that
+implementation executes `nginx` and `systemctl` subprocesses and writes under
+`/etc/nginx` in the Agent's own container. The production Agent image is
+Python-only and Compose provides no host runtime interface or mounted host
+configuration. Putting the Nginx service runtime in the Agent would violate
+`AGENTS.md`; executing `systemctl` from the Agent violates this document's
+rule that Agents neither contain nor manage system-service lifecycle. The
+explicit runtime interface required
+by `docs/implementation-boundaries.md` is not yet specified or implemented,
+and the Structurizr deployment relation currently says the Nginx runtime is
+"Managed by" the Agent rather than showing that boundary.
+
+Further inconsistencies: `WebAgentDesiredStateStore.report_actual_state`
+reports the accepted desired configuration as actual even when provider
+application failed, so Master does not receive the observed configuration.
+The CLI still exposes `service state report` using a user session; Master
+rejects this credential, but the command contradicts the Agent-only
+actual-state write contract. Master composition and application services do
+not implement the documented outbound Agent Client or send persisted desired
+state to the assigned Agent, so the current code is not an end-to-end Master
+reconciliation flow. Heartbeats still report zero CPU, memory and disk usage
+rather than observations. Review result: the previous Nginx validation step
+cannot be considered complete architecturally until host operations go
+through an explicit external runtime interface; replace the plan with the
+bounded runtime-boundary and report-ownership iteration. Do not install
+Nginx/systemd into the Agent container or let the Agent own host service
+lifecycle. The Last Test Result establishes the service-scoped unit behavior,
+not production host-runtime integration or the full Master-to-Agent flow.
 
 ## Last Test Result
 

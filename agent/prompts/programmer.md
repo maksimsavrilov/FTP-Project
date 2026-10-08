@@ -22,7 +22,6 @@ Rules:
 - Do not modify AGENTS.md.
 - Do not update architecture documentation unless the Architect action explicitly requires it.
 - Do not remove existing functionality unless explicitly required.
-- Do not add system service runtimes (Nginx, Apache, PostgreSQL, MySQL, BIND, mail services) to agent containers. Refer to docs/implementation-boundaries.md for the architectural boundary.
 - Follow existing project conventions.
 - Prefer the smallest coherent implementation.
 - Preserve backward compatibility where possible.
