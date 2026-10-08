@@ -4,6 +4,7 @@ import hmac
 import os
 from collections.abc import Callable
 from contextlib import AbstractAsyncContextManager
+from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import FastAPI, Request
@@ -197,6 +198,22 @@ def create_app(
         if not accepted:
             return error(request, 409, "STALE_DESIRED_STATE", rejection or "desired state was rejected")
         result = desired_states.reconcile(service_id)
+
+        client = getattr(app.state, "node_client", None)
+        if client is not None:
+            try:
+                desired_states.report_actual_state(
+                    service_id,
+                    client,
+                    status=result.status,
+                    health=result.health,
+                    observed_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    request_id=request_id(request),
+                )
+            except Exception as exc:  # pragma: no cover - surfaces dependency failure to the app logs
+                app.state.last_report_error = exc
+                raise RuntimeError(f"Master actual-state report failed for service {service_id}") from exc
+
         return JSONResponse(
             status_code=202,
             content={

@@ -265,6 +265,8 @@ architecture review.
   idempotent process-local acceptance of repeated versions.
 - Web Agent registration over REST/HTTP: submit its configured hostname,
   capabilities, capacity, and bootstrap credential.
+- Web Agent authenticated heartbeat operation added
+- Production Web Agent lifespan wired to reconciliation path. 
 
 ---
 
@@ -273,39 +275,10 @@ architecture review.
 
 ### Steps
 
-1. Correct the Structurizr node-registration dynamic views in
-   `structurizr/views/dynamic-node-registration-web.dsl` and
-   `structurizr/views/dynamic-node-registration-db.dsl`: show an already
-   deployed Agent initiating REST/HTTP registration with its bootstrap
-   credential, Master persisting the WorkerNode, and Master returning its
-   stable ID and node-specific credential. Remove the implication that Master
-   starts or remotely bootstraps an Agent.
-2. Enforce Agent ownership for actual-state writes in the Master API and
-   application boundary: authenticate the reporting node with its
-   node-specific credential, require it to own the service's current active
-   assignment, and prevent user-session credentials from writing Agent-owned
-   actual state. Remove the CLI `service state report` command and align its
-   related tests and API documentation; preserve authenticated state reads.
-3. Add an authenticated heartbeat operation to
-   `WorkerAgentMasterClient` in `src/ftp_project/worker_agent.py`, using the
-   registered node ID and credential and the existing Master HTTP transport.
-   The client must send the heartbeat payload and request ID and surface
-   Master API and transport failures.
-4. Wire the production Web Agent lifespan and reconciliation path in
-   `agents/web_agent/entrypoint.py` and `agents/web_agent/app.py` to use the
-   node-specific client created from registration: send periodic heartbeats
-   and automatically report each provider reconciliation result, including
-   status, configuration, health and observation time. Keep the
-   Master-to-Agent desired-state token separate and surface report failures.
 
 
 ### Current Step
 
-Add an authenticated heartbeat operation to
-`WorkerAgentMasterClient` in `src/ftp_project/worker_agent.py`, using the
-registered node ID and credential and the existing Master HTTP transport.
-The client must send the heartbeat payload and request ID and surface
-Master API and transport failures.
 
 
 ### Plan Status

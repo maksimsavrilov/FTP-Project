@@ -205,6 +205,62 @@ class WebAgentTests(unittest.TestCase):
             ],
         )
 
+    def test_reports_actual_state_to_master_using_registered_node_client(self):
+        app = create_app(master_token="master-token")
+        calls = []
+
+        class Client:
+            def report_web_service_actual_state(
+                self,
+                service_id,
+                assignment_id,
+                version,
+                status,
+                configuration,
+                health,
+                observed_at,
+                request_id=None,
+            ):
+                calls.append(
+                    {
+                        "service_id": service_id,
+                        "assignment_id": assignment_id,
+                        "version": version,
+                        "status": status,
+                        "configuration": configuration,
+                        "health": health,
+                        "observed_at": observed_at,
+                        "request_id": request_id,
+                    }
+                )
+                return {"accepted": True}
+
+        app.state.node_client = Client()
+        payload = {
+            "service_type": "WEB",
+            "assignment_id": "assignment-3",
+            "version": 2,
+            "lifecycle_state": "RUNNING",
+            "configuration": {"web_server": "nginx", "php_version": "8.3"},
+        }
+
+        with TestClient(app) as client:
+            response = client.post(
+                "/v1/services/service-4/desired-state",
+                json=payload,
+                headers={
+                    "Authorization": "Bearer master-token",
+                    "X-Request-ID": "request-2",
+                },
+            )
+
+        self.assertEqual(response.status_code, 202)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0]["service_id"], "service-4")
+        self.assertEqual(calls[0]["assignment_id"], "assignment-3")
+        self.assertEqual(calls[0]["status"], "ACCEPTED")
+        self.assertEqual(calls[0]["request_id"], "request-2")
+
 
 if __name__ == "__main__":
     unittest.main()

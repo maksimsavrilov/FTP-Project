@@ -2,16 +2,22 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import socket
+import sys
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, build_opener
+from uuid import uuid4
 
 from fastapi import FastAPI
+
+from ftp_project.worker_agent import WorkerAgentMasterClient
 
 from .app import create_app
 from .providers import NginxProvider
@@ -103,12 +109,53 @@ def register_node(
     return body
 
 
+def _heartbeat_usage() -> dict[str, Any]:
+    return {"cpu": 0, "memory": 0, "disk": 0}
+
+
+async def _heartbeat_loop(app: FastAPI, interval_seconds: float) -> None:
+    while True:
+        await asyncio.sleep(interval_seconds)
+        client = getattr(app.state, "node_client", None)
+        node_id = getattr(app.state, "node_id", None)
+        if client is None or not node_id:
+            continue
+        heartbeat_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        try:
+            client.heartbeat(
+                node_id,
+                "ONLINE",
+                _heartbeat_usage(),
+                heartbeat_at,
+                request_id=f"heartbeat-{uuid4()}",
+            )
+            app.state.last_heartbeat_error = None
+        except Exception as exc:  # pragma: no cover - surfaces heartbeat failures in the agent logs
+            app.state.last_heartbeat_error = exc
+            print(f"Web Agent heartbeat failed: {exc}", file=sys.stderr)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     registration = register_node()
     app.state.node_id = registration["id"]
     app.state.node_credential = registration["credential"]
-    yield
+    app.state.node_client = WorkerAgentMasterClient(
+        app.state.node_credential,
+        base_url=(os.environ.get("MASTER_SERVICE_URL") or "http://master:8000").rstrip("/"),
+    )
+
+    heartbeat_interval = float(os.environ.get("WEB_AGENT_HEARTBEAT_INTERVAL", "30"))
+    heartbeat_task = asyncio.create_task(_heartbeat_loop(app, heartbeat_interval))
+    app.state.heartbeat_task = heartbeat_task
+    try:
+        yield
+    finally:
+        heartbeat_task.cancel()
+        try:
+            await heartbeat_task
+        except asyncio.CancelledError:
+            pass
 
 
 app = create_app(
