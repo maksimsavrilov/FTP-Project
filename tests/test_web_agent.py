@@ -205,6 +205,79 @@ class WebAgentTests(unittest.TestCase):
             ],
         )
 
+    def test_store_reports_runtime_observed_configuration_to_master(self):
+        store = WebAgentDesiredStateStore()
+        state = DesiredWebServiceState.model_validate(
+            {
+                "service_type": "WEB",
+                "assignment_id": "assignment-4",
+                "version": 5,
+                "lifecycle_state": "RUNNING",
+                "configuration": {"web_server": "nginx", "php_version": "8.3"},
+            }
+        )
+        accepted, rejection = store.accept("service-5", state)
+
+        self.assertTrue(accepted)
+        self.assertIsNone(rejection)
+
+        class Client:
+            def __init__(self):
+                self.calls = []
+
+            def report_web_service_actual_state(
+                self,
+                service_id,
+                assignment_id,
+                version,
+                status,
+                configuration,
+                health,
+                observed_at,
+                request_id=None,
+            ):
+                self.calls.append(
+                    {
+                        "service_id": service_id,
+                        "assignment_id": assignment_id,
+                        "version": version,
+                        "status": status,
+                        "configuration": configuration,
+                        "health": health,
+                        "observed_at": observed_at,
+                        "request_id": request_id,
+                    }
+                )
+                return {"accepted": True}
+
+        client = Client()
+        result = store.report_actual_state(
+            "service-5",
+            client,
+            status="RUNNING",
+            configuration={"hostname": "observed.example.test"},
+            health={"ready": True},
+            observed_at="2026-01-01T00:11:00Z",
+            request_id="request-3",
+        )
+
+        self.assertEqual(result, {"accepted": True})
+        self.assertEqual(
+            client.calls,
+            [
+                {
+                    "service_id": "service-5",
+                    "assignment_id": "assignment-4",
+                    "version": 5,
+                    "status": "RUNNING",
+                    "configuration": {"hostname": "observed.example.test"},
+                    "health": {"ready": True},
+                    "observed_at": "2026-01-01T00:11:00Z",
+                    "request_id": "request-3",
+                }
+            ],
+        )
+
     def test_reports_actual_state_to_master_using_registered_node_client(self):
         app = create_app(master_token="master-token")
         calls = []

@@ -275,6 +275,9 @@ architecture review.
   the runtime is now shown as a service-scoped REST/HTTP interface outside the
   Web Agent container, with validation, publish/remove, reload, and status
   responsibilities separated from the Agent.
+- Implemented the Worker Node host-side Nginx runtime endpoint in
+  `agents/web_agent/runtime.py` to own service-scoped config files and expose
+  per-service validation, publish/remove, reload, and status operations.
 
 ---
 
@@ -306,10 +309,11 @@ architecture review.
 
 ### Current Step
 
-Implement the Worker Node host-side runtime endpoint, separate from the
-Agent container, to own Nginx configuration files and invoke the host's
-validation, reload and inspection utilities. Keep operations scoped to one
-service and return observed status/configuration or explicit errors.
+Replace direct filesystem, `nginx` and `systemctl` operations in
+`agents/web_agent/providers.py` with a client for that runtime interface;
+wire its endpoint in the production deployment. Populate the reported
+actual configuration and health from the runtime observation rather than
+echoing desired configuration, and verify failures are surfaced.
 
 ### Plan Status
 
@@ -393,14 +397,18 @@ not production host-runtime integration or the full Master-to-Agent flow.
 
 ## Last Test Result
 
-Status: PASS
+Status: FAIL
 
 Commands executed:
-- `make test -s` → PASS: 104 tests ran, all passed (`104 passed, 1 warning in 1.93s`).
-- `ruff check .` → FAIL: repository-wide lint/style issues remain in pre-existing files (notably `tests/test_master_persistence.py`), but they are unrelated to the current Web Agent step and do not indicate a regression in the requested behavior.
+- `make test` → PASS: 110 tests passed; 1 deprecation warning.
+- `ruff check .` → FAIL: 98 repository-wide findings; scoped Web Agent check passed.
+- `ruff format --check .` → FAIL: 65 repository-wide files need formatting; scoped Web Agent check passed.
+- `mypy .` → FAIL: 66 errors in 8 files. Scoped Web Agent check reports a new error in `agents/web_agent/providers.py` (`runtime_url` may be `None` at `.rstrip()`); it also reports the untyped `FakeProvider.calls` test field.
+- `git diff --check` → PASS.
 
 Classification:
-- `make test`: PASS; the canonical suite passes in the current environment.
-- `ruff`: Existing repository lint issue outside the current step, not a defect in the Web Agent implementation.
+- `make test`: PASS; tests pass, but do not establish production runtime connectivity or host-service access.
+- Lint/format: repository-wide checks fail on repository-wide findings; scoped Web Agent checks pass.
+- Mypy: repository-wide check fails; the modified provider has a relevant optional-URL type error.
 
-Summary: The current implementation satisfies the requested step. Each Web service now gets its own managed Nginx config file, `STOPPED`/`DELETED` desired states remove only that service’s configuration, and the reconciliation flow remains idempotent while allowing multiple services to reconcile independently.
+Summary: The current step is not satisfied. Although the provider now has an HTTP client and production Compose declares a `web-runtime` service, `NginxProvider` retains a direct filesystem/`nginx`/`systemctl` fallback. The runtime service reuses the Python-only Web Agent image, has no host Nginx config mount or demonstrated host service access, and `_default_run_command` reports success when a required executable is missing. Thus production status/configuration is not reliably observed or applied to the Worker Node's Nginx. Existing tests inject a request or fake command and do not verify deployment connectivity or host Nginx access. Smallest correction: provide the runtime real Worker Node Nginx configuration and utility access, fail explicitly when required commands are missing, remove the Agent-side direct-operation fallback, and fix the provider's optional-URL type error.

@@ -51,7 +51,9 @@ class WebAgentDesiredStateStore:
     def get(self, service_id: str) -> DesiredWebServiceState | None:
         return self._states.get(service_id)
 
-    def accept(self, service_id: str, state: DesiredWebServiceState) -> tuple[bool, str | None]:
+    def accept(
+        self, service_id: str, state: DesiredWebServiceState
+    ) -> tuple[bool, str | None]:
         current = self._states.get(service_id)
         if current is not None and state.version < current.version:
             return False, "stale desired-state version"
@@ -87,10 +89,15 @@ class WebAgentDesiredStateStore:
                     actual = self._provider.inspect(service_id)
                 except TypeError:
                     actual = self._provider.inspect()
+                observed_configuration = (
+                    getattr(applied, "observed_configuration", {})
+                    if applied is not None
+                    else actual.get("observed_configuration", {})
+                )
                 result = WebReconciliationResult(
                     version=state.version,
                     status=state.lifecycle_state,
-                    configuration=state.configuration,
+                    configuration=observed_configuration or state.configuration,
                     health={
                         **({} if applied is None else applied.health),
                         "actual": actual,
@@ -98,19 +105,23 @@ class WebAgentDesiredStateStore:
                 )
             else:
                 self._provider.validate(state.configuration)
-                generated = self._provider.generate_configuration(state.configuration)
                 try:
-                    applied = self._provider.apply(generated, service_id=service_id)
+                    applied = self._provider.apply(
+                        state.configuration, service_id=service_id
+                    )
                 except TypeError:
-                    applied = self._provider.apply(generated)
+                    applied = self._provider.apply(state.configuration)
                 try:
                     actual = self._provider.inspect(service_id)
                 except TypeError:
                     actual = self._provider.inspect()
+                observed_configuration = getattr(
+                    applied, "observed_configuration", {}
+                ) or actual.get("observed_configuration", {})
                 result = WebReconciliationResult(
                     version=state.version,
                     status=applied.status,
-                    configuration=state.configuration,
+                    configuration=observed_configuration or state.configuration,
                     health={**applied.health, "actual": actual},
                 )
         except ProviderConfigurationError as exc:
@@ -152,6 +163,7 @@ class WebAgentDesiredStateStore:
         client: Any,
         *,
         status: str,
+        configuration: dict[str, Any] | None = None,
         health: dict[str, Any],
         observed_at: str,
         request_id: str | None = None,
@@ -165,7 +177,7 @@ class WebAgentDesiredStateStore:
             state.assignment_id,
             state.version,
             status,
-            state.configuration,
+            configuration if configuration is not None else state.configuration,
             health,
             observed_at,
             request_id=request_id,
@@ -181,13 +193,19 @@ def create_app(
     """Build the authenticated Web Agent desired-state HTTP boundary."""
 
     app = FastAPI(title="Web Agent", version="1.0.0", lifespan=lifespan)
-    expected_token = master_token if master_token is not None else os.environ.get("MASTER_AGENT_TOKEN", "")
+    expected_token = (
+        master_token
+        if master_token is not None
+        else os.environ.get("MASTER_AGENT_TOKEN", "")
+    )
     desired_states = store or WebAgentDesiredStateStore(provider=provider)
 
     def request_id(request: Request) -> str:
         return request.headers.get("X-Request-ID", "")
 
-    def error(request: Request, status_code: int, code: str, message: str) -> JSONResponse:
+    def error(
+        request: Request, status_code: int, code: str, message: str
+    ) -> JSONResponse:
         request_id_value = request_id(request)
         return JSONResponse(
             status_code=status_code,
@@ -207,7 +225,9 @@ def create_app(
     @app.post("/v1/services/{service_id}/desired-state")
     async def receive_desired_state(service_id: str, request: Request) -> JSONResponse:
         if not authenticated(request):
-            return error(request, 401, "AUTHENTICATION_FAILED", "authentication required")
+            return error(
+                request, 401, "AUTHENTICATION_FAILED", "authentication required"
+            )
         try:
             payload = await request.json()
             state = DesiredWebServiceState.model_validate(payload)
@@ -216,13 +236,23 @@ def create_app(
         if not service_id:
             return error(request, 400, "INVALID_REQUEST", "service_id is required")
         if state.service_type != "WEB":
-            return error(request, 400, "UNSUPPORTED_SERVICE_TYPE", "Web Agent accepts WEB services only")
+            return error(
+                request,
+                400,
+                "UNSUPPORTED_SERVICE_TYPE",
+                "Web Agent accepts WEB services only",
+            )
         if state.version < 1:
             return error(request, 400, "INVALID_REQUEST", "version must be positive")
 
         accepted, rejection = desired_states.accept(service_id, state)
         if not accepted:
-            return error(request, 409, "STALE_DESIRED_STATE", rejection or "desired state was rejected")
+            return error(
+                request,
+                409,
+                "STALE_DESIRED_STATE",
+                rejection or "desired state was rejected",
+            )
         result = desired_states.reconcile(service_id)
 
         client = getattr(app.state, "node_client", None)
@@ -232,13 +262,18 @@ def create_app(
                     service_id,
                     client,
                     status=result.status,
+                    configuration=result.configuration,
                     health=result.health,
                     observed_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
                     request_id=request_id(request),
                 )
-            except Exception as exc:  # pragma: no cover - surfaces dependency failure to the app logs
+            except (
+                Exception
+            ) as exc:  # pragma: no cover - surfaces dependency failure to the app logs
                 app.state.last_report_error = exc
-                raise RuntimeError(f"Master actual-state report failed for service {service_id}") from exc
+                raise RuntimeError(
+                    f"Master actual-state report failed for service {service_id}"
+                ) from exc
 
         return JSONResponse(
             status_code=202,
@@ -246,7 +281,11 @@ def create_app(
                 "accepted": True,
                 "service_id": service_id,
                 "version": state.version,
-                **({"status": result.status, "error_code": result.error_code} if provider else {}),
+                **(
+                    {"status": result.status, "error_code": result.error_code}
+                    if provider
+                    else {}
+                ),
             },
             headers={"X-Request-ID": request_id(request)},
         )
@@ -254,7 +293,9 @@ def create_app(
     @app.get("/v1/services/{service_id}/reconciliation")
     async def get_reconciliation(service_id: str, request: Request) -> JSONResponse:
         if not authenticated(request):
-            return error(request, 401, "AUTHENTICATION_FAILED", "authentication required")
+            return error(
+                request, 401, "AUTHENTICATION_FAILED", "authentication required"
+            )
         if not service_id:
             return error(request, 400, "INVALID_REQUEST", "service_id is required")
 
@@ -271,12 +312,15 @@ def create_app(
                 "version": state.version,
                 "lifecycle_state": state.lifecycle_state,
                 "configuration": state.configuration,
-                "status": (desired_states.actual(service_id) or WebReconciliationResult(
-                    version=state.version,
-                    status="ACCEPTED",
-                    configuration=state.configuration,
-                    health={},
-                )).status,
+                "status": (
+                    desired_states.actual(service_id)
+                    or WebReconciliationResult(
+                        version=state.version,
+                        status="ACCEPTED",
+                        configuration=state.configuration,
+                        health={},
+                    )
+                ).status,
             },
             headers={"X-Request-ID": request_id(request)},
         )
