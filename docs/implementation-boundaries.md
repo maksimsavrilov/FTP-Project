@@ -19,15 +19,28 @@ Each Agent has its own deployable REST service and local provider adapter. Agent
 - Agents communicate with managed services through an explicit runtime interface.
 - Agents MUST NOT have direct access to host system services or unrestricted host-level privileges. All privileged operations on managed services MUST be performed through a restricted runtime interface exposing explicit, service-specific operations.
 
-### Web Agent ↔ host Nginx runtime
+### Web Agent ↔ Web service container
 
-The Web Agent does not invoke `nginx`, `systemctl`, or direct filesystem writes for host-managed runtime state. It calls a host-side runtime adapter daemon over shared Unix-socket and treats that adapter as the authority for config publication, validation, reload, and status observation.
+The Web Agent and Web service run in separate containers. The Web service
+container is built from a standard Nginx image and owns the Nginx runtime,
+configuration files, validation, reloads, and runtime observation. A separate
+adapter application in that container exposes only the service-scoped
+operations required by reconciliation. The Agent calls it through a shared
+Unix socket; the Agent container contains no Nginx runtime and receives no
+host-container management privileges.
 
-The adapter is scoped to a single managed service and exposes service-level operations instead of a single global config object. The Web Agent only owns request validation and reconciliation flow; the host adapter owns configuration files, `nginx` validation, daemon reloads, and observed runtime state.
+Adapter operations apply, remove, or observe one managed service at a time.
+They are idempotent for the same desired version and return explicit errors
+for invalid configuration, missing service state, or runtime failures. The
+Agent reports adapter-observed configuration and health to Master instead of
+echoing desired configuration without validation.
 
-The adapter is responsible to strictly limit the Web Agent scope on the host. The only operations and host's objects the adapter can process are related to nginx lifecycle.
-
-All operations are per service, idempotent for the same desired version, and return explicit errors for invalid config, missing service state, or runtime failures. The Web Agent records the runtime-observed configuration and health as the actual state it reports back to Master rather than echoing the desired config without validation.
+Node-local bootstrap/deployment starts the Web service container and Web Agent
+container with the shared socket mounted before the Agent registers with
+Master. Registration remains Agent-initiated REST/HTTP using the bootstrap
+credential; Master continues to own node identity, placement, assignments,
+desired state, and reconciliation orchestration. Bootstrap does not grant the
+Agent permission to manage containers on the host.
 
 ## Master persistence boundary
 

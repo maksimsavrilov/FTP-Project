@@ -1,7 +1,9 @@
 import os
 import unittest
+from pathlib import Path
 from unittest import mock
 
+import yaml
 from fastapi.testclient import TestClient
 
 from agents.web_agent import entrypoint
@@ -99,6 +101,22 @@ class WebAgentTests(unittest.TestCase):
         ):
             self.assertEqual(entrypoint.app.state.node_id, "node-123")
             self.assertEqual(entrypoint.app.state.node_credential, "node-secret")
+
+    def test_compose_waits_for_web_service_socket_before_agent_registration(self):
+        compose = yaml.safe_load(
+            Path("docker-compose.prod.yml").read_text(encoding="utf-8")
+        )
+        services = compose["services"]
+        agent = services["web-agent"]
+        web_service = services["web-service"]
+
+        self.assertEqual(
+            agent["depends_on"]["web-service"]["condition"], "service_healthy"
+        )
+        socket_mount = "web-adapter-socket:/run/web-service"
+        self.assertIn(socket_mount, agent["volumes"])
+        self.assertIn(socket_mount, web_service["volumes"])
+        self.assertNotIn("/var/run/docker.sock", str(agent))
 
     def test_returns_current_reconciliation_state_for_accepted_desired_version(self):
         payload = {

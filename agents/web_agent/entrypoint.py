@@ -160,7 +160,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
 
 app = create_app(
     master_token=os.environ.get("MASTER_AGENT_TOKEN", ""),
-    provider=NginxProvider(),
+    provider=NginxProvider(
+        socket_path=os.environ.get(
+            "WEB_SERVICE_SOCKET", "/run/web-service/adapter.sock"
+        )
+    ),
     lifespan=lifespan,
 )
 

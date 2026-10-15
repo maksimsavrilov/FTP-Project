@@ -83,10 +83,7 @@ class WebAgentDesiredStateStore:
                     applied = self._provider.remove_service(service_id)
                 else:
                     applied = None
-                try:
-                    actual = self._provider.inspect(service_id)
-                except TypeError:
-                    actual = self._provider.inspect()
+                actual = self._provider.inspect(service_id)
                 result = WebReconciliationResult(
                     version=state.version,
                     status=state.lifecycle_state,
@@ -99,14 +96,10 @@ class WebAgentDesiredStateStore:
             else:
                 self._provider.validate(state.configuration)
                 generated = self._provider.generate_configuration(state.configuration)
-                try:
-                    applied = self._provider.apply(generated, service_id=service_id)
-                except TypeError:
-                    applied = self._provider.apply(generated)
-                try:
-                    actual = self._provider.inspect(service_id)
-                except TypeError:
-                    actual = self._provider.inspect()
+                applied = self._provider.apply(
+                    generated, service_id=service_id, version=state.version
+                )
+                actual = self._provider.inspect(service_id)
                 result = WebReconciliationResult(
                     version=state.version,
                     status=applied.status,

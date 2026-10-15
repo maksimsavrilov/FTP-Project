@@ -29,8 +29,42 @@ services:
       WEB_AGENT_HOST: ${WEB_AGENT_HOST:-0.0.0.0}
       WEB_AGENT_PORT: ${WEB_AGENT_PORT:-8002}
       WEB_AGENT_LOG_LEVEL: ${WEB_AGENT_LOG_LEVEL:-info}
+      WEB_SERVICE_SOCKET: /run/web-service/adapter.sock
     ports:
       - "${WEB_AGENT_PORT:-8002}:8002"
+    volumes:
+      - web-adapter-socket:/run/web-service
+    depends_on:
+      web-service:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - hosting
+
+  web-service:
+    build:
+      context: .
+      dockerfile: agents/web_service/Dockerfile
+    environment:
+      WEB_SERVICE_SOCKET: /run/web-service/adapter.sock
+    ports:
+      - "${WEB_SERVICE_HTTP_PORT:-80}:80"
+    volumes:
+      - web-adapter-socket:/run/web-service
+    healthcheck:
+      test:
+        - CMD
+        - python3
+        - -c
+        - >-
+          import socket; s=socket.socket(socket.AF_UNIX); s.settimeout(2);
+          s.connect('/run/web-service/adapter.sock');
+          s.sendall(b'GET /health HTTP/1.0\r\nHost: localhost\r\n\r\n');
+          assert b'200 OK' in s.recv(1024)
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
     restart: unless-stopped
     networks:
       - hosting
@@ -297,3 +331,4 @@ networks:
 volumes:
   postgres-data:
   zitadel-bootstrap:
+  web-adapter-socket:

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping, Sequence
+import http.client
+import json
+import socket
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any, Protocol
 
 
@@ -27,40 +29,34 @@ class ProviderApplyResult:
 class WebProvider(Protocol):
     name: str
 
-    def validate(self, desired: Mapping[str, Any]) -> None:
-        """Validate provider-neutral desired web state."""
+    def validate(self, desired: Mapping[str, Any]) -> None: ...
 
-    def generate_configuration(self, desired: Mapping[str, Any]) -> str:
-        """Translate desired web state into provider configuration."""
+    def generate_configuration(self, desired: Mapping[str, Any]) -> str: ...
 
-    def apply(self, configuration: str, *, service_id: str | None = None) -> ProviderApplyResult:
-        """Apply generated configuration and reload the provider if needed."""
+    def apply(
+        self, configuration: str, *, service_id: str, version: int
+    ) -> ProviderApplyResult: ...
 
-    def inspect(self, service_id: str | None = None) -> dict[str, Any]:
-        """Return provider-specific actual-state diagnostics."""
+    def inspect(self, service_id: str) -> dict[str, Any]: ...
+
+
+class UnixSocketHTTPConnection(http.client.HTTPConnection):
+    def __init__(self, socket_path: str, timeout: float = 5) -> None:
+        super().__init__("localhost", timeout=timeout)
+        self.socket_path = socket_path
+
+    def connect(self) -> None:
+        connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        connection.settimeout(self.timeout)
+        connection.connect(self.socket_path)
+        self.sock = connection
 
 
 class NginxProvider:
     name = "nginx"
 
-    def __init__(
-        self,
-        config_path: str | Path = "/etc/nginx/conf.d/ftp-project.conf",
-        nginx_config_path: str | Path | None = None,
-        write_configuration: Callable[[Path, str], None] | None = None,
-        run_command: Callable[[Sequence[str]], None] | None = None,
-    ) -> None:
-        self.config_path = Path(config_path)
-        self.nginx_config_path = (
-            Path(nginx_config_path) if nginx_config_path is not None else Path("/etc/nginx/nginx.conf")
-        )
-        self._write_configuration = write_configuration or self._write
-        self._run_command = run_command or self._run
-
-    def service_config_path(self, service_id: str) -> Path:
-        if not service_id:
-            return self.config_path
-        return self.config_path.with_name(f"{self.config_path.stem}-{service_id}{self.config_path.suffix}")
+    def __init__(self, socket_path: str = "/run/web-service/adapter.sock") -> None:
+        self.socket_path = socket_path
 
     def validate(self, desired: Mapping[str, Any]) -> None:
         required = ("hostname", "document_root")
@@ -93,63 +89,73 @@ class NginxProvider:
         lines.extend(["}", ""])
         return "\n".join(lines)
 
-    def apply(self, configuration: str, *, service_id: str | None = None) -> ProviderApplyResult:
-        target = self.service_config_path(service_id) if service_id else self.config_path
-        try:
-            self._write_configuration(target, configuration)
-            self._run_command(("nginx", "-t", "-c", str(self.nginx_config_path)))
-            self._run_command(("systemctl", "reload", "nginx"))
-        except ProviderError:
-            raise
-        except Exception as exc:
-            raise ProviderExecutionError(str(exc)) from exc
+    def apply(
+        self, configuration: str, *, service_id: str, version: int = 1
+    ) -> ProviderApplyResult:
+        state = self._request(
+            "/v1/apply",
+            {
+                "service_id": service_id,
+                "version": version,
+                "configuration": configuration,
+            },
+        )
         return ProviderApplyResult(
-            status="RUNNING",
-            health={"provider": self.name, "ready": True, "service_id": service_id},
+            status=str(state.get("status", "ERROR")),
+            health={"provider": self.name, "ready": state.get("ready", False)},
         )
 
     def remove_service(self, service_id: str) -> ProviderApplyResult:
-        target = self.service_config_path(service_id)
-        removed = False
-        if target.exists():
-            target.unlink()
-            removed = True
-        try:
-            self._run_command(("nginx", "-t", "-c", str(self.nginx_config_path)))
-            self._run_command(("systemctl", "reload", "nginx"))
-        except ProviderError:
-            raise
-        except Exception as exc:
-            raise ProviderExecutionError(str(exc)) from exc
+        state = self._request("/v1/remove", {"service_id": service_id})
         return ProviderApplyResult(
             status="REMOVED",
-            health={"provider": self.name, "ready": True, "service_id": service_id, "removed": removed},
+            health={
+                "provider": self.name,
+                "ready": state.get("ready", False),
+                "service_id": service_id,
+                "removed": state.get("removed", False),
+            },
         )
 
-    def inspect(self, service_id: str | None = None) -> dict[str, Any]:
-        target = self.service_config_path(service_id) if service_id else self.config_path
+    def inspect(self, service_id: str) -> dict[str, Any]:
+        state = self._request("/v1/observe", {"service_id": service_id})
+        return {"provider": self.name, **state}
+
+    def _request(self, path: str, payload: dict[str, Any]) -> dict[str, Any]:
+        connection = UnixSocketHTTPConnection(self.socket_path)
         try:
-            self._run_command(("nginx", "-t", "-c", str(self.nginx_config_path)))
-            ready = True
-        except ProviderError:
-            ready = False
-        return {
-            "provider": self.name,
-            "ready": ready,
-            "service_id": service_id,
-            "config_path": str(target),
-        }
+            connection.request(
+                "POST",
+                path,
+                body=json.dumps(payload),
+                headers={"Content-Type": "application/json"},
+            )
+            response = connection.getresponse()
+            body = json.loads(response.read())
+        except (OSError, http.client.HTTPException, json.JSONDecodeError) as exc:
+            raise ProviderExecutionError(
+                f"Web service adapter unavailable: {exc}"
+            ) from exc
+        finally:
+            connection.close()
 
-    @staticmethod
-    def _write(path: Path, configuration: str) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(configuration, encoding="utf-8")
-
-    @staticmethod
-    def _run(command: Sequence[str]) -> None:
-        import subprocess
-
-        completed = subprocess.run(command, check=False, capture_output=True, text=True)
-        if completed.returncode:
-            message = completed.stderr.strip() or "provider command failed"
-            raise ProviderExecutionError(message)
+        if not isinstance(body, dict):
+            raise ProviderExecutionError(
+                "Web service adapter returned an invalid response"
+            )
+        if response.status >= 400:
+            error = body.get("error")
+            message = error.get("message") if isinstance(error, dict) else None
+            code = error.get("code") if isinstance(error, dict) else None
+            exception = (
+                ProviderConfigurationError
+                if response.status < 500
+                else ProviderExecutionError
+            )
+            raise exception(f"{code or 'ADAPTER_ERROR'}: {message or response.status}")
+        state = body.get("state")
+        if not isinstance(state, dict):
+            raise ProviderExecutionError(
+                "Web service adapter response omitted observed state"
+            )
+        return state

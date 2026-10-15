@@ -52,11 +52,11 @@ and ownership needed by Master.
 | `Subscription` | Customer hosting scope; `id`, `customer_id`, optional `reseller_id`, plan reference, status, dates | Owned by one Customer; pending, active, suspended, expired, terminated | Ownership, plan, effective entitlements and lifecycle in Master |
 | `ResourceEntitlement` | Effective quota/limit; resource name, limit, usage, reservation, source | Derived from plan plus delegated/explicit overrides | Limit, reservation and reported usage in Master; local enforcement/measurement on Agents |
 | `Domain` | Canonical internet name and subscription boundary; `id`, subscription, normalized name, status | Owned by one Subscription; pending, active, suspended, deleted | Name, ownership and lifecycle in Master; DNS/web/mail effects on Agents |
-| `Website` | Logical web site attached to a Domain; `id`, domain, document root, status | At most one primary Website per Domain in this scope | Intent and config in Master; files, virtual host and runtime on Web Agent |
+| `Website` | Logical web site attached to a Domain; `id`, domain, document root, status | At most one primary Website per Domain in this scope | Intent and config in Master; files, virtual host and runtime in the Web service container, reconciled by Web Agent |
 | `DnsZone` / `DnsRecord` | Authoritative DNS data; zone status and record name/type/value/TTL | One managed zone per Domain at most; records contained by the zone | Records and desired zone config in Master; nameserver runtime on DNS Agent |
 | `MailDomain` / `MailAccount` | Mail capability and mailbox identities; address/status/quota | One managed MailDomain per Domain at most; accounts contained by it | Mail objects and desired config in Master; mailbox/runtime on Mail Agent |
 | `Service` | Common deployable aggregate; `id`, subscription, type, status, timestamps | Owned by one Subscription; pending, provisioning, running, degraded, stopped, deleted | Desired lifecycle/config and placement in Master; provider state on an Agent |
-| `WebService` | Web implementation/configuration; server, PHP/runtime and document root | One WebService for a Website in this scope | Typed desired config in Master; web server/filesystem on Web Agent |
+| `WebService` | Web implementation/configuration; server, PHP/runtime and document root | One WebService for a Website in this scope | Typed desired config in Master; web server/filesystem in the Web service container, managed through its adapter by Web Agent |
 | `DnsService` | DNS implementation for managed zones | One service may serve a subscription's DNS objects | Typed desired config in Master; DNS daemon on DNS Agent |
 | `MailService` | Mail implementation for managed mail objects | One service may serve a subscription's mail objects | Typed desired config in Master; mail stack on Mail Agent |
 | `DatabaseService` | Database instance; engine, database name, subscription and optional domain context | Owned by one Subscription; users are contained by it | Definition and credential references in Master; database instance on DB Agent |
@@ -155,7 +155,7 @@ ownership or placement truth.
 | --- | --- | --- |
 | ZITADEL/Auth service | Credentials, login, tokens, external identity and authorization decision | Hosting ownership, plans, domains, quotas or placement |
 | Master | Business entities, effective quotas, scheduling, assignments, desired state, actual state and PostgreSQL transactions | Provider-specific process control and direct filesystem/database/mail changes |
-| Web Agent | WebService reconciliation and local web runtime/files | Customers, domains as owners, global scheduling, another Agent |
+| Web Agent | WebService reconciliation and calls to the local Web service adapter | Customers, domains as owners, global scheduling, another Agent, Nginx runtime lifecycle |
 | DNS Agent | DnsService reconciliation and local zones/records | Customer ownership, subscriptions, another Agent |
 | Mail Agent | MailService reconciliation and local mail runtime | Customer ownership, subscriptions, another Agent |
 | DB Agent | DatabaseService/DatabaseUser reconciliation and local DB runtime | Subscription ownership, global placement, another Agent |
@@ -164,6 +164,14 @@ ownership or placement truth.
 All Master↔Agent communication is REST/HTTP. Agents never communicate with
 each other. A service's physical node can change without changing its domain
 owner, subscription or domain relationships.
+
+On a Web Worker Node, the Web Agent and Web service run in separate containers.
+The Web service container owns Nginx and its configuration and runs a separate
+adapter application. The Agent reaches the adapter through a shared Unix
+socket. Node-local bootstrap deploys both containers and the socket mount
+before the Agent registers with Master; registration still establishes the
+WorkerNode identity, while Master retains placement and desired-state
+ownership. This deployment arrangement does not add a business-domain entity.
 
 ## Plesk reference classification
 

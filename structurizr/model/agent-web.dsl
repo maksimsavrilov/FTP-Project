@@ -23,11 +23,11 @@ webAgent = container "Web Agent" {
         technology "Python"
     }
     nginxRuntimeClient = component "Nginx Runtime Client" {
-        description "Publishes, validates and inspects per-service Nginx configuration through the host runtime"
+        description "Calls the Web service container adapter to publish, validate and inspect per-service Nginx configuration"
         technology "Python"
     }
     nginxProvider = component "Nginx Provider" {
-        description "Generates and serializes per-service Nginx configuration for the runtime"
+        description "Generates and serializes per-service Nginx configuration for the service adapter"
         technology "Python"
     }
     apacheRuntimeClient = component "Apache Runtime Client" {
@@ -57,3 +57,10 @@ webAgent = container "Web Agent" {
     webReconciliation -> webStateReporter "Reports reconciliation result" "Python"
     webStateReporter -> webApi "Exposes state and health information" "Python"
 }
+
+webService = container "Web Service" {
+    description "Owns the Nginx runtime and a separate service-scoped adapter application"
+    technology "Nginx image / adapter application"
+}
+
+webAgent.nginxRuntimeClient -> webService "Applies, removes and observes service configuration through shared Unix socket" "Unix socket / JSON"

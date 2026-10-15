@@ -283,33 +283,38 @@ architecture review.
 
 ### Steps
 
-1. Define the Web Agent-to-host-service runtime interface in
-   `docs/implementation-boundaries.md` and the Structurizr Agent/deployment
-   model. Specify an explicit REST/HTTP contract for per-service configuration
-   publication/removal, validation, reload and observed status, and show the
-   Nginx runtime and its lifecycle manager outside the Web Agent container.
-2. Implement the Worker Node host-side runtime endpoint, separate from the
-   Agent container, to own Nginx configuration files and invoke the host's
-   validation, reload and inspection utilities. Keep operations scoped to one
-   service and return observed status/configuration or explicit errors.
-3. Replace direct filesystem, `nginx` and `systemctl` operations in
-   `agents/web_agent/providers.py` with a client for that runtime interface;
-   wire its endpoint in the production deployment. Populate the reported
-   actual configuration and health from the runtime observation rather than
-   echoing desired configuration, and verify failures are surfaced.
-4. Remove the user-session `service state report` CLI command from
-   `src/ftp_project/cli/commands/hosting.py` and
-   `src/ftp_project/cli/handlers.py`, updating its CLI tests and documentation.
-   Preserve `service state get`; actual-state writes remain restricted to the
-   Worker Node owning the current assignment.
+1. Update `AGENTS.md`, `docs/domain-model.md`,
+   `docs/implementation-boundaries.md`, and the Structurizr Web Agent,
+   deployment, and node-registration views to define the Web service container
+   as the owner of the Nginx runtime and a separate adapter application.
+   Show the Web Agent and service container sharing a Unix socket, and define
+   node-local bootstrap/deployment as deploying both containers before the
+   Agent registers with Master. Keep Master registration, placement, and
+   desired-state ownership unchanged.
+2. Implement the Web/Nginx adapter application and service image. Build the
+   service container from a standard Nginx image with only the required
+   packages and adapter added. Give the adapter a service-scoped Unix-socket
+   interface for applying, removing, and observing configuration; keep Nginx
+   configuration and lifecycle operations inside that container and return
+   explicit errors and observed state.
+3. Replace direct filesystem, `nginx`, and `systemctl` operations in
+   `agents/web_agent/providers.py` with the Unix-socket client, and wire the
+   node-local registration/deployment path to launch the Web Agent and
+   service containers with the shared socket before Agent registration.
+   Verify service-scoped reconciliation, observed-state reporting, and
+   deployment/registration behavior without giving the Agent host-container
+   management privileges.
 
 
 ### Current Step
 
-Implement the Worker Node host-side runtime endpoint, separate from the
-Agent container, to own Nginx configuration files and invoke the host's
-validation, reload and inspection utilities. Keep operations scoped to one
-service and return observed status/configuration or explicit errors.
+Replace direct filesystem, `nginx`, and `systemctl` operations in
+`agents/web_agent/providers.py` with the Unix-socket client, and wire the
+node-local registration/deployment path to launch the Web Agent and
+service containers with the shared socket before Agent registration.
+Verify service-scoped reconciliation, observed-state reporting, and
+deployment/registration behavior without giving the Agent host-container
+management privileges.
 
 ### Plan Status
 
@@ -360,47 +365,44 @@ and persisted actual state. Agent registration/heartbeat and actual-state
 report authentication use the node-specific credential; Master checks that
 the reporter owns the current assignment. Registration views now show
 Agent-initiated REST/HTTP registration, and no Agent-to-Agent communication
-or automatic failover was found. The current plan's service-scoped Nginx
-configuration behavior is implemented; provider tests also cover top-level
-configuration validation before reload and readiness checks. However, that
-implementation executes `nginx` and `systemctl` subprocesses and writes under
-`/etc/nginx` in the Agent's own container. The production Agent image is
-Python-only and Compose provides no host runtime interface or mounted host
-configuration. Putting the Nginx service runtime in the Agent would violate
-`AGENTS.md`; executing `systemctl` from the Agent violates this document's
-rule that Agents neither contain nor manage system-service lifecycle. The
-explicit runtime interface required
-by `docs/implementation-boundaries.md` is not yet specified or implemented,
-and the Structurizr deployment relation currently says the Nginx runtime is
-"Managed by" the Agent rather than showing that boundary.
-
-Further inconsistencies: `WebAgentDesiredStateStore.report_actual_state`
-reports the accepted desired configuration as actual even when provider
-application failed, so Master does not receive the observed configuration.
-The CLI still exposes `service state report` using a user session; Master
-rejects this credential, but the command contradicts the Agent-only
-actual-state write contract. Master composition and application services do
-not implement the documented outbound Agent Client or send persisted desired
-state to the assigned Agent, so the current code is not an end-to-end Master
-reconciliation flow. Heartbeats still report zero CPU, memory and disk usage
-rather than observations. Review result: the previous Nginx validation step
-cannot be considered complete architecturally until host operations go
-through an explicit external runtime interface; replace the plan with the
-bounded runtime-boundary and report-ownership iteration. Do not install
-Nginx/systemd into the Agent container or let the Agent own host service
-lifecycle. The Last Test Result establishes the service-scoped unit behavior,
-not production host-runtime integration or the full Master-to-Agent flow.
+or automatic failover was found. The existing Web provider writes Nginx
+configuration and invokes `nginx`/`systemctl` in the Agent container, while
+`AGENTS.md` and `docs/domain-model.md` assign host runtime management to the
+Agent. `docs/implementation-boundaries.md` and the Structurizr deployment
+model instead describe a host-side Nginx adapter. These descriptions are
+inconsistent with each other and with the requested boundary: a distinct
+adapter application runs beside Nginx in a service container built from a
+standard service image, and the Agent communicates with it only through a
+shared Unix socket. The current node-registration endpoint only establishes
+Master-side node identity; it does not provision containers. Preserve that
+REST registration contract and Master ownership of identity/placement; a
+node-local bootstrap/deployment path must launch the Agent and service
+containers before the Agent registers, without granting the Agent Docker
+host-management privileges. Review result: the prior host-side-runtime plan
+is obsolete. Replace it with a bounded Web/Nginx service-container model,
+adapter implementation, and Agent/deployment integration iteration. Scope
+this iteration to Web/Nginx; do not add service runtimes to Agent containers,
+change Master placement/reconciliation ownership, or imply that the domain
+model gains a new business entity. The Last Test Result establishes existing
+Web Agent service-scoped unit behavior only, not the new socket boundary or
+paired-container registration deployment.
 
 ## Last Test Result
 
-Status: PASS
+Status: FAIL
 
 Commands executed:
-- `make test -s` → PASS: 104 tests ran, all passed (`104 passed, 1 warning in 1.93s`).
-- `ruff check .` → FAIL: repository-wide lint/style issues remain in pre-existing files (notably `tests/test_master_persistence.py`), but they are unrelated to the current Web Agent step and do not indicate a regression in the requested behavior.
+- `make test` → PASS: 107 tests passed.
+- `mypy agents/web_agent/providers.py agents/web_service/adapter.py` → PASS.
+- `ruff check agents/web_agent agents/web_service tests/test_web_agent.py tests/test_web_agent_providers.py tests/test_web_service_adapter.py` → PASS.
+- `podman build` for both `agents/web_service/Dockerfile` and `agents/web_agent/Dockerfile` → PASS.
+- `docker compose -f docker-compose.prod.yml config --quiet` → PASS.
+- Real service-container readiness check → FAIL: `/health` returned HTTP 200 both before and after Nginx was stopped.
+- `mypy agents/web_agent agents/web_service` → FAIL because the imported `ftp_project.worker_agent` module has no type stubs or `py.typed` marker.
+- `make lint`, `make format-check`, `make type-check`, `ruff check .`, and `ruff format --check .` → FAIL on existing issues outside the changed implementation; formatter failures for the changed `app.py`, `entrypoint.py`, and provider test were reproduced against their `HEAD` versions.
+- `git diff --check` → PASS.
+- `docker compose -f docker-compose.dev.yml ps` → DSL service is running; workspace endpoint returned HTTP 200.
 
-Classification:
-- `make test`: PASS; the canonical suite passes in the current environment.
-- `ruff`: Existing repository lint issue outside the current step, not a defect in the Web Agent implementation.
+Classification: The readiness failure is a regression in the current deployment implementation. The health endpoint only checks Nginx configuration validity through `nginx -t`; it does not detect that the Nginx process has stopped. Since `web-agent` waits on `web-service: service_healthy`, the Agent can register with Master while its managed web runtime is unavailable. Repository-wide lint/type/format failures are pre-existing and unrelated.
 
-Summary: The current implementation satisfies the requested step. Each Web service now gets its own managed Nginx config file, `STOPPED`/`DELETED` desired states remove only that service’s configuration, and the reconciliation flow remains idempotent while allowing multiple services to reconcile independently.
+Summary: Unix-socket reconciliation, request validation, image builds, Compose rendering, and focused provider/adapter checks pass. The current step is not satisfied because the readiness gate permits Agent startup/registration when Nginx is not running.
