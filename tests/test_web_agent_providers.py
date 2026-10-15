@@ -60,7 +60,12 @@ class FakeProvider:
 
     def inspect(self, service_id: str | None = None) -> dict[str, Any]:
         self.calls.append(("inspect", service_id))
-        return {"provider": self.name, "service_id": service_id}
+        return {
+            "provider": self.name,
+            "service_id": service_id,
+            "status": "RUNNING",
+            "configuration": "observed configuration",
+        }
 
 
 class WebProviderTests(unittest.TestCase):
@@ -94,6 +99,8 @@ class WebProviderTests(unittest.TestCase):
         second = store.reconcile("service-1")
 
         self.assertEqual(first.status, "RUNNING")
+        self.assertEqual(first.observed_status, "RUNNING")
+        self.assertEqual(first.observed_configuration, "observed configuration")
         self.assertEqual(second, first)
         self.assertEqual(
             [call[0] for call in provider.calls],
@@ -155,8 +162,7 @@ class WebProviderTests(unittest.TestCase):
                 store.report_actual_state(
                     "service-1",
                     MasterReporter(),
-                    status=one.status,
-                    health=one.health,
+                    result=one,
                     observed_at="2026-10-15T00:00:00Z",
                 )
             finally:
@@ -165,12 +171,15 @@ class WebProviderTests(unittest.TestCase):
                 server_thread.join()
 
         self.assertEqual(one.status, "RUNNING")
+        self.assertEqual(one.observed_status, "RUNNING")
+        self.assertIn("server_name example.test;", one.observed_configuration)
         self.assertEqual(two.status, "RUNNING")
         self.assertEqual(actual_one["status"], "RUNNING")
         self.assertIn("server_name example.test;", actual_one["configuration"])
         self.assertIn(
-            "server_name example.test;", reported[0][5]["actual"]["configuration"]
+            "server_name example.test;", reported[0][4]["nginx"]
         )
+        self.assertEqual(reported[0][3], "RUNNING")
         self.assertEqual(actual_removed["status"], "ABSENT")
         self.assertEqual(actual_two["status"], "RUNNING")
 
@@ -224,6 +233,8 @@ class WebProviderTests(unittest.TestCase):
                 server_thread.join()
 
         self.assertEqual(first.status, "STOPPED")
+        self.assertEqual(first.observed_status, "ABSENT")
+        self.assertIsNone(first.observed_configuration)
         self.assertEqual(second.status, "STOPPED")
         self.assertEqual(actual["status"], "ABSENT")
 

@@ -36,6 +36,8 @@ class WebReconciliationResult(BaseModel):
     status: str
     configuration: dict[str, Any]
     health: dict[str, Any]
+    observed_configuration: str | None = None
+    observed_status: str | None = None
     error_code: str | None = None
     error_message: str | None = None
 
@@ -92,6 +94,8 @@ class WebAgentDesiredStateStore:
                         **({} if applied is None else applied.health),
                         "actual": actual,
                     },
+                    observed_configuration=actual.get("configuration"),
+                    observed_status=actual.get("status"),
                 )
             else:
                 self._provider.validate(state.configuration)
@@ -105,6 +109,8 @@ class WebAgentDesiredStateStore:
                     status=applied.status,
                     configuration=state.configuration,
                     health={**applied.health, "actual": actual},
+                    observed_configuration=actual.get("configuration"),
+                    observed_status=actual.get("status"),
                 )
         except ProviderConfigurationError as exc:
             result = WebReconciliationResult(
@@ -144,8 +150,7 @@ class WebAgentDesiredStateStore:
         service_id: str,
         client: Any,
         *,
-        status: str,
-        health: dict[str, Any],
+        result: WebReconciliationResult,
         observed_at: str,
         request_id: str | None = None,
     ) -> dict[str, Any]:
@@ -157,9 +162,13 @@ class WebAgentDesiredStateStore:
             service_id,
             state.assignment_id,
             state.version,
-            status,
-            state.configuration,
-            health,
+            result.observed_status or result.status,
+            (
+                {"nginx": result.observed_configuration}
+                if result.observed_configuration is not None
+                else {}
+            ),
+            result.health,
             observed_at,
             request_id=request_id,
         )
@@ -224,8 +233,7 @@ def create_app(
                 desired_states.report_actual_state(
                     service_id,
                     client,
-                    status=result.status,
-                    health=result.health,
+                    result=result,
                     observed_at=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
                     request_id=request_id(request),
                 )

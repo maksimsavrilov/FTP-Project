@@ -7,7 +7,12 @@ import yaml
 from fastapi.testclient import TestClient
 
 from agents.web_agent import entrypoint
-from agents.web_agent.app import DesiredWebServiceState, WebAgentDesiredStateStore
+from agents.web_agent.app import (
+    DesiredWebServiceState,
+    WebAgentDesiredStateStore,
+    WebReconciliationResult,
+)
+from agents.web_agent.providers import ProviderApplyResult
 from ftp_project.web_agent import create_app
 
 
@@ -201,8 +206,14 @@ class WebAgentTests(unittest.TestCase):
         result = store.report_actual_state(
             "service-3",
             client,
-            status="RUNNING",
-            health={"ready": True},
+            result=WebReconciliationResult(
+                version=7,
+                status="RUNNING",
+                configuration=state.configuration,
+                health={"ready": True},
+                observed_configuration="server { listen 80; }",
+                observed_status="RUNNING",
+            ),
             observed_at="2026-01-01T00:10:00Z",
         )
 
@@ -215,7 +226,7 @@ class WebAgentTests(unittest.TestCase):
                     "assignment_id": "assignment-2",
                     "version": 7,
                     "status": "RUNNING",
-                    "configuration": {"web_server": "nginx", "php_version": "8.3"},
+                    "configuration": {"nginx": "server { listen 80; }"},
                     "health": {"ready": True},
                     "observed_at": "2026-01-01T00:10:00Z",
                     "request_id": None,
@@ -224,7 +235,25 @@ class WebAgentTests(unittest.TestCase):
         )
 
     def test_reports_actual_state_to_master_using_registered_node_client(self):
-        app = create_app(master_token="master-token")
+        observed_configuration = "server_name observed.example.test;"
+
+        class Provider:
+            def validate(self, desired):
+                return None
+
+            def generate_configuration(self, desired):
+                return "server_name desired.example.test;"
+
+            def apply(self, configuration, *, service_id, version):
+                return ProviderApplyResult(status="RUNNING", health={"ready": True})
+
+            def inspect(self, service_id):
+                return {
+                    "status": "RUNNING",
+                    "configuration": observed_configuration,
+                }
+
+        app = create_app(master_token="master-token", provider=Provider())
         calls = []
 
         class Client:
@@ -276,7 +305,10 @@ class WebAgentTests(unittest.TestCase):
         self.assertEqual(len(calls), 1)
         self.assertEqual(calls[0]["service_id"], "service-4")
         self.assertEqual(calls[0]["assignment_id"], "assignment-3")
-        self.assertEqual(calls[0]["status"], "ACCEPTED")
+        self.assertEqual(calls[0]["status"], "RUNNING")
+        self.assertEqual(
+            calls[0]["configuration"], {"nginx": observed_configuration}
+        )
         self.assertEqual(calls[0]["request_id"], "request-2")
 
 
