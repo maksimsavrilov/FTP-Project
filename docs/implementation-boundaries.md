@@ -17,31 +17,15 @@ Each Agent has its own deployable REST service and local provider adapter. Agent
 
 - Agents must never contain or manage the lifecycle of the system services they orchestrate.
 - Agents communicate with managed services through an explicit runtime interface.
+- Agents MUST NOT have direct access to host system services or unrestricted host-level privileges. All privileged operations on managed services MUST be performed through a restricted runtime interface exposing explicit, service-specific operations.
 
 ### Web Agent ↔ host Nginx runtime
 
-The Web Agent does not invoke `nginx`, `systemctl`, or direct filesystem writes for host-managed runtime state. It calls a host-side runtime service over REST/HTTP and treats that service as the authority for config publication, validation, reload, and status observation.
+The Web Agent does not invoke `nginx`, `systemctl`, or direct filesystem writes for host-managed runtime state. It calls a host-side runtime adapter daemon over shared Unix-socket and treats that adapter as the authority for config publication, validation, reload, and status observation.
 
-The runtime is scoped to a single managed service and exposes service-level operations instead of a single global config object. The Web Agent only owns request validation and reconciliation flow; the host runtime owns configuration files, `nginx` validation, daemon reloads, and observed runtime state.
+The adapter is scoped to a single managed service and exposes service-level operations instead of a single global config object. The Web Agent only owns request validation and reconciliation flow; the host adapter owns configuration files, `nginx` validation, daemon reloads, and observed runtime state.
 
-#### Explicit REST/HTTP contract
-
-- `PUT /v1/services/{service_id}/config`
-  - Publishes or replaces the active config for one service version.
-  - Request body: `{ "desired_version": "...", "lifecycle": "STARTED|STOPPED|DELETED", "configuration": { ... } }`
-  - Response: `200 OK` or `201 Created` with `{ "service_id": "...", "desired_version": "...", "status": "APPLIED|REJECTED", "observed_configuration": { ... } }`
-- `DELETE /v1/services/{service_id}/config`
-  - Removes the generated config for a service when it is stopped or deleted.
-  - Response: `200 OK` with `{ "service_id": "...", "status": "REMOVED" }` or an explicit error payload.
-- `POST /v1/services/{service_id}/validate`
-  - Validates the supplied config without persisting it.
-  - Response: `200 OK` with `{ "valid": true, "errors": [] }` or `422`/`400` with details if validation fails.
-- `POST /v1/services/{service_id}/reload`
-  - Triggers a config reload and daemon reload only after validation passes.
-  - Response: `200 OK` with `{ "service_id": "...", "reload_status": "OK|FAILED", "details": "..." }`
-- `GET /v1/services/{service_id}/status`
-  - Returns observed service status, current runtime configuration, validation timestamp, reload outcome, and health.
-  - Response: `{ "service_id": "...", "status": "RUNNING|STOPPED|ERROR", "observed_configuration": { ... }, "last_reload": "...", "health": "...", "errors": [] }`
+The adapter is responsible to strictly limit the Web Agent scope on the host. The only operations and host's objects the adapter can process are related to nginx lifecycle.
 
 All operations are per service, idempotent for the same desired version, and return explicit errors for invalid config, missing service state, or runtime failures. The Web Agent records the runtime-observed configuration and health as the actual state it reports back to Master rather than echoing the desired config without validation.
 

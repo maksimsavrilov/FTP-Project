@@ -14,28 +14,16 @@ deploymentEnvironment "Production" {
         dnsAgentInstance = containerInstance hosting.dnsAgent
         mailAgentInstance = containerInstance hosting.mailAgent
 
-        nginxRuntime = infrastructureNode "Nginx Runtime" {
-            description "Host-managed Nginx runtime outside the Web Agent container"
-            technology "nginx"
-            -> webAgentInstance "REST/HTTP: publish / validate / reload / status"
-        }
-
-        nginxLifecycleManager = infrastructureNode "Nginx Lifecycle Manager" {
-            description "Host-side supervisor that owns generated config files, validation and service reload operations"
+        nginxRuntimeAdapter = infrastructureNode "Nginx Runtime Adapter" {
+            description "Host-running Nginx runtime adapter outside the Web Agent container"
             technology "systemd / nginx"
-            -> nginxRuntime "Owns config files and daemon lifecycle"
+            -> webAgentInstance "Shared Unix socket. Owns config files and daemon lifecycle"
         }
 
-        apacheRuntime = infrastructureNode "Apache Runtime" {
-            description "Host-managed Apache runtime outside the Web Agent container"
-            technology "Apache HTTP Server"
-            -> webAgentInstance "REST/HTTP: publish / validate / reload / status"
-        }
-        
-        apacheLifecycleManager = infrastructureNode "Apache Lifecycle Manager" {
-            description "Host-side supervisor that owns generated config files, validation and service reload operations"
-            technology "systemd / apache"
-            -> apacheRuntime "Owns config files and daemon lifecycle"
+        apacheRuntimeAdapter = infrastructureNode "Apache Runtime Adapter" {
+            description "Host-running Apache runtime adapter outside the Web Agent container"
+            technology "systemd / httpd / apache"
+            -> webAgentInstance "Shared Unix socket. Owns config files and daemon lifecycle"
         }
 
         infrastructureNode bindRuntime "BIND" {

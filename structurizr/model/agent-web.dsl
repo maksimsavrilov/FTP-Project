@@ -44,7 +44,7 @@ webAgent = container "Web Agent" {
     }
 
     # ====================================================
-    # Внутренние связи компонентов Web Agent (перенесены сюда)
+    # Внутренние связи компонентов Web Agent
     # ====================================================
     webApi -> webAuth "Authenticates Master requests" "Python"
     webApi -> webDesiredState "Accepts desired state" "Python"

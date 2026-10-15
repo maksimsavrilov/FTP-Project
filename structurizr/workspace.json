@@ -5,7 +5,7 @@
   "description" : "Distributed hosting management system",
   "documentation" : { },
   "id" : 1,
-  "lastModifiedDate" : "2026-10-08T16:10:53Z",
+  "lastModifiedDate" : "2026-10-15T06:28:51Z",
   "model" : {
     "deploymentNodes" : [ {
       "containerInstances" : [ {
@@ -14,7 +14,7 @@
         "id" : "141",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.734905cc-e102-47d5-8254-0421287aebbd.masterInstance"
+          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.4dac530e-60a1-4adc-8138-065f6b971031.masterInstance"
         },
         "relationships" : [ {
           "description" : "Reads and writes state",
@@ -53,8 +53,8 @@
           "technology" : "REST/HTTP"
         }, {
           "description" : "Controls via REST/HTTP",
-          "destinationId" : "174",
-          "id" : "176",
+          "destinationId" : "170",
+          "id" : "172",
           "linkedRelationshipId" : "131",
           "sourceId" : "141",
           "technology" : "REST/HTTP"
@@ -66,7 +66,7 @@
         "id" : "142",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.734905cc-e102-47d5-8254-0421287aebbd.databaseInstance"
+          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.4dac530e-60a1-4adc-8138-065f6b971031.databaseInstance"
         },
         "tags" : "Container Instance"
       } ],
@@ -75,7 +75,7 @@
       "instances" : "1",
       "name" : "Master Node",
       "properties" : {
-        "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.734905cc-e102-47d5-8254-0421287aebbd"
+        "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.4dac530e-60a1-4adc-8138-065f6b971031"
       },
       "tags" : "Element,Deployment Node"
     }, {
@@ -84,14 +84,14 @@
       "instances" : "1",
       "name" : "Authentication Node",
       "properties" : {
-        "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.5086c780-6f4d-40d3-95b1-7a7b3c1ea8b8"
+        "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.f5a5aabb-6eb2-4cca-8250-cbb9b02afd43"
       },
       "softwareSystemInstances" : [ {
         "environment" : "Production",
         "id" : "145",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.5086c780-6f4d-40d3-95b1-7a7b3c1ea8b8.authServiceInstance"
+          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.f5a5aabb-6eb2-4cca-8250-cbb9b02afd43.authServiceInstance"
         },
         "softwareSystemId" : "4",
         "tags" : "Software System Instance"
@@ -104,7 +104,7 @@
         "id" : "148",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.16cb8ae3-fe54-42bf-98a3-7fd99c5d06ec.webAgentInstance"
+          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.298db046-fa43-48d0-96aa-bfeadc2b5cf9.webAgentInstance"
         },
         "relationships" : [ {
           "description" : "Reports state and heartbeat via REST/HTTP",
@@ -121,7 +121,7 @@
         "id" : "151",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.16cb8ae3-fe54-42bf-98a3-7fd99c5d06ec.dnsAgentInstance"
+          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.298db046-fa43-48d0-96aa-bfeadc2b5cf9.dnsAgentInstance"
         },
         "relationships" : [ {
           "description" : "Reports state and heartbeat via REST/HTTP",
@@ -138,7 +138,7 @@
         "id" : "154",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.16cb8ae3-fe54-42bf-98a3-7fd99c5d06ec.mailAgentInstance"
+          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.298db046-fa43-48d0-96aa-bfeadc2b5cf9.mailAgentInstance"
         },
         "relationships" : [ {
           "description" : "Reports state and heartbeat via REST/HTTP",
@@ -153,86 +153,52 @@
       "environment" : "Production",
       "id" : "147",
       "infrastructureNodes" : [ {
-        "description" : "Host-managed Nginx runtime outside the Web Agent container",
+        "description" : "Host-running Nginx runtime adapter outside the Web Agent container",
         "environment" : "Production",
         "id" : "157",
-        "name" : "Nginx Runtime",
+        "name" : "Nginx Runtime Adapter",
         "properties" : {
-          "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.16cb8ae3-fe54-42bf-98a3-7fd99c5d06ec.nginxRuntime"
+          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.298db046-fa43-48d0-96aa-bfeadc2b5cf9.nginxRuntimeAdapter"
         },
         "relationships" : [ {
-          "description" : "REST/HTTP: publish / validate / reload / status",
+          "description" : "Shared Unix socket. Owns config files and daemon lifecycle",
           "destinationId" : "148",
           "id" : "158",
           "sourceId" : "157",
           "tags" : "Relationship"
         } ],
         "tags" : "Element,Infrastructure Node",
-        "technology" : "nginx"
+        "technology" : "systemd / nginx"
       }, {
-        "description" : "Host-side supervisor that owns generated config files, validation and service reload operations",
+        "description" : "Host-running Apache runtime adapter outside the Web Agent container",
         "environment" : "Production",
         "id" : "159",
-        "name" : "Nginx Lifecycle Manager",
+        "name" : "Apache Runtime Adapter",
         "properties" : {
-          "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.16cb8ae3-fe54-42bf-98a3-7fd99c5d06ec.nginxLifecycleManager"
+          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.298db046-fa43-48d0-96aa-bfeadc2b5cf9.apacheRuntimeAdapter"
         },
         "relationships" : [ {
-          "description" : "Owns config files and daemon lifecycle",
-          "destinationId" : "157",
+          "description" : "Shared Unix socket. Owns config files and daemon lifecycle",
+          "destinationId" : "148",
           "id" : "160",
           "sourceId" : "159",
           "tags" : "Relationship"
         } ],
         "tags" : "Element,Infrastructure Node",
-        "technology" : "systemd / nginx"
-      }, {
-        "description" : "Host-managed Apache runtime outside the Web Agent container",
-        "environment" : "Production",
-        "id" : "161",
-        "name" : "Apache Runtime",
-        "properties" : {
-          "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.16cb8ae3-fe54-42bf-98a3-7fd99c5d06ec.apacheRuntime"
-        },
-        "relationships" : [ {
-          "description" : "REST/HTTP: publish / validate / reload / status",
-          "destinationId" : "148",
-          "id" : "162",
-          "sourceId" : "161",
-          "tags" : "Relationship"
-        } ],
-        "tags" : "Element,Infrastructure Node",
-        "technology" : "Apache HTTP Server"
-      }, {
-        "description" : "Host-side supervisor that owns generated config files, validation and service reload operations",
-        "environment" : "Production",
-        "id" : "163",
-        "name" : "Apache Lifecycle Manager",
-        "properties" : {
-          "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.16cb8ae3-fe54-42bf-98a3-7fd99c5d06ec.apacheLifecycleManager"
-        },
-        "relationships" : [ {
-          "description" : "Owns config files and daemon lifecycle",
-          "destinationId" : "161",
-          "id" : "164",
-          "sourceId" : "163",
-          "tags" : "Relationship"
-        } ],
-        "tags" : "Element,Infrastructure Node",
-        "technology" : "systemd / apache"
+        "technology" : "systemd / httpd / apache"
       }, {
         "description" : "DNS server managed by DNS Agent",
         "environment" : "Production",
-        "id" : "165",
+        "id" : "161",
         "name" : "bindRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.16cb8ae3-fe54-42bf-98a3-7fd99c5d06ec.d1269b5e-dd60-4a40-b18b-4b5ff678bfa8"
+          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.298db046-fa43-48d0-96aa-bfeadc2b5cf9.6ac138db-e880-481d-89c1-4835d25ea84d"
         },
         "relationships" : [ {
           "description" : "Managed by",
           "destinationId" : "151",
-          "id" : "166",
-          "sourceId" : "165",
+          "id" : "162",
+          "sourceId" : "161",
           "tags" : "Relationship"
         } ],
         "tags" : "Element,Infrastructure Node",
@@ -240,10 +206,44 @@
       }, {
         "description" : "SMTP server managed by Mail Agent",
         "environment" : "Production",
-        "id" : "167",
+        "id" : "163",
         "name" : "postfixRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.16cb8ae3-fe54-42bf-98a3-7fd99c5d06ec.200a745a-937c-4829-953e-ec1ff9efebfd"
+          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.298db046-fa43-48d0-96aa-bfeadc2b5cf9.175f913f-8994-4ba0-81d4-b7379037acfc"
+        },
+        "relationships" : [ {
+          "description" : "Managed by",
+          "destinationId" : "154",
+          "id" : "164",
+          "sourceId" : "163",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Infrastructure Node",
+        "technology" : "Postfix SMTP Server"
+      }, {
+        "description" : "SMTP server managed by Mail Agent",
+        "environment" : "Production",
+        "id" : "165",
+        "name" : "qmailRuntime",
+        "properties" : {
+          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.298db046-fa43-48d0-96aa-bfeadc2b5cf9.b6caff5e-56df-49a3-a2fb-103a0c574aba"
+        },
+        "relationships" : [ {
+          "description" : "Managed by",
+          "destinationId" : "154",
+          "id" : "166",
+          "sourceId" : "165",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Infrastructure Node",
+        "technology" : "Qmail SMTP Server"
+      }, {
+        "description" : "IMAP server managed by Mail Agent",
+        "environment" : "Production",
+        "id" : "167",
+        "name" : "CourierRuntime",
+        "properties" : {
+          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.298db046-fa43-48d0-96aa-bfeadc2b5cf9.0a97edfb-301c-414d-ae4d-dad66f025f05"
         },
         "relationships" : [ {
           "description" : "Managed by",
@@ -253,82 +253,48 @@
           "tags" : "Relationship"
         } ],
         "tags" : "Element,Infrastructure Node",
-        "technology" : "Postfix SMTP Server"
-      }, {
-        "description" : "SMTP server managed by Mail Agent",
-        "environment" : "Production",
-        "id" : "169",
-        "name" : "qmailRuntime",
-        "properties" : {
-          "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.16cb8ae3-fe54-42bf-98a3-7fd99c5d06ec.11774f3b-5ae4-49d0-8580-4335cfbdd562"
-        },
-        "relationships" : [ {
-          "description" : "Managed by",
-          "destinationId" : "154",
-          "id" : "170",
-          "sourceId" : "169",
-          "tags" : "Relationship"
-        } ],
-        "tags" : "Element,Infrastructure Node",
-        "technology" : "Qmail SMTP Server"
-      }, {
-        "description" : "IMAP server managed by Mail Agent",
-        "environment" : "Production",
-        "id" : "171",
-        "name" : "CourierRuntime",
-        "properties" : {
-          "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.16cb8ae3-fe54-42bf-98a3-7fd99c5d06ec.e56760f1-3c30-456c-8631-10e57d7d160b"
-        },
-        "relationships" : [ {
-          "description" : "Managed by",
-          "destinationId" : "154",
-          "id" : "172",
-          "sourceId" : "171",
-          "tags" : "Relationship"
-        } ],
-        "tags" : "Element,Infrastructure Node",
         "technology" : "Courier IMAP Server"
       } ],
       "instances" : "1",
       "name" : "Worker Node",
       "properties" : {
-        "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.16cb8ae3-fe54-42bf-98a3-7fd99c5d06ec"
+        "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.298db046-fa43-48d0-96aa-bfeadc2b5cf9"
       },
       "tags" : "Element,Deployment Node"
     }, {
       "containerInstances" : [ {
         "containerId" : "104",
         "environment" : "Production",
-        "id" : "174",
+        "id" : "170",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.70a790f0-5fbb-4882-bba7-c090a0f67b71.dbAgentInstance"
+          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.31cc6d31-3501-47fe-8dc9-45055adb5e4a.dbAgentInstance"
         },
         "relationships" : [ {
           "description" : "Reports state and heartbeat via REST/HTTP",
           "destinationId" : "141",
-          "id" : "175",
+          "id" : "171",
           "linkedRelationshipId" : "132",
-          "sourceId" : "174",
+          "sourceId" : "170",
           "technology" : "REST/HTTP"
         } ],
         "tags" : "Container Instance"
       } ],
       "environment" : "Production",
-      "id" : "173",
+      "id" : "169",
       "infrastructureNodes" : [ {
         "description" : "MySQL server managed by DB agent",
         "environment" : "Production",
-        "id" : "177",
+        "id" : "173",
         "name" : "mysqlRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.70a790f0-5fbb-4882-bba7-c090a0f67b71.b44f59ee-4536-4a15-a49f-494bdd7b72a2"
+          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.31cc6d31-3501-47fe-8dc9-45055adb5e4a.54a42c49-89fb-47fc-90c8-2a409ab6c8b7"
         },
         "relationships" : [ {
           "description" : "Managed by",
-          "destinationId" : "174",
-          "id" : "178",
-          "sourceId" : "177",
+          "destinationId" : "170",
+          "id" : "174",
+          "sourceId" : "173",
           "tags" : "Relationship"
         } ],
         "tags" : "Element,Infrastructure Node",
@@ -336,16 +302,16 @@
       }, {
         "description" : "PostgreSQL server managed by DB agent",
         "environment" : "Production",
-        "id" : "179",
+        "id" : "175",
         "name" : "postgresqlRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.70a790f0-5fbb-4882-bba7-c090a0f67b71.c68c9472-9246-4852-b18a-64eedae03834"
+          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.31cc6d31-3501-47fe-8dc9-45055adb5e4a.58ee62e1-e000-479b-b471-53283e1a648b"
         },
         "relationships" : [ {
           "description" : "Managed by",
-          "destinationId" : "174",
-          "id" : "180",
-          "sourceId" : "179",
+          "destinationId" : "170",
+          "id" : "176",
+          "sourceId" : "175",
           "tags" : "Relationship"
         } ],
         "tags" : "Element,Infrastructure Node",
@@ -354,7 +320,7 @@
       "instances" : "1",
       "name" : "Database Worker Node",
       "properties" : {
-        "structurizr.dsl.identifier" : "90515064-fd67-4b6c-a7d8-b30d9009c9d3.70a790f0-5fbb-4882-bba7-c090a0f67b71"
+        "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.31cc6d31-3501-47fe-8dc9-45055adb5e4a"
       },
       "tags" : "Element,Deployment Node"
     } ],
@@ -1546,7 +1512,7 @@
   },
   "name" : "Hosting Control System",
   "properties" : {
-    "structurizr.inspection.error" : "21",
+    "structurizr.inspection.error" : "19",
     "structurizr.inspection.info" : "0",
     "structurizr.inspection.ignore" : "0",
     "structurizr.inspection.warning" : "0"
@@ -2134,7 +2100,7 @@
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "171",
+        "id" : "170",
         "x" : 0,
         "y" : 0
       }, {
@@ -2142,15 +2108,7 @@
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "174",
-        "x" : 0,
-        "y" : 0
-      }, {
-        "id" : "177",
-        "x" : 0,
-        "y" : 0
-      }, {
-        "id" : "179",
+        "id" : "175",
         "x" : 0,
         "y" : 0
       } ],
@@ -2188,17 +2146,13 @@
       }, {
         "id" : "168"
       }, {
-        "id" : "170"
+        "id" : "171"
       }, {
         "id" : "172"
       }, {
-        "id" : "175"
+        "id" : "174"
       }, {
         "id" : "176"
-      }, {
-        "id" : "178"
-      }, {
-        "id" : "180"
       } ],
       "softwareSystemId" : "5"
     } ],
