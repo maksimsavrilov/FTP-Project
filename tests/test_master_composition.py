@@ -11,10 +11,14 @@ class MasterCompositionTests(unittest.TestCase):
     def test_production_composition_wires_all_master_boundaries(self):
         engine = create_engine("sqlite:///:memory:")
         authentication_client = AuthenticationClient("http://auth")
+        web_agent_client = object()
 
-        api = build_master_api(lambda: Session(engine), authentication_client)
+        api = build_master_api(
+            lambda: Session(engine), authentication_client, web_agent_client
+        )
 
         self.assertIs(api.authorization_client, authentication_client)
+        self.assertIs(api.web_service_service.web_agent_client, web_agent_client)
         for service_name in (
             "node_service",
             "reconciliation_service",

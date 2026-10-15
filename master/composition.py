@@ -9,6 +9,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from .api import MasterApi
+from .agent_client import WebAgentClient
 from .auth import AuthenticationClient
 from .fastapi import create_app
 from .services import (
@@ -39,6 +40,7 @@ SessionFactory = Callable[[], Session]
 def build_master_api(
     session_factory: SessionFactory,
     authentication_client: AuthenticationClient,
+    web_agent_client: WebAgentClient | None = None,
 ) -> MasterApi:
     """Assemble the Master application boundary from its production dependencies."""
 
@@ -52,7 +54,9 @@ def build_master_api(
         domain_service=MasterDomainService(session_factory),
         website_service=MasterWebsiteService(session_factory),
         service_service=MasterServiceService(session_factory),
-        web_service_service=MasterWebServiceService(session_factory),
+        web_service_service=MasterWebServiceService(
+            session_factory, web_agent_client=web_agent_client
+        ),
         dns_service_service=MasterDnsServiceService(session_factory),
         mail_service_service=MasterMailServiceService(session_factory),
         database_service_service=MasterDatabaseServiceService(session_factory),
@@ -86,7 +90,17 @@ def create_master_app(
 
     engine = engine_factory(database_url)
     session_factory = sessionmaker(bind=engine, expire_on_commit=False)
-    api = build_master_api(session_factory, AuthenticationClient(auth_service_url))
+    master_agent_token = os.environ.get("MASTER_AGENT_TOKEN", "")
+    web_agent_client = (
+        WebAgentClient("http://localhost:8002", master_agent_token)
+        if master_agent_token
+        else None
+    )
+    api = build_master_api(
+        session_factory,
+        AuthenticationClient(auth_service_url),
+        web_agent_client=web_agent_client,
+    )
     api.node_service.bootstrap_credential = os.environ.get("NODE_BOOTSTRAP_CREDENTIAL", "")
     api.node_service.node_credential_secret = os.environ.get("NODE_CREDENTIAL_SECRET", "")
     return create_app(api)

@@ -6,6 +6,7 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/master}
       AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://auth:8001}
+      MASTER_AGENT_TOKEN: ${MASTER_AGENT_TOKEN:-change-me-web-agent-token}
       NODE_BOOTSTRAP_CREDENTIAL: ${NODE_BOOTSTRAP_CREDENTIAL:-change-me-node-bootstrap-credential}
       NODE_CREDENTIAL_SECRET: ${NODE_CREDENTIAL_SECRET:-change-me-node-credential-secret}
     ports:
@@ -26,6 +27,7 @@ services:
       MASTER_AGENT_TOKEN: ${MASTER_AGENT_TOKEN:-change-me-web-agent-token}
       MASTER_SERVICE_URL: ${MASTER_SERVICE_URL:-http://master:8000}
       NODE_BOOTSTRAP_CREDENTIAL: ${NODE_BOOTSTRAP_CREDENTIAL:-change-me-node-bootstrap-credential}
+      WEB_AGENT_HOSTNAME: ${WEB_AGENT_HOSTNAME:-web-agent}
       WEB_AGENT_HOST: ${WEB_AGENT_HOST:-0.0.0.0}
       WEB_AGENT_PORT: ${WEB_AGENT_PORT:-8002}
       WEB_AGENT_LOG_LEVEL: ${WEB_AGENT_LOG_LEVEL:-info}

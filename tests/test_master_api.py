@@ -5,6 +5,7 @@ import uuid
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
+from master.agent_client import WebAgentUnavailable
 from master.api import MasterApi
 from master.auth import AuthenticationClient, AuthenticationClientError, AuthenticationServiceUnavailable
 from master.persistence.models import Base, DnsService, MailAccount, MailDomain, MailService, Service, WebService, WorkerNode
@@ -31,6 +32,20 @@ from master.services import (
 )
 
 
+class RecordingWebAgentClient:
+    def __init__(self):
+        self.requests = []
+        self.error = None
+
+    def send_desired_state(self, *args, request_id=None, agent_url=None):
+        self.requests.append(
+            {"args": args, "request_id": request_id, "agent_url": agent_url}
+        )
+        if self.error is not None:
+            raise self.error
+        return {"accepted": True}
+
+
 class MasterApiTests(unittest.TestCase):
     def setUp(self):
         self.engine = create_engine("sqlite:///:memory:")
@@ -52,6 +67,7 @@ class MasterApiTests(unittest.TestCase):
             ServiceAssignmentRepository(session).create_or_replace("service-123", node_id, "ASSIGNED")
             DesiredStateRepository(session).put_next("service-123", "RUNNING", {"web_server": "nginx"})
 
+        self.web_agent_client = RecordingWebAgentClient()
         self.api = MasterApi(
             MasterNodeService(lambda: Session(self.engine)),
             MasterReconciliationService(lambda: Session(self.engine)),
@@ -61,7 +77,9 @@ class MasterApiTests(unittest.TestCase):
             domain_service=MasterDomainService(lambda: Session(self.engine)),
             website_service=MasterWebsiteService(lambda: Session(self.engine)),
             service_service=MasterServiceService(lambda: Session(self.engine)),
-            web_service_service=MasterWebServiceService(lambda: Session(self.engine)),
+            web_service_service=MasterWebServiceService(
+                lambda: Session(self.engine), self.web_agent_client
+            ),
             dns_service_service=MasterDnsServiceService(lambda: Session(self.engine)),
             mail_service_service=MasterMailServiceService(lambda: Session(self.engine)),
             database_service_service=MasterDatabaseServiceService(lambda: Session(self.engine)),
@@ -232,6 +250,45 @@ class MasterApiTests(unittest.TestCase):
         self.assertEqual(created.body["website_id"], website.body["id"])
         self.assertEqual(created.body["php_version"], "8.3")
         self.assertEqual(created.body["desired_state"]["configuration"]["web_server"], "nginx")
+        dispatch = self.web_agent_client.requests[-1]
+        self.assertEqual(dispatch["request_id"], "req-web-service")
+        self.assertEqual(dispatch["agent_url"], "http://node-1:8002")
+        self.assertEqual(dispatch["args"][0], created.body["id"])
+        self.assertEqual(dispatch["args"][1], created.body["assignment"]["id"])
+        self.assertEqual(dispatch["args"][2], created.body["desired_state"]["version"])
+        self.assertEqual(dispatch["args"][3], "PROVISIONING")
+        self.assertEqual(
+            dispatch["args"][4], created.body["desired_state"]["configuration"]
+        )
+
+        self.web_agent_client.error = WebAgentUnavailable("Web Agent is unavailable")
+        unavailable = self.api.create_web_service(
+            {
+                "subscription_id": subscription.body["id"],
+                "website_id": website.body["id"],
+                "allocation": {"cpu": 2, "memory": 1024, "disk": 10000},
+                "lifecycle_state": "PROVISIONING",
+                "web_server": "nginx",
+                "php_version": "8.3",
+                "document_root": "/srv/web",
+            },
+            request_id="req-web-agent-unavailable",
+        )
+        self.assertEqual(unavailable.status_code, 503)
+        self.assertEqual(unavailable.body["code"], "DEPENDENCY_UNAVAILABLE")
+        self.assertEqual(
+            unavailable.headers["X-Request-ID"], "req-web-agent-unavailable"
+        )
+        failed_service_id = self.web_agent_client.requests[-1]["args"][0]
+        with Session(self.engine) as session:
+            self.assertIsNotNone(session.get(Service, failed_service_id))
+            desired = DesiredStateRepository(session).get(failed_service_id)
+            assignment = ServiceAssignmentRepository(session).get_active_for_service(
+                failed_service_id
+            )
+            self.assertIsNotNone(desired)
+            self.assertEqual(desired.configuration["web_server"], "nginx")
+            self.assertIsNotNone(assignment)
 
         loaded = self.api.get_web_service(created.body["id"], request_id="req-web-service-get")
 

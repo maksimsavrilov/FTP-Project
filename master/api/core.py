@@ -6,6 +6,7 @@ from decimal import Decimal
 from typing import Any, Callable, Protocol
 from uuid import uuid4
 
+from ..agent_client import WebAgentClientError
 from ..auth import AuthenticationClientError, AuthenticationServiceUnavailable
 from ..services import (
     MasterDatabaseServiceService,
@@ -442,7 +443,11 @@ class MasterApi:
             return self._error(403, "AUTHORIZATION_DENIED", str(exc), request_id)
         except PermissionError as exc:
             return self._error(401, "AUTHENTICATION_FAILED", str(exc), request_id)
-        except (AuthenticationServiceUnavailable, AuthenticationClientError) as exc:
+        except (
+            AuthenticationServiceUnavailable,
+            AuthenticationClientError,
+            WebAgentClientError,
+        ) as exc:
             return self._error(503, "DEPENDENCY_UNAVAILABLE", str(exc), request_id)
         except LookupError as exc:
             return self._error(404, "NOT_FOUND", str(exc), request_id)
@@ -811,6 +816,7 @@ class MasterApi:
                     web_server,
                     php_version,
                     document_root,
+                    request_id=request_id,
                 )
             )
 

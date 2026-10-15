@@ -283,20 +283,24 @@ architecture review.
 
 ### Steps
 
-1. Update `structurizr/model/agent-web.dsl` and
-   `structurizr/model/deployment.dsl` to remove the obsolete Apache runtime
-   components and deployment node, leaving the Web Agent connected to the
-   separate Nginx Web Service container through its Unix socket adapter.
-2. Load and validate the updated workspace through the existing Structurizr
-   service, and refresh any checked-in generated workspace representation so
-   it matches the DSL with no Apache runtime adapter attached to the Web Agent.
+1. Implement a Master-side Web Agent REST client that sends the persisted
+   desired service version, assignment ID, lifecycle state, and configuration
+   to a selected Web Agent endpoint; keep transport errors and request IDs
+   within the existing Master HTTP boundary.
+2. Integrate that client with the Master WebService lifecycle so a committed
+   WebService desired state is dispatched to the Agent assigned by Master, and
+   an unavailable Agent is surfaced as a dependency failure without changing
+   the committed assignment or desired state.
+3. Verify the WebService dispatch path with focused tests covering the
+   serialized desired-state request, selected assignment target, and
+   unavailable-Agent response behavior.
 
 
 ### Current Step
 
-Load and validate the updated workspace through the existing Structurizr
-service, and refresh any checked-in generated workspace representation so
-it matches the DSL with no Apache runtime adapter attached to the Web Agent.
+Verify the WebService dispatch path with focused tests covering the
+serialized desired-state request, selected assignment target, and
+unavailable-Agent response behavior.
 
 ### Plan Status
 
@@ -342,27 +346,27 @@ Historical information belongs in Git history.
 
 Status: findings
 
-Review: The previous Web/Nginx actual-state reporting iteration is implemented
-in `agents/web_agent/app.py`: reconciliation retains provider-inspected
-configuration and status for apply and removal outcomes, and the reporting
-path sends those observations through the existing Master client contract.
-Focused Web Agent coverage verifies the observed values reach the client.
-Master remains the owner of assignments, desired state and persisted actual
-state; the Agent reports observations over the existing REST/HTTP boundary.
-The architecture and domain model agree that the Web service container owns
-Nginx and its adapter. However, `structurizr/model/deployment.dsl` still
-defines an Apache Runtime Adapter attached to the Web Agent, and
-`structurizr/model/agent-web.dsl` still defines Apache runtime components.
-These are stale C4 elements and contradict the implemented Web boundary.
-The next iteration is limited to aligning those Web Agent C4 elements and
-validating the resulting workspace. No business-domain, Master ownership,
-other Agent, or service-container changes are indicated.
+Review: The previous Web Agent C4 cleanup is already present in
+`structurizr/model/agent-web.dsl` and `structurizr/model/deployment.dsl`;
+`structurizr/workspace.json` contains the matching Web Agent and Nginx Web
+Service model, and the configured DSL service is running. The active
+Implementation Plan therefore referenced completed work and has been
+replaced. Current code and `docs/implementation-boundaries.md` establish the
+Web Agent's inbound desired-state endpoint and its actual-state report to
+Master. Master persists desired state and assignment, but has no outbound
+Agent Client or dispatch operation, so the documented reconciliation sequence
+does not yet reach the assigned Agent. This is a functional implementation
+gap, not a disagreement in the C4 or domain model. The next iteration adds
+only the Master-to-Web-Agent REST dispatch path. Master retains placement and
+desired-state ownership; actual-state reporting remains Agent-to-Master;
+Agents do not call each other. No changes to the domain model or C4 model are
+required for this slice.
 
 ## Last Test Result
 
 Status: PASS
 
 - Command: `make test`
-- Result: `108 passed, 1 warning in 4.09s`
+- Result: `110 passed, 1 warning in 4.14s`
 - Failures: none; no regressions were detected in the current implementation.
-- Explanation: the implementation satisfies the changed Current Step by preserving adapter-observed Nginx configuration and runtime status separately from the accepted desired state and reporting the observed state through the existing Master client contract.
+- Explanation: the current implementation satisfies the Current Step by dispatching the committed WebService desired-state payload from Master to the assigned Web Agent, surfacing unavailable-agent failures as dependency errors without changing the committed assignment or desired state, and preserving the existing Master HTTP boundary and request-id flow.

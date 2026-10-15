@@ -9,6 +9,7 @@ from typing import Any, Callable
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from ..agent_client import WebAgentClient, WebAgentUnavailable
 from ..persistence.repositories import (
     ActualStateRepository,
     DatabaseServiceRepository,
@@ -634,8 +635,13 @@ class MasterServiceService:
 class MasterWebServiceService:
     """Application boundary for WebService configuration and lifecycle."""
 
-    def __init__(self, session_factory: Callable[[], Session]):
+    def __init__(
+        self,
+        session_factory: Callable[[], Session],
+        web_agent_client: WebAgentClient | None = None,
+    ):
         self.session_factory = session_factory
+        self.web_agent_client = web_agent_client
 
     def get(self, service_id: str):
         with self.session_factory() as session:
@@ -660,6 +666,7 @@ class MasterWebServiceService:
         web_server: str,
         php_version: str,
         document_root: str,
+        request_id: str | None = None,
     ):
         with self.session_factory() as session:
             with session.begin():
@@ -685,13 +692,36 @@ class MasterWebServiceService:
                     php_version,
                     document_root,
                 )
-                return WebServiceResult(
+                result = WebServiceResult(
                     service,
                     web_service.website_id,
                     web_service.web_server,
                     web_service.php_version,
                     web_service.document_root,
                 )
+
+        if self.web_agent_client is not None:
+            with self.session_factory() as session:
+                worker_node = WorkerNodeRepository(session).get(
+                    result.service.worker_node_id
+                )
+                if worker_node is None:
+                    raise WebAgentUnavailable(
+                        "assigned Worker Node is unavailable"
+                    )
+                agent_url = f"http://{worker_node.hostname}:8002"
+
+            self.web_agent_client.send_desired_state(
+                result.service.id,
+                result.service.assignment_id,
+                result.service.desired_version,
+                result.service.lifecycle_state,
+                result.service.configuration,
+                request_id=request_id,
+                agent_url=agent_url,
+            )
+
+        return result
 
 
 class MasterDnsServiceService:
