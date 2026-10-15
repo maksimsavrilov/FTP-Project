@@ -19,15 +19,8 @@ deploymentEnvironment "Production" {
         dnsAgentInstance = containerInstance hosting.dnsAgent
         mailAgentInstance = containerInstance hosting.mailAgent
 
-        apacheRuntimeAdapter = infrastructureNode "Apache Runtime Adapter" {
-            description "Host-running Apache runtime adapter outside the Web Agent container"
-            technology "systemd / httpd / apache"
-            -> webAgentInstance "Shared Unix socket. Owns config files and daemon lifecycle"
-        }
-
         webBootstrap -> webAgentInstance "Deploys and starts"
         webBootstrap -> webServiceInstance "Deploys and starts with shared Unix socket mount"
-        webAgentInstance -> webServiceInstance "Reconciles Nginx through adapter over shared Unix socket"
 
         infrastructureNode bindRuntime "BIND" {
             description "DNS server managed by DNS Agent"

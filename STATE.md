@@ -283,22 +283,20 @@ architecture review.
 
 ### Steps
 
-1. Update `agents/web_agent/app.py` so `WebReconciliationResult` retains the
-   adapter-observed Nginx configuration and runtime status separately from
-   the accepted desired configuration; reconciliation reads this from the
-   existing provider `inspect` result for apply and removal outcomes.
-2. Update the Web Agent actual-state reporting path in
-   `agents/web_agent/app.py` to send the observed configuration and runtime
-   status through the existing `WorkerAgentMasterClient` contract, with a
-   focused test proving Master receives observed state after reconciliation.
+1. Update `structurizr/model/agent-web.dsl` and
+   `structurizr/model/deployment.dsl` to remove the obsolete Apache runtime
+   components and deployment node, leaving the Web Agent connected to the
+   separate Nginx Web Service container through its Unix socket adapter.
+2. Load and validate the updated workspace through the existing Structurizr
+   service, and refresh any checked-in generated workspace representation so
+   it matches the DSL with no Apache runtime adapter attached to the Web Agent.
 
 
 ### Current Step
 
-Update the Web Agent actual-state reporting path in
-`agents/web_agent/app.py` to send the observed configuration and runtime
-status through the existing `WorkerAgentMasterClient` contract, with a
-focused test proving Master receives observed state after reconciliation.
+Load and validate the updated workspace through the existing Structurizr
+service, and refresh any checked-in generated workspace representation so
+it matches the DSL with no Apache runtime adapter attached to the Web Agent.
 
 ### Plan Status
 
@@ -344,24 +342,21 @@ Historical information belongs in Git history.
 
 Status: findings
 
-Review: The previous Web/Nginx container-boundary iteration is implemented:
-the Web service image owns Nginx and its adapter, the Agent calls the adapter
-over the shared Unix socket, and Compose gates Agent startup on service
-readiness. `STATE.md` records the readiness regression as fixed and the last
-test result as PASSED. The Master remains the owner of node identity,
-placement, desired state, and persisted actual state; registration remains
-Agent-initiated REST/HTTP, and no Agent-to-Agent communication or automatic
-failover was found. One desired/actual-state gap remains: reconciliation
-observes adapter state, but `report_actual_state` currently sends
-`state.configuration` (the desired configuration) to Master. The next plan
-is limited to preserving and reporting adapter-observed configuration and
-runtime status through the existing Master client contract. Architectural
-inconsistency: Structurizr `model/deployment.dsl` still contains an
-Apache Runtime Adapter attached to the Web Agent, although the canonical Web
-boundary is now the separate Nginx service container; remove or correctly
-place that stale element during a future C4 review. Do not broaden this
-iteration into Apache, DNS/Mail/DB, deployment automation, or Master
-ownership changes.
+Review: The previous Web/Nginx actual-state reporting iteration is implemented
+in `agents/web_agent/app.py`: reconciliation retains provider-inspected
+configuration and status for apply and removal outcomes, and the reporting
+path sends those observations through the existing Master client contract.
+Focused Web Agent coverage verifies the observed values reach the client.
+Master remains the owner of assignments, desired state and persisted actual
+state; the Agent reports observations over the existing REST/HTTP boundary.
+The architecture and domain model agree that the Web service container owns
+Nginx and its adapter. However, `structurizr/model/deployment.dsl` still
+defines an Apache Runtime Adapter attached to the Web Agent, and
+`structurizr/model/agent-web.dsl` still defines Apache runtime components.
+These are stale C4 elements and contradict the implemented Web boundary.
+The next iteration is limited to aligning those Web Agent C4 elements and
+validating the resulting workspace. No business-domain, Master ownership,
+other Agent, or service-container changes are indicated.
 
 ## Last Test Result
 

@@ -5,93 +5,93 @@
   "description" : "Distributed hosting management system",
   "documentation" : { },
   "id" : 1,
-  "lastModifiedDate" : "2026-10-15T06:28:51Z",
+  "lastModifiedDate" : "2026-10-15T10:16:26Z",
   "model" : {
     "deploymentNodes" : [ {
       "containerInstances" : [ {
         "containerId" : "7",
         "environment" : "Production",
-        "id" : "141",
+        "id" : "140",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.4dac530e-60a1-4adc-8138-065f6b971031.masterInstance"
+          "structurizr.dsl.identifier" : "e1a6b40c-e04b-4ceb-9e2d-ad7b9fd59de0.cfa9eb58-76af-458e-81c9-43cbeb0c8275.masterInstance"
         },
         "relationships" : [ {
           "description" : "Reads and writes state",
-          "destinationId" : "142",
-          "id" : "143",
-          "linkedRelationshipId" : "124",
-          "sourceId" : "141",
+          "destinationId" : "141",
+          "id" : "142",
+          "linkedRelationshipId" : "123",
+          "sourceId" : "140",
           "technology" : "SQLAlchemy / PostgreSQL"
         }, {
           "description" : "Authenticates and authorizes requests",
-          "destinationId" : "145",
-          "id" : "146",
-          "linkedRelationshipId" : "122",
-          "sourceId" : "141",
+          "destinationId" : "144",
+          "id" : "145",
+          "linkedRelationshipId" : "121",
+          "sourceId" : "140",
           "technology" : "OIDC / OAuth 2.0"
         }, {
           "description" : "Controls via REST/HTTP",
           "destinationId" : "148",
           "id" : "150",
-          "linkedRelationshipId" : "125",
-          "sourceId" : "141",
+          "linkedRelationshipId" : "124",
+          "sourceId" : "140",
           "technology" : "REST/HTTP"
         }, {
           "description" : "Controls via REST/HTTP",
-          "destinationId" : "151",
-          "id" : "153",
-          "linkedRelationshipId" : "127",
-          "sourceId" : "141",
+          "destinationId" : "153",
+          "id" : "155",
+          "linkedRelationshipId" : "126",
+          "sourceId" : "140",
           "technology" : "REST/HTTP"
         }, {
           "description" : "Controls via REST/HTTP",
-          "destinationId" : "154",
-          "id" : "156",
-          "linkedRelationshipId" : "129",
-          "sourceId" : "141",
+          "destinationId" : "156",
+          "id" : "158",
+          "linkedRelationshipId" : "128",
+          "sourceId" : "140",
           "technology" : "REST/HTTP"
         }, {
           "description" : "Controls via REST/HTTP",
           "destinationId" : "170",
           "id" : "172",
-          "linkedRelationshipId" : "131",
-          "sourceId" : "141",
+          "linkedRelationshipId" : "130",
+          "sourceId" : "140",
           "technology" : "REST/HTTP"
         } ],
         "tags" : "Container Instance"
       }, {
         "containerId" : "50",
         "environment" : "Production",
-        "id" : "142",
+        "id" : "141",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.4dac530e-60a1-4adc-8138-065f6b971031.databaseInstance"
+          "structurizr.dsl.identifier" : "e1a6b40c-e04b-4ceb-9e2d-ad7b9fd59de0.cfa9eb58-76af-458e-81c9-43cbeb0c8275.databaseInstance"
         },
         "tags" : "Container Instance"
       } ],
       "environment" : "Production",
-      "id" : "140",
+      "id" : "139",
       "instances" : "1",
       "name" : "Master Node",
       "properties" : {
-        "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.4dac530e-60a1-4adc-8138-065f6b971031"
+        "structurizr.dsl.identifier" : "e1a6b40c-e04b-4ceb-9e2d-ad7b9fd59de0.cfa9eb58-76af-458e-81c9-43cbeb0c8275"
       },
       "tags" : "Element,Deployment Node"
     }, {
       "environment" : "Production",
-      "id" : "144",
+      "id" : "143",
       "instances" : "1",
       "name" : "Authentication Node",
       "properties" : {
-        "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.f5a5aabb-6eb2-4cca-8250-cbb9b02afd43"
+        "structurizr.dsl.identifier" : "e1a6b40c-e04b-4ceb-9e2d-ad7b9fd59de0.e0adf3db-3f6f-42d0-86c5-3a5ded3a94aa"
       },
       "softwareSystemInstances" : [ {
         "environment" : "Production",
-        "id" : "145",
+        "id" : "144",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.f5a5aabb-6eb2-4cca-8250-cbb9b02afd43.authServiceInstance"
+          "structurizr.dsl.identifier" : "e1a6b40c-e04b-4ceb-9e2d-ad7b9fd59de0.e0adf3db-3f6f-42d0-86c5-3a5ded3a94aa.authServiceInstance"
         },
         "softwareSystemId" : "4",
         "tags" : "Software System Instance"
@@ -104,99 +104,104 @@
         "id" : "148",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.298db046-fa43-48d0-96aa-bfeadc2b5cf9.webAgentInstance"
+          "structurizr.dsl.identifier" : "e1a6b40c-e04b-4ceb-9e2d-ad7b9fd59de0.0103f2ad-fc1a-4635-86d9-3a4d5eb481c7.webAgentInstance"
         },
         "relationships" : [ {
           "description" : "Reports state and heartbeat via REST/HTTP",
-          "destinationId" : "141",
+          "destinationId" : "140",
           "id" : "149",
-          "linkedRelationshipId" : "126",
+          "linkedRelationshipId" : "125",
           "sourceId" : "148",
           "technology" : "REST/HTTP"
+        }, {
+          "description" : "Applies, removes and observes service configuration through shared Unix socket",
+          "destinationId" : "151",
+          "id" : "152",
+          "linkedRelationshipId" : "70",
+          "sourceId" : "148",
+          "technology" : "Unix socket / JSON"
         } ],
         "tags" : "Container Instance"
       }, {
-        "containerId" : "72",
+        "containerId" : "68",
         "environment" : "Production",
         "id" : "151",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.298db046-fa43-48d0-96aa-bfeadc2b5cf9.dnsAgentInstance"
+          "structurizr.dsl.identifier" : "e1a6b40c-e04b-4ceb-9e2d-ad7b9fd59de0.0103f2ad-fc1a-4635-86d9-3a4d5eb481c7.webServiceInstance"
+        },
+        "tags" : "Container Instance"
+      }, {
+        "containerId" : "71",
+        "environment" : "Production",
+        "id" : "153",
+        "instanceId" : 1,
+        "properties" : {
+          "structurizr.dsl.identifier" : "e1a6b40c-e04b-4ceb-9e2d-ad7b9fd59de0.0103f2ad-fc1a-4635-86d9-3a4d5eb481c7.dnsAgentInstance"
         },
         "relationships" : [ {
           "description" : "Reports state and heartbeat via REST/HTTP",
-          "destinationId" : "141",
-          "id" : "152",
-          "linkedRelationshipId" : "128",
-          "sourceId" : "151",
+          "destinationId" : "140",
+          "id" : "154",
+          "linkedRelationshipId" : "127",
+          "sourceId" : "153",
           "technology" : "REST/HTTP"
         } ],
         "tags" : "Container Instance"
       }, {
-        "containerId" : "89",
+        "containerId" : "88",
         "environment" : "Production",
-        "id" : "154",
+        "id" : "156",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.298db046-fa43-48d0-96aa-bfeadc2b5cf9.mailAgentInstance"
+          "structurizr.dsl.identifier" : "e1a6b40c-e04b-4ceb-9e2d-ad7b9fd59de0.0103f2ad-fc1a-4635-86d9-3a4d5eb481c7.mailAgentInstance"
         },
         "relationships" : [ {
           "description" : "Reports state and heartbeat via REST/HTTP",
-          "destinationId" : "141",
-          "id" : "155",
-          "linkedRelationshipId" : "130",
-          "sourceId" : "154",
+          "destinationId" : "140",
+          "id" : "157",
+          "linkedRelationshipId" : "129",
+          "sourceId" : "156",
           "technology" : "REST/HTTP"
         } ],
         "tags" : "Container Instance"
       } ],
       "environment" : "Production",
-      "id" : "147",
+      "id" : "146",
       "infrastructureNodes" : [ {
-        "description" : "Host-running Nginx runtime adapter outside the Web Agent container",
+        "description" : "Deploys and starts the Web service and Web Agent containers before registration",
         "environment" : "Production",
-        "id" : "157",
-        "name" : "Nginx Runtime Adapter",
+        "id" : "147",
+        "name" : "Node-local Bootstrap",
         "properties" : {
-          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.298db046-fa43-48d0-96aa-bfeadc2b5cf9.nginxRuntimeAdapter"
+          "structurizr.dsl.identifier" : "e1a6b40c-e04b-4ceb-9e2d-ad7b9fd59de0.0103f2ad-fc1a-4635-86d9-3a4d5eb481c7.webBootstrap"
         },
         "relationships" : [ {
-          "description" : "Shared Unix socket. Owns config files and daemon lifecycle",
+          "description" : "Deploys and starts",
           "destinationId" : "148",
-          "id" : "158",
-          "sourceId" : "157",
+          "id" : "159",
+          "sourceId" : "147",
           "tags" : "Relationship"
-        } ],
-        "tags" : "Element,Infrastructure Node",
-        "technology" : "systemd / nginx"
-      }, {
-        "description" : "Host-running Apache runtime adapter outside the Web Agent container",
-        "environment" : "Production",
-        "id" : "159",
-        "name" : "Apache Runtime Adapter",
-        "properties" : {
-          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.298db046-fa43-48d0-96aa-bfeadc2b5cf9.apacheRuntimeAdapter"
-        },
-        "relationships" : [ {
-          "description" : "Shared Unix socket. Owns config files and daemon lifecycle",
-          "destinationId" : "148",
+        }, {
+          "description" : "Deploys and starts with shared Unix socket mount",
+          "destinationId" : "151",
           "id" : "160",
-          "sourceId" : "159",
+          "sourceId" : "147",
           "tags" : "Relationship"
         } ],
         "tags" : "Element,Infrastructure Node",
-        "technology" : "systemd / httpd / apache"
+        "technology" : "Node provisioning"
       }, {
         "description" : "DNS server managed by DNS Agent",
         "environment" : "Production",
         "id" : "161",
         "name" : "bindRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.298db046-fa43-48d0-96aa-bfeadc2b5cf9.6ac138db-e880-481d-89c1-4835d25ea84d"
+          "structurizr.dsl.identifier" : "e1a6b40c-e04b-4ceb-9e2d-ad7b9fd59de0.0103f2ad-fc1a-4635-86d9-3a4d5eb481c7.0301d707-a666-4075-bf48-f4b063349d93"
         },
         "relationships" : [ {
           "description" : "Managed by",
-          "destinationId" : "151",
+          "destinationId" : "153",
           "id" : "162",
           "sourceId" : "161",
           "tags" : "Relationship"
@@ -209,11 +214,11 @@
         "id" : "163",
         "name" : "postfixRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.298db046-fa43-48d0-96aa-bfeadc2b5cf9.175f913f-8994-4ba0-81d4-b7379037acfc"
+          "structurizr.dsl.identifier" : "e1a6b40c-e04b-4ceb-9e2d-ad7b9fd59de0.0103f2ad-fc1a-4635-86d9-3a4d5eb481c7.9c41bb36-e2d6-4ff5-a655-f24ca9f1a09d"
         },
         "relationships" : [ {
           "description" : "Managed by",
-          "destinationId" : "154",
+          "destinationId" : "156",
           "id" : "164",
           "sourceId" : "163",
           "tags" : "Relationship"
@@ -226,11 +231,11 @@
         "id" : "165",
         "name" : "qmailRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.298db046-fa43-48d0-96aa-bfeadc2b5cf9.b6caff5e-56df-49a3-a2fb-103a0c574aba"
+          "structurizr.dsl.identifier" : "e1a6b40c-e04b-4ceb-9e2d-ad7b9fd59de0.0103f2ad-fc1a-4635-86d9-3a4d5eb481c7.cd295441-6d0d-48a5-a8c0-9e4cf3a4d7bc"
         },
         "relationships" : [ {
           "description" : "Managed by",
-          "destinationId" : "154",
+          "destinationId" : "156",
           "id" : "166",
           "sourceId" : "165",
           "tags" : "Relationship"
@@ -243,11 +248,11 @@
         "id" : "167",
         "name" : "CourierRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.298db046-fa43-48d0-96aa-bfeadc2b5cf9.0a97edfb-301c-414d-ae4d-dad66f025f05"
+          "structurizr.dsl.identifier" : "e1a6b40c-e04b-4ceb-9e2d-ad7b9fd59de0.0103f2ad-fc1a-4635-86d9-3a4d5eb481c7.b323ce93-c357-444d-b616-f8c3a0114319"
         },
         "relationships" : [ {
           "description" : "Managed by",
-          "destinationId" : "154",
+          "destinationId" : "156",
           "id" : "168",
           "sourceId" : "167",
           "tags" : "Relationship"
@@ -258,23 +263,23 @@
       "instances" : "1",
       "name" : "Worker Node",
       "properties" : {
-        "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.298db046-fa43-48d0-96aa-bfeadc2b5cf9"
+        "structurizr.dsl.identifier" : "e1a6b40c-e04b-4ceb-9e2d-ad7b9fd59de0.0103f2ad-fc1a-4635-86d9-3a4d5eb481c7"
       },
       "tags" : "Element,Deployment Node"
     }, {
       "containerInstances" : [ {
-        "containerId" : "104",
+        "containerId" : "103",
         "environment" : "Production",
         "id" : "170",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.31cc6d31-3501-47fe-8dc9-45055adb5e4a.dbAgentInstance"
+          "structurizr.dsl.identifier" : "e1a6b40c-e04b-4ceb-9e2d-ad7b9fd59de0.d4086e85-8796-45a8-bd05-ba9795a4388d.dbAgentInstance"
         },
         "relationships" : [ {
           "description" : "Reports state and heartbeat via REST/HTTP",
-          "destinationId" : "141",
+          "destinationId" : "140",
           "id" : "171",
-          "linkedRelationshipId" : "132",
+          "linkedRelationshipId" : "131",
           "sourceId" : "170",
           "technology" : "REST/HTTP"
         } ],
@@ -288,7 +293,7 @@
         "id" : "173",
         "name" : "mysqlRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.31cc6d31-3501-47fe-8dc9-45055adb5e4a.54a42c49-89fb-47fc-90c8-2a409ab6c8b7"
+          "structurizr.dsl.identifier" : "e1a6b40c-e04b-4ceb-9e2d-ad7b9fd59de0.d4086e85-8796-45a8-bd05-ba9795a4388d.db94fd5e-0598-4e96-bb99-fb8e2cfddcce"
         },
         "relationships" : [ {
           "description" : "Managed by",
@@ -305,7 +310,7 @@
         "id" : "175",
         "name" : "postgresqlRuntime",
         "properties" : {
-          "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.31cc6d31-3501-47fe-8dc9-45055adb5e4a.58ee62e1-e000-479b-b471-53283e1a648b"
+          "structurizr.dsl.identifier" : "e1a6b40c-e04b-4ceb-9e2d-ad7b9fd59de0.d4086e85-8796-45a8-bd05-ba9795a4388d.6dbd30d7-6546-4c8a-8965-d92b96e5ec62"
         },
         "relationships" : [ {
           "description" : "Managed by",
@@ -320,7 +325,7 @@
       "instances" : "1",
       "name" : "Database Worker Node",
       "properties" : {
-        "structurizr.dsl.identifier" : "b8b670b5-409f-4b06-960b-3b6afc7ad65f.31cc6d31-3501-47fe-8dc9-45055adb5e4a"
+        "structurizr.dsl.identifier" : "e1a6b40c-e04b-4ceb-9e2d-ad7b9fd59de0.d4086e85-8796-45a8-bd05-ba9795a4388d"
       },
       "tags" : "Element,Deployment Node"
     } ],
@@ -334,15 +339,15 @@
       "relationships" : [ {
         "description" : "Uses",
         "destinationId" : "6",
-        "id" : "134",
+        "id" : "133",
         "sourceId" : "1",
         "tags" : "Relationship",
         "technology" : "Unix shell"
       }, {
         "description" : "Uses",
         "destinationId" : "5",
-        "id" : "135",
-        "linkedRelationshipId" : "134",
+        "id" : "134",
+        "linkedRelationshipId" : "133",
         "sourceId" : "1",
         "technology" : "Unix shell"
       } ],
@@ -357,15 +362,15 @@
       "relationships" : [ {
         "description" : "Uses",
         "destinationId" : "6",
-        "id" : "136",
+        "id" : "135",
         "sourceId" : "2",
         "tags" : "Relationship",
         "technology" : "Unix shell"
       }, {
         "description" : "Uses",
         "destinationId" : "5",
-        "id" : "137",
-        "linkedRelationshipId" : "136",
+        "id" : "136",
+        "linkedRelationshipId" : "135",
         "sourceId" : "2",
         "technology" : "Unix shell"
       } ],
@@ -380,15 +385,15 @@
       "relationships" : [ {
         "description" : "Uses",
         "destinationId" : "6",
-        "id" : "138",
+        "id" : "137",
         "sourceId" : "3",
         "tags" : "Relationship",
         "technology" : "Unix shell"
       }, {
         "description" : "Uses",
         "destinationId" : "5",
-        "id" : "139",
-        "linkedRelationshipId" : "138",
+        "id" : "138",
+        "linkedRelationshipId" : "137",
         "sourceId" : "3",
         "technology" : "Unix shell"
       } ],
@@ -415,15 +420,15 @@
         "relationships" : [ {
           "description" : "Executes commands via REST/HTTP",
           "destinationId" : "8",
-          "id" : "119",
+          "id" : "118",
           "sourceId" : "6",
           "tags" : "Relationship",
           "technology" : "REST/HTTP"
         }, {
           "description" : "Executes commands via REST/HTTP",
           "destinationId" : "7",
-          "id" : "120",
-          "linkedRelationshipId" : "119",
+          "id" : "119",
+          "linkedRelationshipId" : "118",
           "sourceId" : "6",
           "technology" : "REST/HTTP"
         } ],
@@ -490,7 +495,7 @@
           }, {
             "description" : "Authenticates and authorizes requests",
             "destinationId" : "4",
-            "id" : "121",
+            "id" : "120",
             "sourceId" : "8",
             "tags" : "Relationship",
             "technology" : "OIDC / OAuth 2.0"
@@ -768,7 +773,7 @@
           }, {
             "description" : "Sends Web service desired state via REST",
             "destinationId" : "51",
-            "id" : "133",
+            "id" : "132",
             "sourceId" : "18",
             "tags" : "Relationship",
             "technology" : "Python / HTTP"
@@ -796,42 +801,42 @@
         "relationships" : [ {
           "description" : "Authenticates and authorizes requests",
           "destinationId" : "4",
-          "id" : "122",
-          "linkedRelationshipId" : "121",
+          "id" : "121",
+          "linkedRelationshipId" : "120",
           "sourceId" : "7",
           "technology" : "OIDC / OAuth 2.0"
         }, {
           "description" : "Reads and writes state",
           "destinationId" : "50",
-          "id" : "124",
+          "id" : "123",
           "sourceId" : "7",
           "tags" : "Relationship",
           "technology" : "SQLAlchemy / PostgreSQL"
         }, {
           "description" : "Controls via REST/HTTP",
           "destinationId" : "51",
-          "id" : "125",
+          "id" : "124",
           "sourceId" : "7",
           "tags" : "Relationship",
           "technology" : "REST/HTTP"
         }, {
           "description" : "Controls via REST/HTTP",
-          "destinationId" : "72",
-          "id" : "127",
+          "destinationId" : "71",
+          "id" : "126",
           "sourceId" : "7",
           "tags" : "Relationship",
           "technology" : "REST/HTTP"
         }, {
           "description" : "Controls via REST/HTTP",
-          "destinationId" : "89",
-          "id" : "129",
+          "destinationId" : "88",
+          "id" : "128",
           "sourceId" : "7",
           "tags" : "Relationship",
           "technology" : "REST/HTTP"
         }, {
           "description" : "Controls via REST/HTTP",
-          "destinationId" : "104",
-          "id" : "131",
+          "destinationId" : "103",
+          "id" : "130",
           "sourceId" : "7",
           "tags" : "Relationship",
           "technology" : "REST/HTTP"
@@ -860,14 +865,14 @@
           "relationships" : [ {
             "description" : "Authenticates Master requests",
             "destinationId" : "53",
-            "id" : "62",
+            "id" : "60",
             "sourceId" : "52",
             "tags" : "Relationship",
             "technology" : "Python"
           }, {
             "description" : "Accepts desired state",
             "destinationId" : "54",
-            "id" : "63",
+            "id" : "61",
             "sourceId" : "52",
             "tags" : "Relationship",
             "technology" : "Python"
@@ -895,7 +900,7 @@
           "relationships" : [ {
             "description" : "Triggers reconciliation",
             "destinationId" : "55",
-            "id" : "64",
+            "id" : "62",
             "sourceId" : "54",
             "tags" : "Relationship",
             "technology" : "Python"
@@ -913,14 +918,14 @@
           "relationships" : [ {
             "description" : "Applies required configuration",
             "destinationId" : "56",
-            "id" : "65",
+            "id" : "63",
             "sourceId" : "55",
             "tags" : "Relationship",
             "technology" : "Python"
           }, {
             "description" : "Reports reconciliation result",
-            "destinationId" : "61",
-            "id" : "70",
+            "destinationId" : "59",
+            "id" : "66",
             "sourceId" : "55",
             "tags" : "Relationship",
             "technology" : "Python"
@@ -928,7 +933,7 @@
           "tags" : "Element,Component",
           "technology" : "Python"
         }, {
-          "description" : "Translates desired web state and manages the selected local provider",
+          "description" : "Translates desired web state for the Nginx provider",
           "documentation" : { },
           "id" : "56",
           "name" : "Web Provider Adapter",
@@ -938,14 +943,7 @@
           "relationships" : [ {
             "description" : "Generates per-service Nginx config",
             "destinationId" : "58",
-            "id" : "66",
-            "sourceId" : "56",
-            "tags" : "Relationship",
-            "technology" : "Python"
-          }, {
-            "description" : "Generates per-service Apache config",
-            "destinationId" : "60",
-            "id" : "68",
+            "id" : "64",
             "sourceId" : "56",
             "tags" : "Relationship",
             "technology" : "Python"
@@ -953,17 +951,25 @@
           "tags" : "Element,Component",
           "technology" : "Python"
         }, {
-          "description" : "Publishes, validates and inspects per-service Nginx configuration through the host runtime",
+          "description" : "Calls the Web service container adapter to publish, validate and inspect per-service Nginx configuration",
           "documentation" : { },
           "id" : "57",
           "name" : "Nginx Runtime Client",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.webAgent.nginxRuntimeClient"
           },
+          "relationships" : [ {
+            "description" : "Applies, removes and observes service configuration through shared Unix socket",
+            "destinationId" : "68",
+            "id" : "69",
+            "sourceId" : "57",
+            "tags" : "Relationship",
+            "technology" : "Unix socket / JSON"
+          } ],
           "tags" : "Element,Component",
           "technology" : "Python"
         }, {
-          "description" : "Generates and serializes per-service Nginx configuration for the runtime",
+          "description" : "Generates and serializes per-service Nginx configuration for the service adapter",
           "documentation" : { },
           "id" : "58",
           "name" : "Nginx Provider",
@@ -973,36 +979,8 @@
           "relationships" : [ {
             "description" : "Publishes and validates config through runtime",
             "destinationId" : "57",
-            "id" : "67",
+            "id" : "65",
             "sourceId" : "58",
-            "tags" : "Relationship",
-            "technology" : "Python"
-          } ],
-          "tags" : "Element,Component",
-          "technology" : "Python"
-        }, {
-          "description" : "Publishes, validates and inspects per-service Apache configuration through the host runtime",
-          "documentation" : { },
-          "id" : "59",
-          "name" : "Apache Runtime Client",
-          "properties" : {
-            "structurizr.dsl.identifier" : "hosting.webAgent.apacheRuntimeClient"
-          },
-          "tags" : "Element,Component",
-          "technology" : "Python"
-        }, {
-          "description" : "Generates and serializes per-service Apache configuration for the runtime",
-          "documentation" : { },
-          "id" : "60",
-          "name" : "Apache Provider",
-          "properties" : {
-            "structurizr.dsl.identifier" : "hosting.webAgent.apacheProvider"
-          },
-          "relationships" : [ {
-            "description" : "Publishes and validates config through runtime",
-            "destinationId" : "59",
-            "id" : "69",
-            "sourceId" : "60",
             "tags" : "Relationship",
             "technology" : "Python"
           } ],
@@ -1011,7 +989,7 @@
         }, {
           "description" : "Reports actual state, health and heartbeat to Master",
           "documentation" : { },
-          "id" : "61",
+          "id" : "59",
           "name" : "State & Health Reporter",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.webAgent.webStateReporter"
@@ -1019,8 +997,8 @@
           "relationships" : [ {
             "description" : "Exposes state and health information",
             "destinationId" : "52",
-            "id" : "71",
-            "sourceId" : "61",
+            "id" : "67",
+            "sourceId" : "59",
             "tags" : "Relationship",
             "technology" : "Python"
           } ],
@@ -1035,9 +1013,16 @@
           "structurizr.dsl.identifier" : "hosting.webAgent"
         },
         "relationships" : [ {
+          "description" : "Applies, removes and observes service configuration through shared Unix socket",
+          "destinationId" : "68",
+          "id" : "70",
+          "linkedRelationshipId" : "69",
+          "sourceId" : "51",
+          "technology" : "Unix socket / JSON"
+        }, {
           "description" : "Reports state and heartbeat via REST/HTTP",
           "destinationId" : "7",
-          "id" : "126",
+          "id" : "125",
           "sourceId" : "51",
           "tags" : "Relationship",
           "technology" : "REST/HTTP"
@@ -1045,26 +1030,36 @@
         "tags" : "Element,Container",
         "technology" : "Python"
       }, {
+        "description" : "Owns the Nginx runtime and a separate service-scoped adapter application",
+        "documentation" : { },
+        "id" : "68",
+        "name" : "Web Service",
+        "properties" : {
+          "structurizr.dsl.identifier" : "hosting.webService"
+        },
+        "tags" : "Element,Container",
+        "technology" : "Nginx image / adapter application"
+      }, {
         "components" : [ {
           "description" : "REST endpoints exposed to Master",
           "documentation" : { },
-          "id" : "73",
+          "id" : "72",
           "name" : "REST API",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.dnsAgent.dnsApi"
           },
           "relationships" : [ {
             "description" : "Authenticates Master requests",
-            "destinationId" : "74",
-            "id" : "81",
-            "sourceId" : "73",
+            "destinationId" : "73",
+            "id" : "80",
+            "sourceId" : "72",
             "tags" : "Relationship",
             "technology" : "Python"
           }, {
             "description" : "Accepts desired DNS state",
-            "destinationId" : "75",
-            "id" : "82",
-            "sourceId" : "73",
+            "destinationId" : "74",
+            "id" : "81",
+            "sourceId" : "72",
             "tags" : "Relationship",
             "technology" : "Python"
           } ],
@@ -1073,7 +1068,7 @@
         }, {
           "description" : "Validates requests from Master",
           "documentation" : { },
-          "id" : "74",
+          "id" : "73",
           "name" : "Authentication",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.dnsAgent.dnsAuth"
@@ -1083,16 +1078,16 @@
         }, {
           "description" : "Accepts and validates desired DNS state from Master",
           "documentation" : { },
-          "id" : "75",
+          "id" : "74",
           "name" : "Desired State Handler",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.dnsAgent.dnsDesiredState"
           },
           "relationships" : [ {
             "description" : "Triggers reconciliation",
-            "destinationId" : "76",
-            "id" : "83",
-            "sourceId" : "75",
+            "destinationId" : "75",
+            "id" : "82",
+            "sourceId" : "74",
             "tags" : "Relationship",
             "technology" : "Python"
           } ],
@@ -1101,23 +1096,23 @@
         }, {
           "description" : "Compares desired DNS state with actual state",
           "documentation" : { },
-          "id" : "76",
+          "id" : "75",
           "name" : "Reconciliation Engine",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.dnsAgent.dnsReconciliation"
           },
           "relationships" : [ {
             "description" : "Applies required DNS configuration",
-            "destinationId" : "77",
-            "id" : "84",
-            "sourceId" : "76",
+            "destinationId" : "76",
+            "id" : "83",
+            "sourceId" : "75",
             "tags" : "Relationship",
             "technology" : "Python"
           }, {
             "description" : "Reports reconciliation result",
-            "destinationId" : "80",
-            "id" : "87",
-            "sourceId" : "76",
+            "destinationId" : "79",
+            "id" : "86",
+            "sourceId" : "75",
             "tags" : "Relationship",
             "technology" : "Python"
           } ],
@@ -1126,13 +1121,31 @@
         }, {
           "description" : "Manages DNS Agent configuration",
           "documentation" : { },
-          "id" : "77",
+          "id" : "76",
           "name" : "DNS Configuration Manager",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.dnsAgent.dnsConfig"
           },
           "relationships" : [ {
             "description" : "Manages zones and records",
+            "destinationId" : "77",
+            "id" : "84",
+            "sourceId" : "76",
+            "tags" : "Relationship",
+            "technology" : "Python"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Python"
+        }, {
+          "description" : "Creates, updates and removes DNS zones and records",
+          "documentation" : { },
+          "id" : "77",
+          "name" : "Zone Manager",
+          "properties" : {
+            "structurizr.dsl.identifier" : "hosting.dnsAgent.zoneManager"
+          },
+          "relationships" : [ {
+            "description" : "Applies BIND configuration",
             "destinationId" : "78",
             "id" : "85",
             "sourceId" : "77",
@@ -1142,27 +1155,9 @@
           "tags" : "Element,Component",
           "technology" : "Python"
         }, {
-          "description" : "Creates, updates and removes DNS zones and records",
-          "documentation" : { },
-          "id" : "78",
-          "name" : "Zone Manager",
-          "properties" : {
-            "structurizr.dsl.identifier" : "hosting.dnsAgent.zoneManager"
-          },
-          "relationships" : [ {
-            "description" : "Applies BIND configuration",
-            "destinationId" : "79",
-            "id" : "86",
-            "sourceId" : "78",
-            "tags" : "Relationship",
-            "technology" : "Python"
-          } ],
-          "tags" : "Element,Component",
-          "technology" : "Python"
-        }, {
           "description" : "Manages BIND configuration, validation and lifecycle",
           "documentation" : { },
-          "id" : "79",
+          "id" : "78",
           "name" : "BIND Manager",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.dnsAgent.bindManager"
@@ -1172,16 +1167,16 @@
         }, {
           "description" : "Reports actual DNS state, health and heartbeat to Master",
           "documentation" : { },
-          "id" : "80",
+          "id" : "79",
           "name" : "State & Health Reporter",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.dnsAgent.dnsStateReporter"
           },
           "relationships" : [ {
             "description" : "Exposes state and health information",
-            "destinationId" : "73",
-            "id" : "88",
-            "sourceId" : "80",
+            "destinationId" : "72",
+            "id" : "87",
+            "sourceId" : "79",
             "tags" : "Relationship",
             "technology" : "Python"
           } ],
@@ -1190,7 +1185,7 @@
         } ],
         "description" : "Manages DNS services",
         "documentation" : { },
-        "id" : "72",
+        "id" : "71",
         "name" : "DNS Agent",
         "properties" : {
           "structurizr.dsl.identifier" : "hosting.dnsAgent"
@@ -1198,8 +1193,8 @@
         "relationships" : [ {
           "description" : "Reports state and heartbeat via REST/HTTP",
           "destinationId" : "7",
-          "id" : "128",
-          "sourceId" : "72",
+          "id" : "127",
+          "sourceId" : "71",
           "tags" : "Relationship",
           "technology" : "REST/HTTP"
         } ],
@@ -1209,23 +1204,23 @@
         "components" : [ {
           "description" : "REST endpoints exposed to Master",
           "documentation" : { },
-          "id" : "90",
+          "id" : "89",
           "name" : "REST API",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.mailAgent.mailApi"
           },
           "relationships" : [ {
             "description" : "Authenticates Master requests",
-            "destinationId" : "91",
-            "id" : "97",
-            "sourceId" : "90",
+            "destinationId" : "90",
+            "id" : "96",
+            "sourceId" : "89",
             "tags" : "Relationship",
             "technology" : "Python"
           }, {
             "description" : "Accepts desired mail state",
-            "destinationId" : "92",
-            "id" : "98",
-            "sourceId" : "90",
+            "destinationId" : "91",
+            "id" : "97",
+            "sourceId" : "89",
             "tags" : "Relationship",
             "technology" : "Python"
           } ],
@@ -1234,7 +1229,7 @@
         }, {
           "description" : "Validates requests from Master",
           "documentation" : { },
-          "id" : "91",
+          "id" : "90",
           "name" : "Authentication",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.mailAgent.mailAuth"
@@ -1244,16 +1239,16 @@
         }, {
           "description" : "Accepts and validates desired mail state from Master",
           "documentation" : { },
-          "id" : "92",
+          "id" : "91",
           "name" : "Desired State Handler",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.mailAgent.mailDesiredState"
           },
           "relationships" : [ {
             "description" : "Triggers reconciliation",
-            "destinationId" : "93",
-            "id" : "99",
-            "sourceId" : "92",
+            "destinationId" : "92",
+            "id" : "98",
+            "sourceId" : "91",
             "tags" : "Relationship",
             "technology" : "Python"
           } ],
@@ -1262,23 +1257,23 @@
         }, {
           "description" : "Compares desired mail state with actual state",
           "documentation" : { },
-          "id" : "93",
+          "id" : "92",
           "name" : "Reconciliation Engine",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.mailAgent.mailReconciliation"
           },
           "relationships" : [ {
             "description" : "Applies required mail configuration",
-            "destinationId" : "94",
-            "id" : "100",
-            "sourceId" : "93",
+            "destinationId" : "93",
+            "id" : "99",
+            "sourceId" : "92",
             "tags" : "Relationship",
             "technology" : "Python"
           }, {
             "description" : "Reports reconciliation result",
-            "destinationId" : "96",
-            "id" : "102",
-            "sourceId" : "93",
+            "destinationId" : "95",
+            "id" : "101",
+            "sourceId" : "92",
             "tags" : "Relationship",
             "technology" : "Python"
           } ],
@@ -1287,16 +1282,16 @@
         }, {
           "description" : "Manages mail service configuration",
           "documentation" : { },
-          "id" : "94",
+          "id" : "93",
           "name" : "Mail Configuration Manager",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.mailAgent.mailConfig"
           },
           "relationships" : [ {
             "description" : "Manages mail stack",
-            "destinationId" : "95",
-            "id" : "101",
-            "sourceId" : "94",
+            "destinationId" : "94",
+            "id" : "100",
+            "sourceId" : "93",
             "tags" : "Relationship",
             "technology" : "Python"
           } ],
@@ -1305,7 +1300,7 @@
         }, {
           "description" : "Manages the configured mail stack",
           "documentation" : { },
-          "id" : "95",
+          "id" : "94",
           "name" : "Mail Manager",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.mailAgent.mailManager"
@@ -1315,16 +1310,16 @@
         }, {
           "description" : "Reports actual mail state, health and heartbeat to Master",
           "documentation" : { },
-          "id" : "96",
+          "id" : "95",
           "name" : "State & Health Reporter",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.mailAgent.mailStateReporter"
           },
           "relationships" : [ {
             "description" : "Exposes state and health information",
-            "destinationId" : "90",
-            "id" : "103",
-            "sourceId" : "96",
+            "destinationId" : "89",
+            "id" : "102",
+            "sourceId" : "95",
             "tags" : "Relationship",
             "technology" : "Python"
           } ],
@@ -1333,7 +1328,7 @@
         } ],
         "description" : "Manages mail services",
         "documentation" : { },
-        "id" : "89",
+        "id" : "88",
         "name" : "Mail Agent",
         "properties" : {
           "structurizr.dsl.identifier" : "hosting.mailAgent"
@@ -1341,8 +1336,8 @@
         "relationships" : [ {
           "description" : "Reports state and heartbeat via REST/HTTP",
           "destinationId" : "7",
-          "id" : "130",
-          "sourceId" : "89",
+          "id" : "129",
+          "sourceId" : "88",
           "tags" : "Relationship",
           "technology" : "REST/HTTP"
         } ],
@@ -1352,23 +1347,23 @@
         "components" : [ {
           "description" : "REST endpoints exposed to Master",
           "documentation" : { },
-          "id" : "105",
+          "id" : "104",
           "name" : "REST API",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.dbAgent.dbApi"
           },
           "relationships" : [ {
             "description" : "Authenticates Master requests",
-            "destinationId" : "106",
-            "id" : "112",
-            "sourceId" : "105",
+            "destinationId" : "105",
+            "id" : "111",
+            "sourceId" : "104",
             "tags" : "Relationship",
             "technology" : "Python"
           }, {
             "description" : "Accepts and validates desired database state",
-            "destinationId" : "107",
-            "id" : "113",
-            "sourceId" : "105",
+            "destinationId" : "106",
+            "id" : "112",
+            "sourceId" : "104",
             "tags" : "Relationship",
             "technology" : "Python"
           } ],
@@ -1377,7 +1372,7 @@
         }, {
           "description" : "Validates requests from Master",
           "documentation" : { },
-          "id" : "106",
+          "id" : "105",
           "name" : "Authentication",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.dbAgent.dbAuth"
@@ -1387,16 +1382,16 @@
         }, {
           "description" : "Accepts and validates desired database state from Master",
           "documentation" : { },
-          "id" : "107",
+          "id" : "106",
           "name" : "Desired State Handler",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.dbAgent.dbDesiredState"
           },
           "relationships" : [ {
             "description" : "Triggers reconciliation",
-            "destinationId" : "108",
-            "id" : "114",
-            "sourceId" : "107",
+            "destinationId" : "107",
+            "id" : "113",
+            "sourceId" : "106",
             "tags" : "Relationship",
             "technology" : "Python"
           } ],
@@ -1405,23 +1400,23 @@
         }, {
           "description" : "Compares desired database state with actual state",
           "documentation" : { },
-          "id" : "108",
+          "id" : "107",
           "name" : "Reconciliation Engine",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.dbAgent.dbReconciliation"
           },
           "relationships" : [ {
             "description" : "Applies required database configuration",
-            "destinationId" : "109",
-            "id" : "115",
-            "sourceId" : "108",
+            "destinationId" : "108",
+            "id" : "114",
+            "sourceId" : "107",
             "tags" : "Relationship",
             "technology" : "Python"
           }, {
             "description" : "Reports reconciliation result",
-            "destinationId" : "111",
-            "id" : "117",
-            "sourceId" : "108",
+            "destinationId" : "110",
+            "id" : "116",
+            "sourceId" : "107",
             "tags" : "Relationship",
             "technology" : "Python"
           } ],
@@ -1430,16 +1425,16 @@
         }, {
           "description" : "Manages database service configuration",
           "documentation" : { },
-          "id" : "109",
+          "id" : "108",
           "name" : "Database Configuration Manager",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.dbAgent.dbConfig"
           },
           "relationships" : [ {
             "description" : "Manages database engine",
-            "destinationId" : "110",
-            "id" : "116",
-            "sourceId" : "109",
+            "destinationId" : "109",
+            "id" : "115",
+            "sourceId" : "108",
             "tags" : "Relationship",
             "technology" : "Python"
           } ],
@@ -1448,7 +1443,7 @@
         }, {
           "description" : "Manages the configured database engine",
           "documentation" : { },
-          "id" : "110",
+          "id" : "109",
           "name" : "Database Manager",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.dbAgent.dbManager"
@@ -1458,16 +1453,16 @@
         }, {
           "description" : "Reports actual database state, health and heartbeat to Master",
           "documentation" : { },
-          "id" : "111",
+          "id" : "110",
           "name" : "State & Health Reporter",
           "properties" : {
             "structurizr.dsl.identifier" : "hosting.dbAgent.dbStateReporter"
           },
           "relationships" : [ {
             "description" : "Exposes state and health information",
-            "destinationId" : "105",
-            "id" : "118",
-            "sourceId" : "111",
+            "destinationId" : "104",
+            "id" : "117",
+            "sourceId" : "110",
             "tags" : "Relationship",
             "technology" : "Python"
           } ],
@@ -1476,7 +1471,7 @@
         } ],
         "description" : "Manages database services",
         "documentation" : { },
-        "id" : "104",
+        "id" : "103",
         "name" : "DB Agent",
         "properties" : {
           "structurizr.dsl.identifier" : "hosting.dbAgent"
@@ -1484,8 +1479,8 @@
         "relationships" : [ {
           "description" : "Reports state and heartbeat via REST/HTTP",
           "destinationId" : "7",
-          "id" : "132",
-          "sourceId" : "104",
+          "id" : "131",
+          "sourceId" : "103",
           "tags" : "Relationship",
           "technology" : "REST/HTTP"
         } ],
@@ -1502,8 +1497,8 @@
       "relationships" : [ {
         "description" : "Authenticates and authorizes requests",
         "destinationId" : "4",
-        "id" : "123",
-        "linkedRelationshipId" : "121",
+        "id" : "122",
+        "linkedRelationshipId" : "120",
         "sourceId" : "5",
         "technology" : "OIDC / OAuth 2.0"
       } ],
@@ -1593,11 +1588,11 @@
       "name" : "Component View: Hosting Control System - Master Application",
       "order" : 4,
       "relationships" : [ {
-        "id" : "119"
+        "id" : "118"
       }, {
-        "id" : "121"
+        "id" : "120"
       }, {
-        "id" : "133"
+        "id" : "132"
       }, {
         "id" : "20"
       }, {
@@ -1701,11 +1696,7 @@
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "60",
-        "x" : 0,
-        "y" : 0
-      }, {
-        "id" : "61",
+        "id" : "68",
         "x" : 0,
         "y" : 0
       } ],
@@ -1714,6 +1705,10 @@
       "name" : "Component View: Hosting Control System - Web Agent",
       "order" : 5,
       "relationships" : [ {
+        "id" : "60"
+      }, {
+        "id" : "61"
+      }, {
         "id" : "62"
       }, {
         "id" : "63"
@@ -1726,13 +1721,7 @@
       }, {
         "id" : "67"
       }, {
-        "id" : "68"
-      }, {
         "id" : "69"
-      }, {
-        "id" : "70"
-      }, {
-        "id" : "71"
       } ]
     }, {
       "automaticLayout" : {
@@ -1742,8 +1731,12 @@
         "rankSeparation" : 100,
         "vertices" : true
       },
-      "containerId" : "72",
+      "containerId" : "71",
       "elements" : [ {
+        "id" : "72",
+        "x" : 0,
+        "y" : 0
+      }, {
         "id" : "73",
         "x" : 0,
         "y" : 0
@@ -1771,16 +1764,14 @@
         "id" : "79",
         "x" : 0,
         "y" : 0
-      }, {
-        "id" : "80",
-        "x" : 0,
-        "y" : 0
       } ],
       "externalContainerBoundariesVisible" : false,
       "key" : "DnsAgentComponents",
       "name" : "Component View: Hosting Control System - DNS Agent",
       "order" : 6,
       "relationships" : [ {
+        "id" : "80"
+      }, {
         "id" : "81"
       }, {
         "id" : "82"
@@ -1794,8 +1785,6 @@
         "id" : "86"
       }, {
         "id" : "87"
-      }, {
-        "id" : "88"
       } ]
     }, {
       "automaticLayout" : {
@@ -1805,8 +1794,12 @@
         "rankSeparation" : 100,
         "vertices" : true
       },
-      "containerId" : "89",
+      "containerId" : "88",
       "elements" : [ {
+        "id" : "89",
+        "x" : 0,
+        "y" : 0
+      }, {
         "id" : "90",
         "x" : 0,
         "y" : 0
@@ -1830,10 +1823,6 @@
         "id" : "95",
         "x" : 0,
         "y" : 0
-      }, {
-        "id" : "96",
-        "x" : 0,
-        "y" : 0
       } ],
       "externalContainerBoundariesVisible" : false,
       "key" : "MailAgentComponents",
@@ -1846,7 +1835,7 @@
       }, {
         "id" : "102"
       }, {
-        "id" : "103"
+        "id" : "96"
       }, {
         "id" : "97"
       }, {
@@ -1862,8 +1851,12 @@
         "rankSeparation" : 100,
         "vertices" : true
       },
-      "containerId" : "104",
+      "containerId" : "103",
       "elements" : [ {
+        "id" : "104",
+        "x" : 0,
+        "y" : 0
+      }, {
         "id" : "105",
         "x" : 0,
         "y" : 0
@@ -1887,16 +1880,14 @@
         "id" : "110",
         "x" : 0,
         "y" : 0
-      }, {
-        "id" : "111",
-        "x" : 0,
-        "y" : 0
       } ],
       "externalContainerBoundariesVisible" : false,
       "key" : "DbAgentComponents",
       "name" : "Component View: Hosting Control System - DB Agent",
       "order" : 8,
       "relationships" : [ {
+        "id" : "111"
+      }, {
         "id" : "112"
       }, {
         "id" : "113"
@@ -1908,8 +1899,6 @@
         "id" : "116"
       }, {
         "id" : "117"
-      }, {
-        "id" : "118"
       } ]
     } ],
     "configuration" : {
@@ -1980,15 +1969,19 @@
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "72",
+        "id" : "68",
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "89",
+        "id" : "71",
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "104",
+        "id" : "88",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "103",
         "x" : 0,
         "y" : 0
       } ],
@@ -1997,9 +1990,11 @@
       "name" : "Container View: Hosting Control System",
       "order" : 2,
       "relationships" : [ {
-        "id" : "120"
+        "id" : "119"
       }, {
-        "id" : "122"
+        "id" : "121"
+      }, {
+        "id" : "123"
       }, {
         "id" : "124"
       }, {
@@ -2017,13 +2012,13 @@
       }, {
         "id" : "131"
       }, {
-        "id" : "132"
+        "id" : "133"
       }, {
-        "id" : "134"
+        "id" : "135"
       }, {
-        "id" : "136"
+        "id" : "137"
       }, {
-        "id" : "138"
+        "id" : "70"
       } ],
       "softwareSystemId" : "5"
     } ],
@@ -2036,6 +2031,10 @@
         "vertices" : true
       },
       "elements" : [ {
+        "id" : "139",
+        "x" : 0,
+        "y" : 0
+      }, {
         "id" : "140",
         "x" : 0,
         "y" : 0
@@ -2044,7 +2043,7 @@
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "142",
+        "id" : "143",
         "x" : 0,
         "y" : 0
       }, {
@@ -2052,7 +2051,7 @@
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "145",
+        "id" : "146",
         "x" : 0,
         "y" : 0
       }, {
@@ -2068,15 +2067,11 @@
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "154",
+        "id" : "153",
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "157",
-        "x" : 0,
-        "y" : 0
-      }, {
-        "id" : "159",
+        "id" : "156",
         "x" : 0,
         "y" : 0
       }, {
@@ -2118,9 +2113,9 @@
       "name" : "Deployment View: Hosting Control System - Production",
       "order" : 3,
       "relationships" : [ {
-        "id" : "143"
+        "id" : "142"
       }, {
-        "id" : "146"
+        "id" : "145"
       }, {
         "id" : "149"
       }, {
@@ -2128,13 +2123,15 @@
       }, {
         "id" : "152"
       }, {
-        "id" : "153"
+        "id" : "154"
       }, {
         "id" : "155"
       }, {
-        "id" : "156"
+        "id" : "157"
       }, {
         "id" : "158"
+      }, {
+        "id" : "159"
       }, {
         "id" : "160"
       }, {
@@ -2177,30 +2174,39 @@
         "id" : "51",
         "x" : 0,
         "y" : 0
+      }, {
+        "id" : "68",
+        "x" : 0,
+        "y" : 0
       } ],
       "externalBoundariesVisible" : false,
       "key" : "NodeRegistration-Web",
       "name" : "Dynamic View: Hosting Control System",
       "order" : 9,
       "relationships" : [ {
-        "description" : "Registers via REST/HTTP using its bootstrap credential",
-        "id" : "126",
+        "description" : "Uses shared Unix socket after deployment",
+        "id" : "70",
         "order" : "1",
         "response" : false
       }, {
-        "description" : "Persists the WorkerNode record",
-        "id" : "124",
+        "description" : "Registers via REST/HTTP using its bootstrap credential",
+        "id" : "125",
         "order" : "2",
         "response" : false
       }, {
-        "description" : "Returns the stable Node ID and node-specific credential",
-        "id" : "125",
+        "description" : "Persists the WorkerNode record",
+        "id" : "123",
         "order" : "3",
         "response" : false
       }, {
-        "description" : "Uses the returned credential for heartbeats and status reporting",
-        "id" : "126",
+        "description" : "Returns the stable Node ID and node-specific credential",
+        "id" : "124",
         "order" : "4",
+        "response" : false
+      }, {
+        "description" : "Uses the returned credential for heartbeats and status reporting",
+        "id" : "125",
+        "order" : "5",
         "response" : false
       } ]
     }, {
@@ -2221,7 +2227,7 @@
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "104",
+        "id" : "103",
         "x" : 0,
         "y" : 0
       } ],
@@ -2231,22 +2237,22 @@
       "order" : 10,
       "relationships" : [ {
         "description" : "Registers via REST/HTTP using its bootstrap credential",
-        "id" : "132",
+        "id" : "131",
         "order" : "1",
         "response" : false
       }, {
         "description" : "Persists the WorkerNode record",
-        "id" : "124",
+        "id" : "123",
         "order" : "2",
         "response" : false
       }, {
         "description" : "Returns the stable Node ID and node-specific credential",
-        "id" : "131",
+        "id" : "130",
         "order" : "3",
         "response" : false
       }, {
         "description" : "Uses the returned credential for heartbeats and status reporting",
-        "id" : "132",
+        "id" : "131",
         "order" : "4",
         "response" : false
       } ]
@@ -2282,27 +2288,27 @@
       "order" : 11,
       "relationships" : [ {
         "description" : "Starts user creation command",
-        "id" : "134",
+        "id" : "133",
         "order" : "1",
         "response" : false
       }, {
         "description" : "Requests user creation via REST",
-        "id" : "120",
+        "id" : "119",
         "order" : "2",
         "response" : false
       }, {
         "description" : "Creates User record",
-        "id" : "124",
+        "id" : "123",
         "order" : "3",
         "response" : false
       }, {
         "description" : "Returns User ID",
-        "id" : "120",
+        "id" : "119",
         "order" : "4",
         "response" : true
       }, {
         "description" : "Shows created user",
-        "id" : "134",
+        "id" : "133",
         "order" : "5",
         "response" : true
       } ]
@@ -2338,27 +2344,27 @@
       "order" : 12,
       "relationships" : [ {
         "description" : "Starts hosting plan creation command",
-        "id" : "134",
+        "id" : "133",
         "order" : "1",
         "response" : false
       }, {
         "description" : "Requests Hosting Plan creation via REST",
-        "id" : "120",
+        "id" : "119",
         "order" : "2",
         "response" : false
       }, {
         "description" : "Creates Hosting Plan with resource limits and object limits",
-        "id" : "124",
+        "id" : "123",
         "order" : "3",
         "response" : false
       }, {
         "description" : "Returns Hosting Plan ID",
-        "id" : "120",
+        "id" : "119",
         "order" : "4",
         "response" : true
       }, {
         "description" : "Shows created hosting plan",
-        "id" : "134",
+        "id" : "133",
         "order" : "5",
         "response" : true
       } ]
@@ -2394,42 +2400,42 @@
       "order" : 13,
       "relationships" : [ {
         "description" : "Starts subscription creation command",
-        "id" : "134",
+        "id" : "133",
         "order" : "1",
         "response" : false
       }, {
         "description" : "Requests Subscription creation for a User based on a Hosting Plan via REST",
-        "id" : "120",
+        "id" : "119",
         "order" : "2",
         "response" : false
       }, {
         "description" : "Reads User account",
-        "id" : "124",
+        "id" : "123",
         "order" : "3",
         "response" : false
       }, {
         "description" : "Reads Hosting Plan limits and permissions",
-        "id" : "124",
+        "id" : "123",
         "order" : "4",
         "response" : false
       }, {
         "description" : "Validates and reserves subscription resource limits and object limits from the Hosting Plan to the User",
-        "id" : "124",
+        "id" : "123",
         "order" : "5",
         "response" : false
       }, {
         "description" : "Creates Subscription record bound to User and Hosting Plan",
-        "id" : "124",
+        "id" : "123",
         "order" : "6",
         "response" : false
       }, {
         "description" : "Returns Subscription ID",
-        "id" : "120",
+        "id" : "119",
         "order" : "7",
         "response" : true
       }, {
         "description" : "Shows created subscription",
-        "id" : "134",
+        "id" : "133",
         "order" : "8",
         "response" : true
       } ]
@@ -2469,37 +2475,37 @@
       "order" : 14,
       "relationships" : [ {
         "description" : "Starts service creation command",
-        "id" : "138",
+        "id" : "137",
         "order" : "1",
         "response" : false
       }, {
         "description" : "Requests service creation via REST",
-        "id" : "120",
+        "id" : "119",
         "order" : "2",
         "response" : false
       }, {
         "description" : "Persists service, assignment and desired state",
-        "id" : "124",
+        "id" : "123",
         "order" : "3",
         "response" : false
       }, {
         "description" : "Sends Web service desired state via REST",
-        "id" : "125",
+        "id" : "124",
         "order" : "4",
         "response" : false
       }, {
         "description" : "Reports Web service actual state via REST",
-        "id" : "126",
+        "id" : "125",
         "order" : "5",
         "response" : false
       }, {
         "description" : "Returns service information",
-        "id" : "120",
+        "id" : "119",
         "order" : "6",
         "response" : true
       }, {
         "description" : "Shows service status",
-        "id" : "138",
+        "id" : "137",
         "order" : "7",
         "response" : true
       } ]
@@ -2581,12 +2587,12 @@
         "response" : false
       }, {
         "description" : "Sends Web service desired state via REST",
-        "id" : "133",
+        "id" : "132",
         "order" : "7",
         "response" : false
       }, {
         "description" : "Reports Web service actual state",
-        "id" : "133",
+        "id" : "132",
         "order" : "8",
         "response" : true
       }, {
@@ -2622,15 +2628,15 @@
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "72",
+        "id" : "71",
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "89",
+        "id" : "88",
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "104",
+        "id" : "103",
         "x" : 0,
         "y" : 0
       } ],
@@ -2640,27 +2646,27 @@
       "order" : 16,
       "relationships" : [ {
         "description" : "Sends heartbeat and actual state",
-        "id" : "126",
+        "id" : "125",
         "order" : "1",
         "response" : false
       }, {
         "description" : "Sends heartbeat and actual state",
-        "id" : "128",
+        "id" : "127",
         "order" : "2",
         "response" : false
       }, {
         "description" : "Sends heartbeat and actual state",
-        "id" : "130",
+        "id" : "129",
         "order" : "3",
         "response" : false
       }, {
         "description" : "Sends heartbeat and actual state",
-        "id" : "132",
+        "id" : "131",
         "order" : "4",
         "response" : false
       }, {
         "description" : "Updates node heartbeat and observed state",
-        "id" : "124",
+        "id" : "123",
         "order" : "5",
         "response" : false
       } ]
@@ -2699,13 +2705,13 @@
       "name" : "System Context View: Hosting Control System",
       "order" : 1,
       "relationships" : [ {
-        "id" : "123"
+        "id" : "122"
       }, {
-        "id" : "135"
+        "id" : "134"
       }, {
-        "id" : "137"
+        "id" : "136"
       }, {
-        "id" : "139"
+        "id" : "138"
       } ],
       "softwareSystemId" : "5"
     } ]
