@@ -91,6 +91,19 @@ class MasterPersistenceTests(unittest.TestCase):
         self.assertEqual(actual.status, "RUNNING")
         self.assertEqual(actual.version, 1)
 
+        self.assertFalse(
+            self.actual_repo.record_observation(
+                service_id="service-123",
+                assignment_id=assignment.id,
+                version=2,
+                status="ERROR",
+                configuration={},
+                health={},
+                observed_at="2026-01-01T00:11:00Z",
+            )
+        )
+        self.assertEqual(self.actual_repo.get("service-123").version, 1)
+
     def test_account_identity_and_subscription_entitlement_flow(self):
         identity = IdentityReferenceRepository(self.session).create("zitadel", "user-123")
         account = AccountRepository(self.session).create(

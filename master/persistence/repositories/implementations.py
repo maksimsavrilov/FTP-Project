@@ -577,6 +577,10 @@ class ActualStateRepository:
         if not assignment_ok:
             raise ValueError("Assignment does not match the current active assignment")
 
+        desired = DesiredStateRepository(self.session).get(normalized_service_id)
+        if desired is None or int(desired.version) != int(version):
+            return False
+
         existing = self.session.execute(
             select(ActualState).where(ActualState.service_id == normalized_service_id).with_for_update()
         ).scalar_one_or_none()
