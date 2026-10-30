@@ -283,6 +283,9 @@ architecture review.
    WebService desired state is dispatched to the Agent assigned by Master, and
    an unavailable Agent is surfaced as a dependency failure without changing
    the committed assignment or desired state.
+- Update Master actual-state persistence in `master/persistence/repositories/implementations.py` to accept observations only for    the current active assignment and desired-state version; stale reports must not replace the stored observation.
+- Update `MasterReconciliationService` in `master/services/core.py` so an accepted Web Agent observation and the corresponding `Service.status` change commit in one transaction, mapping provider outcomes to the existing Service lifecycle states.
+- Verify the report-to-lifecycle path with focused existing Master persistence and API tests, including stale-version rejection and the status returned by Service reads.
 
 
 ---
@@ -292,13 +295,14 @@ architecture review.
 
 ### Steps
 
-1. Update Master actual-state persistence in `master/persistence/repositories/implementations.py` to accept observations only for the current active assignment and desired-state version; stale reports must not replace the stored observation.
-2. Update `MasterReconciliationService` in `master/services/core.py` so an accepted Web Agent observation and the corresponding `Service.status` change commit in one transaction, mapping provider outcomes to the existing Service lifecycle states.
-3. Verify the report-to-lifecycle path with focused existing Master persistence and API tests, including stale-version rejection and the status returned by Service reads.
+1. Make `docker-compose.prod.yml` a reproducible single-host Docker Compose deployment using explicit versioned images for Master, Authentication Service, Web Agent, and Web service; require production secrets and public endpoint/TLS configuration, preserve durable PostgreSQL and ZITADEL state, and keep internal service ports private. Verify rendered production configuration with all required settings supplied.
+2. Add GitHub Actions CI to run the existing project test command and build/publish the four project images to GHCR, tagging each successful source revision with an immutable commit identifier and publishing release tags.
+3. Add GitHub Actions CD to deploy a selected, already-published image revision to the production Docker host over SSH, run Compose health/smoke checks, and support rollback to the previous image revision without deleting persistent volumes.
+4. Write a user-facing production deployment runbook covering host/environment preparation, a component topology diagram, credentials and DNS/TLS setup, ordered per-component deployment/configuration/health checks, CLI setup, upgrades, rollback, backup/restore, and troubleshooting. Clearly identify DNS, Mail, and DB Agents as not yet deployable because their implementations and images are absent.
 
 ### Current Step
 
-Update `MasterReconciliationService` in `master/services/core.py` so an accepted Web Agent observation and the corresponding `Service.status` change commit in one transaction, mapping provider outcomes to the existing Service lifecycle states.
+Make `docker-compose.prod.yml` a reproducible single-host Docker Compose deployment using explicit versioned images for Master, Authentication Service, Web Agent, and Web service; require production secrets and public endpoint/TLS configuration, preserve durable PostgreSQL and ZITADEL state, and keep internal service ports private. Verify rendered production configuration with all required settings supplied.
 
 ### Plan Status
 
@@ -344,20 +348,25 @@ Historical information belongs in Git history.
 
 Status: findings
 
-Review: The prior implementation step completed and passed: Master dispatches
-the committed WebService desired state to its assigned Web Agent over REST,
-and the Web Agent reconciles through the separate local Web service adapter
-and reports observed state to Master. The repository and boundary documents
-remain consistent with the canonical C4 and domain models; no architecture
-change is needed. The remaining closed-loop gap is in Master: actual-state
-reports are persisted without checking their version against current desired
-state, and accepted observations do not update `Service.status`. A future
-version can therefore become authoritative in `ActualState`, while a
-successful or failed provider reconciliation remains invisible in Service
-reads. This iteration validates current assignment/version, then atomically
-persists an accepted observation and projects its result onto the existing
-Service lifecycle. It does not add retry infrastructure, alter placement, or
-extend beyond the Web Agent path.
+Review: The Master-to-Web-Agent reconciliation path is implemented and its
+focused persistence/API tests pass. The new objective is the fastest usable
+prototype with automated CI/CD and complete user-facing production deployment
+instructions. The user selected Docker Compose first, resolving the Compose
+versus Kubernetes/Terraform deployment fork. This matches the existing
+production Compose stack and the README's preference for simple infrastructure.
+The canonical C4 model keeps Master, authentication, PostgreSQL and Worker
+Nodes as separate responsibilities; the prototype may colocate these
+containers on one Docker host without changing those ownership boundaries.
+Current deployment gaps: no CI/CD workflows exist; production Compose builds
+images locally, contains a Podman-specific socket path, publishes internal
+service ports, and does not provide a complete public TLS ingress setup. Only
+the Web Agent and Web service have implementations/images; DNS, Mail and DB
+Agents are architectural components without deployable implementations.
+The planned iteration therefore makes the current Compose deployment
+reproducible, automates test/build/publish/deploy with rollback, and documents
+host preparation and every currently deployable component. The runbook must
+state the unavailable Agent components plainly; it must not imply that they
+can already be deployed. Kubernetes and Terraform are outside this iteration.
 
 ## Last Test Result
 
