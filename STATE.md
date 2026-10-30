@@ -275,6 +275,15 @@ architecture review.
   the runtime is now shown as a service-scoped REST/HTTP interface outside the
   Web Agent container, with validation, publish/remove, reload, and status
   responsibilities separated from the Agent.
+- Implement a Master-side Web Agent REST client that sends the persisted
+   desired service version, assignment ID, lifecycle state, and configuration
+   to a selected Web Agent endpoint; keep transport errors and request IDs
+   within the existing Master HTTP boundary.
+- Integrate that client with the Master WebService lifecycle so a committed
+   WebService desired state is dispatched to the Agent assigned by Master, and
+   an unavailable Agent is surfaced as a dependency failure without changing
+   the committed assignment or desired state.
+
 
 ---
 
@@ -283,24 +292,13 @@ architecture review.
 
 ### Steps
 
-1. Implement a Master-side Web Agent REST client that sends the persisted
-   desired service version, assignment ID, lifecycle state, and configuration
-   to a selected Web Agent endpoint; keep transport errors and request IDs
-   within the existing Master HTTP boundary.
-2. Integrate that client with the Master WebService lifecycle so a committed
-   WebService desired state is dispatched to the Agent assigned by Master, and
-   an unavailable Agent is surfaced as a dependency failure without changing
-   the committed assignment or desired state.
-3. Verify the WebService dispatch path with focused tests covering the
-   serialized desired-state request, selected assignment target, and
-   unavailable-Agent response behavior.
-
+1. Update Master actual-state persistence in `master/persistence/repositories/implementations.py` to accept observations only for the current active assignment and desired-state version; stale reports must not replace the stored observation.
+2. Update `MasterReconciliationService` in `master/services/core.py` so an accepted Web Agent observation and the corresponding `Service.status` change commit in one transaction, mapping provider outcomes to the existing Service lifecycle states.
+3. Verify the report-to-lifecycle path with focused existing Master persistence and API tests, including stale-version rejection and the status returned by Service reads.
 
 ### Current Step
 
-Verify the WebService dispatch path with focused tests covering the
-serialized desired-state request, selected assignment target, and
-unavailable-Agent response behavior.
+Update `MasterReconciliationService` in `master/services/core.py` so an accepted Web Agent observation and the corresponding `Service.status` change commit in one transaction, mapping provider outcomes to the existing Service lifecycle states.
 
 ### Plan Status
 
@@ -346,27 +344,26 @@ Historical information belongs in Git history.
 
 Status: findings
 
-Review: The previous Web Agent C4 cleanup is already present in
-`structurizr/model/agent-web.dsl` and `structurizr/model/deployment.dsl`;
-`structurizr/workspace.json` contains the matching Web Agent and Nginx Web
-Service model, and the configured DSL service is running. The active
-Implementation Plan therefore referenced completed work and has been
-replaced. Current code and `docs/implementation-boundaries.md` establish the
-Web Agent's inbound desired-state endpoint and its actual-state report to
-Master. Master persists desired state and assignment, but has no outbound
-Agent Client or dispatch operation, so the documented reconciliation sequence
-does not yet reach the assigned Agent. This is a functional implementation
-gap, not a disagreement in the C4 or domain model. The next iteration adds
-only the Master-to-Web-Agent REST dispatch path. Master retains placement and
-desired-state ownership; actual-state reporting remains Agent-to-Master;
-Agents do not call each other. No changes to the domain model or C4 model are
-required for this slice.
+Review: The prior implementation step completed and passed: Master dispatches
+the committed WebService desired state to its assigned Web Agent over REST,
+and the Web Agent reconciles through the separate local Web service adapter
+and reports observed state to Master. The repository and boundary documents
+remain consistent with the canonical C4 and domain models; no architecture
+change is needed. The remaining closed-loop gap is in Master: actual-state
+reports are persisted without checking their version against current desired
+state, and accepted observations do not update `Service.status`. A future
+version can therefore become authoritative in `ActualState`, while a
+successful or failed provider reconciliation remains invisible in Service
+reads. This iteration validates current assignment/version, then atomically
+persists an accepted observation and projects its result onto the existing
+Service lifecycle. It does not add retry infrastructure, alter placement, or
+extend beyond the Web Agent path.
 
 ## Last Test Result
 
 Status: PASS
 
 - Command: `make test`
-- Result: `110 passed, 1 warning in 4.14s`
-- Failures: none; no regressions were detected in the current implementation.
-- Explanation: the current implementation satisfies the Current Step by dispatching the committed WebService desired-state payload from Master to the assigned Web Agent, surfacing unavailable-agent failures as dependency errors without changing the committed assignment or desired state, and preserving the existing Master HTTP boundary and request-id flow.
+- Result: `110 passed, 1 warning in 4.05s`
+- Failures: none. The warning is a Starlette deprecation warning for `anyio.abc.BlockingPortal`.
+- Explanation: accepted current-assignment/current-version observations update `ActualState` and the mapped `Service.status` within one transaction. Stale observations are rejected without changing the Service status. The Current Step is satisfied.

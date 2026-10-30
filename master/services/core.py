@@ -1022,6 +1022,14 @@ class MasterNodeService:
 class MasterReconciliationService:
     """Application boundary for desired-state reads and agent reports."""
 
+    SERVICE_STATUS_BY_PROVIDER_STATUS = {
+        "PROVISIONING": "PROVISIONING",
+        "RUNNING": "RUNNING",
+        "ERROR": "DEGRADED",
+        "STOPPED": "STOPPED",
+        "DELETED": "DELETED",
+    }
+
     def __init__(self, session_factory: Callable[[], Session]):
         self.session_factory = session_factory
 
@@ -1060,6 +1068,11 @@ class MasterReconciliationService:
                     health,
                     observed_at,
                 )
+                service_status = self.SERVICE_STATUS_BY_PROVIDER_STATUS.get(status)
+                if accepted and service_status is not None:
+                    service = ServiceRepository(session).get(service_id)
+                    if service is not None:
+                        service.status = service_status
                 return ActualStateReportResult(accepted=accepted)
 
 

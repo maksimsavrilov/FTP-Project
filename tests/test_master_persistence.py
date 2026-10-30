@@ -5,7 +5,14 @@ from datetime import datetime, timezone
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from master.persistence.models import Base, WorkerNode, ServiceAssignment, DesiredState, ActualState
+from master.persistence.models import (
+    ActualState,
+    Base,
+    DesiredState,
+    Service,
+    ServiceAssignment,
+    WorkerNode,
+)
 from master.persistence.repositories import (
     AccountRepository,
     WorkerNodeRepository,
@@ -15,7 +22,12 @@ from master.persistence.repositories import (
     IdentityReferenceRepository,
     ResourceEntitlementRepository,
 )
-from master.services import MasterNodeService, MasterPlacementService, MasterReconciliationService
+from master.services import (
+    MasterNodeService,
+    MasterPlacementService,
+    MasterReconciliationService,
+    MasterServiceService,
+)
 
 
 class MasterPersistenceTests(unittest.TestCase):
@@ -277,6 +289,14 @@ class MasterPersistenceTests(unittest.TestCase):
     def test_reconciliation_service_reports_and_reads_actual_state(self):
         node_id = str(uuid.uuid4())
         with self.session.begin():
+            self.session.add(
+                Service(
+                    id="service-123",
+                    subscription_id="subscription-123",
+                    type="WEB",
+                    status="PROVISIONING",
+                )
+            )
             self.worker_repo.create(
                 WorkerNode(
                     id=node_id,
@@ -314,6 +334,12 @@ class MasterPersistenceTests(unittest.TestCase):
         self.assertEqual(state.desired.version, 1)
         self.assertEqual(state.actual.status, "RUNNING")
         self.assertEqual(state.assignment.id, assignment.id)
+        self.assertEqual(
+            MasterServiceService(lambda: Session(self.engine))
+            .get("service-123")
+            .status,
+            "RUNNING",
+        )
 
         stale = service.report_actual_state(
             "service-123",
@@ -325,6 +351,12 @@ class MasterPersistenceTests(unittest.TestCase):
             "2026-01-01T00:09:00Z",
         )
         self.assertFalse(stale.accepted)
+        self.assertEqual(
+            MasterServiceService(lambda: Session(self.engine))
+            .get("service-123")
+            .status,
+            "RUNNING",
+        )
 
 
 if __name__ == "__main__":
